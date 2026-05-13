@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Linux Virus</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main id="app" class="app app--minimized">
+      <section class="minimized" data-panel="minimized">
+        <div class="timer" data-bind="timerText">Timer: not set</div>
+        <button type="button" data-action="showSettings">Settings</button>
+      </section>
+
+      <section class="expanded" data-panel="expanded">
+        <div class="topline">
+          <span data-bind="status">Expanded</span>
+          <button type="button" data-action="showSettings">Settings</button>
+        </div>
+        <div class="quiz">
+          <div class="quiz__label">Linux コマンド並び替え</div>
+          <div class="quiz__question">隠しファイルを含めて、long format でファイル一覧を表示するコマンドに並び替えてください。</div>
+          <div id="answer" class="quiz__answer" aria-label="Answer area"></div>
+          <div id="tokens" class="quiz__tokens" aria-label="Command tokens"></div>
+          <div class="quiz__footer">
+            <span id="quizResult" class="quiz__result">Select tokens in order.</span>
+            <div class="quiz__actions">
+              <button type="button" data-action="checkQuiz">Check</button>
+              <button type="button" data-action="resetQuiz">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" data-action="minimize">Minimize</button>
+          <button type="button" data-action="quit">Quit</button>
+        </div>
+      </section>
+
+      <section class="settings" data-panel="settings">
+        <div class="topline">
+          <span>Settings</span>
+        </div>
+        <label>
+          <span>Timer seconds</span>
+          <input
+            id="timerSeconds"
+            inputmode="numeric"
+            type="number"
+            min="1"
+            value="60"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </label>
+        <div class="command-header">
+          <span>Commands</span>
+          <div class="command-header__actions">
+            <button class="icon-button" type="button" data-action="addCommand">+</button>
+            <button class="icon-button" type="button" data-action="showHelp">?</button>
+          </div>
+        </div>
+        <div id="commands" class="commands"></div>
+        <div class="hint">Use text such as /focus or shortcuts such as &lt;cmd&gt;+k.</div>
+        <div class="settings__status" data-bind="status">Settings</div>
+        <div class="actions">
+          <button type="button" data-action="done">Done</button>
+        </div>
+      </section>
+
+      <dialog id="helpDialog" class="help-dialog">
+        <div class="help-dialog__header">
+          <strong>Command notation</strong>
+          <button class="icon-button" type="button" data-action="closeHelp">×</button>
+        </div>
+        <div class="help-dialog__body">
+          <p>Text commands match typed text exactly.</p>
+          <ul>
+            <li><code>/focus</code></li>
+            <li><code>start quiz</code></li>
+          </ul>
+          <p>Modifier shortcuts use angle brackets before the key.</p>
+          <ul>
+            <li><code>&lt;cmd&gt;+k</code></li>
+            <li><code>&lt;ctrl&gt;+j</code></li>
+            <li><code>&lt;option&gt;+x</code></li>
+            <li><code>&lt;shift&gt;+a</code></li>
+            <li><code>&lt;ctrl+option&gt;+&lt;space&gt;</code></li>
+            <li><code>&lt;cmd+shift&gt;+p</code></li>
+          </ul>
+          <p>Supported modifier names are <code>cmd</code>, <code>ctrl</code>, <code>option</code>, and <code>shift</code>.</p>
+        </div>
+      </dialog>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

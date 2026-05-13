@@ -1,0 +1,259 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  background: #171a1f;
+  color: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #171a1f;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 1px solid #4d5969;
+  border-radius: 6px;
+  padding: 5px 10px;
+  background: #27303a;
+  color: #f4f7fb;
+}
+
+button:active {
+  background: #3a4654;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #4d5969;
+  border-radius: 6px;
+  padding: 6px 8px;
+  background: #0f1216;
+  color: #f4f7fb;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+}
+
+section {
+  display: none;
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+}
+
+.app--minimized [data-panel="minimized"],
+.app--expanded [data-panel="expanded"],
+.app--settings [data-panel="settings"] {
+  display: flex;
+}
+
+.minimized {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timer {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.expanded,
+.settings {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.topline,
+.actions,
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topline {
+  justify-content: space-between;
+  font-weight: 700;
+}
+
+.quiz {
+  display: grid;
+  gap: 12px;
+  min-height: 210px;
+  border: 1px solid #313a46;
+  border-radius: 8px;
+  padding: 14px;
+  background: #202832;
+}
+
+.quiz__label {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.quiz__question {
+  color: #aeb8c8;
+}
+
+.quiz__answer,
+.quiz__tokens {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px dashed #4d5969;
+  border-radius: 8px;
+  padding: 8px;
+  color: #aeb8c8;
+}
+
+.quiz__answer:empty::before {
+  content: "ここにドラッグするか、下のトークンを順番にクリック";
+}
+
+.quiz__tokens {
+  border-style: solid;
+  background: #171d24;
+}
+
+.token {
+  min-width: 52px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 700;
+  cursor: grab;
+}
+
+.token--dragging {
+  opacity: 0.45;
+}
+
+.token--selected {
+  background: #39506a;
+}
+
+.quiz__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quiz__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.quiz__result {
+  color: #d7dde7;
+  font-size: 12px;
+}
+
+.meta {
+  flex-wrap: wrap;
+  color: #aeb8c8;
+  font-size: 12px;
+}
+
+.settings label,
+.command-header {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button {
+  width: 32px;
+  justify-self: start;
+  padding: 5px 0;
+  font-weight: 800;
+}
+
+.command-header__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.commands {
+  display: grid;
+  gap: 8px;
+  max-height: 96px;
+  overflow: auto;
+}
+
+.hint {
+  color: #aeb8c8;
+  font-size: 12px;
+}
+
+.settings__status {
+  color: #aeb8c8;
+  font-size: 12px;
+}
+
+.help-dialog {
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  border: 1px solid #4d5969;
+  border-radius: 8px;
+  padding: 0;
+  background: #171a1f;
+  color: #f4f7fb;
+}
+
+.help-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.help-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #313a46;
+}
+
+.help-dialog__body {
+  display: grid;
+  gap: 8px;
+  max-height: 250px;
+  overflow: auto;
+  padding: 12px 14px 14px;
+  color: #d7dde7;
+  font-size: 13px;
+}
+
+.help-dialog p,
+.help-dialog ul {
+  margin: 0;
+}
+
+.help-dialog ul {
+  padding-left: 20px;
+}
+
+.help-dialog code {
+  color: #f4f7fb;
+  background: #0f1216;
+  border: 1px solid #313a46;
+  border-radius: 4px;
+  padding: 1px 4px;
+}

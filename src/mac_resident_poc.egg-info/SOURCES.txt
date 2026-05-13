@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+src/mac_resident_poc.egg-info/PKG-INFO
+src/mac_resident_poc.egg-info/SOURCES.txt
+src/mac_resident_poc.egg-info/dependency_links.txt
+src/mac_resident_poc.egg-info/entry_points.txt
+src/mac_resident_poc.egg-info/requires.txt
+src/mac_resident_poc.egg-info/top_level.txt
+src/resident_poc/__init__.py
+src/resident_poc/app.py
+src/resident_poc/web/app.js
+src/resident_poc/web/index.html
+src/resident_poc/web/style.css

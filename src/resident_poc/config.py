@@ -1,0 +1,30 @@
+TOGGLE_HOTKEY_LABEL = "ctrl+option+space"
+QUIT_HOTKEY_LABEL = "ctrl+option+q"
+
+SPACE_KEY_CODE = 49
+Q_KEY_CODE = 12
+
+DEFAULT_TIMER_SECONDS = 60
+DEFAULT_COMMAND = "/focus"
+DEFAULT_COMMANDS = [DEFAULT_COMMAND]
+
+EDGE_MARGIN = 32.0
+TOP_MARGIN = 56.0
+MINIMIZED_SIZE = (240.0, 112.0)
+EXPANDED_SIZE = (520.0, 420.0)
+SETTINGS_SIZE = (520.0, 360.0)
+
+POLL_INTERVAL_SECONDS = 0.1
+TIMER_INTERVAL_SECONDS = 0.2
+
+SPECIAL_KEY_LABELS = {
+    36: "<return>",
+    48: "<tab>",
+    49: "<space>",
+    51: "<delete>",
+    53: "<escape>",
+    123: "<left>",
+    124: "<right>",
+    125: "<down>",
+    126: "<up>",
+}

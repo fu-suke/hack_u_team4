@@ -1,0 +1,37 @@
+[project]
+name = "mac-resident-poc"
+version = "0.1.0"
+description = "macOS resident-app proof of concept with a floating icon, global hotkey, and keyboard tracking."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pyobjc-framework-ApplicationServices>=12.1",
+    "pyobjc-framework-Cocoa>=12.1",
+    "pyobjc-framework-WebKit>=12.1",
+]
+
+[project.scripts]
+mac-resident-poc = "resident_poc.app:main"
+
+[build-system]
+requires = ["setuptools>=80.0"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.11.0",
+    "ty>=0.0.1a8",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ty.rules]
+unresolved-import = "ignore"
+
+[tool.setuptools.package-data]
+resident_poc = ["web/*"]
