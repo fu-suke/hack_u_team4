@@ -1,17 +1,17 @@
-"""Paste操作時の強制クイズAPIを起動するFastAPIアプリ。"""
+"""強制クイズAPIを起動するFastAPIアプリ。"""
 
 from fastapi import FastAPI
 
 from app.routers import questions
 
-app = FastAPI(title="Paste Guard Backend")
+app = FastAPI(title="Linux Virus Backend")
 
 app.include_router(questions.router)
 
 
 @app.get("/")
 def read_root() -> dict[str, str]:
-    return {"message": "Paste Guard Backend is running"}
+    return {"message": "Linux Virus Backend is running"}
 
 
 @app.get("/health")

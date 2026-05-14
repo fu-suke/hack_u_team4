@@ -6,8 +6,13 @@ router = APIRouter(prefix="/questions", tags=["questions"])
 
 
 @router.get("/sample")
-def get_sample_question() -> dict[str, str]:
+def get_sample_question() -> dict[str, int | str | list[str] | list[list[int]]]:
     return {
-        "id": "sample",
-        "question": "これはサンプル問題。具体的な問題は後で追加予定。",
+        "id": 1,
+        "question": "隠しファイルを含めて、long format でファイル一覧を表示するコマンドに並び替えてください。",
+        "options": ["ls", "-l", "-a"],
+        "answers": [
+            [1, 2, 3],
+            [1, 3, 2],
+        ],
     }
