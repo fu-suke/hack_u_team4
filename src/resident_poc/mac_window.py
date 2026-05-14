@@ -13,7 +13,7 @@ from AppKit import (
     NSWindowCollectionBehaviorCanJoinAllSpaces,
     NSWindowCollectionBehaviorFullScreenAuxiliary,
     NSWindowCollectionBehaviorStationary,
-    NSWindowStyleMaskClosable,
+    NSWindowStyleMaskBorderless,
     NSWindowStyleMaskTitled,
 )
 from Foundation import NSURL
@@ -36,7 +36,7 @@ def _build_web_window(
     width: float,
     height: float,
 ) -> tuple[NSWindow, WKWebView, _ScriptMessageHandler]:
-    style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
+    style = NSWindowStyleMaskTitled
     window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
         _top_right_frame(width, height),
         style,
@@ -69,6 +69,29 @@ def _build_web_window(
     content.addSubview_(webview)
     _load_web_ui(webview)
     return window, webview, message_handler
+
+
+def _build_overlay() -> NSWindow:
+    screen = NSScreen.mainScreen()
+    frame = screen.frame()
+    overlay = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
+        frame,
+        NSWindowStyleMaskBorderless,
+        NSBackingStoreBuffered,
+        False,
+    )
+    overlay.setLevel_(NSFloatingWindowLevel - 1)
+    overlay.setOpaque_(False)
+    overlay.setBackgroundColor_(
+        NSColor.colorWithCalibratedRed_green_blue_alpha_(0.0, 0.0, 0.0, 0.55)
+    )
+    overlay.setIgnoresMouseEvents_(False)
+    overlay.setCollectionBehavior_(
+        NSWindowCollectionBehaviorCanJoinAllSpaces
+        | NSWindowCollectionBehaviorStationary
+    )
+    overlay.setReleasedWhenClosed_(False)
+    return overlay
 
 
 def _load_web_ui(webview: WKWebView) -> None:

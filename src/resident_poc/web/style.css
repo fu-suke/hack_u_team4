@@ -2,8 +2,19 @@
   color-scheme: dark;
   font-family:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  background: #171a1f;
+  background: #131f24;
   color: #f4f7fb;
+  --duo-green: #58cc02;
+  --duo-green-dark: #46a302;
+  --duo-red: #ff4b4b;
+  --duo-red-dark: #cc3c3c;
+  --duo-blue: #1cb0f6;
+  --duo-blue-dark: #1899d6;
+  --duo-gold: #ffc800;
+  --duo-surface: #1a2e35;
+  --duo-surface-light: #233d47;
+  --duo-border: #37464f;
+  --duo-text-muted: #93a8b4;
 }
 
 * {
@@ -14,7 +25,7 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow: hidden;
-  background: #171a1f;
+  background: #131f24;
 }
 
 button,
@@ -23,24 +34,31 @@ input {
 }
 
 button {
-  border: 1px solid #4d5969;
-  border-radius: 6px;
-  padding: 5px 10px;
-  background: #27303a;
+  border: none;
+  border-radius: 12px;
+  padding: 6px 14px;
+  background: var(--duo-surface-light);
   color: #f4f7fb;
+  cursor: pointer;
+  transition: transform 0.1s;
 }
 
 button:active {
-  background: #3a4654;
+  transform: scale(0.96);
 }
 
 input {
   width: 100%;
-  border: 1px solid #4d5969;
-  border-radius: 6px;
-  padding: 6px 8px;
-  background: #0f1216;
+  border: 2px solid var(--duo-border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--duo-surface);
   color: #f4f7fb;
+}
+
+input:focus {
+  border-color: var(--duo-blue);
+  outline: none;
 }
 
 .app {
@@ -61,22 +79,352 @@ section {
   display: flex;
 }
 
+/* --- Minimized --- */
+
 .minimized {
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
 }
 
-.timer {
-  min-width: 0;
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
+.minimized__settings {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--duo-text-muted);
+  font-size: 16px;
+  border: 2px solid var(--duo-border);
+  flex-shrink: 0;
 }
+
+.minimized__settings:hover {
+  background: var(--duo-surface-light);
+}
+
+/* Flip clock */
+
+.flip-timer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.flip-group {
+  display: flex;
+  gap: 3px;
+}
+
+.flip-colon {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--duo-text-muted);
+  padding: 0 1px;
+  line-height: 1;
+}
+
+.flip-card {
+  width: 28px;
+  height: 38px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--duo-surface-light) 49.5%, var(--duo-border) 49.5%, var(--duo-border) 50.5%, var(--duo-surface) 50.5%);
+  border: 1px solid var(--duo-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f4f7fb;
+  line-height: 1;
+}
+
+.flip-card.flipping {
+  animation: flip-tick 0.3s ease-in-out;
+}
+
+@keyframes flip-tick {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(0.88); }
+  100% { transform: scaleY(1); }
+}
+
+/* --- Expanded (Quiz) --- */
 
 .expanded,
 .settings {
   flex-direction: column;
+  gap: 0;
+}
+
+/* Top bar */
+
+.quiz-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.quiz-topbar__icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--duo-text-muted);
+  font-size: 16px;
+  border: 2px solid var(--duo-border);
+}
+
+.quiz-topbar__icon:hover {
+  background: var(--duo-surface-light);
+}
+
+.quiz-topbar__progress {
+  flex: 1;
+  height: 16px;
+  background: var(--duo-surface-light);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.quiz-topbar__progress-bar {
+  width: 30%;
+  height: 100%;
+  background: var(--duo-green);
+  border-radius: 8px;
+  transition: width 0.5s ease;
+}
+
+/* Quiz card */
+
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.quiz__mascot {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.quiz__label {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f4f7fb;
+}
+
+.quiz__question {
+  color: var(--duo-text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.quiz__answer,
+.quiz__tokens {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 52px;
+  border: 2px dashed var(--duo-border);
+  border-radius: 12px;
+  padding: 10px;
+  color: var(--duo-text-muted);
+  font-size: 13px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.quiz__placeholder {
+  color: var(--duo-text-muted);
+  font-size: 13px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.quiz__answer.dragover,
+.quiz__tokens.dragover {
+  border-color: var(--duo-blue);
+  background: rgba(28, 176, 246, 0.06);
+}
+
+.quiz__tokens {
+  border-style: solid;
+  border-color: var(--duo-border);
+  background: var(--duo-surface);
+}
+
+/* Tokens (Duolingo 3D pill buttons) */
+
+.token {
+  min-width: 52px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: grab;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px;
+  background: var(--duo-surface-light);
+  color: #f4f7fb;
+  transition: transform 0.1s, box-shadow 0.1s, opacity 0.15s;
+  user-select: none;
+}
+
+.token:hover {
+  background: #2a4a56;
+}
+
+.token:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.token--dragging {
+  opacity: 0.4;
+}
+
+.token--selected {
+  background: var(--duo-blue-dark);
+  border-color: var(--duo-blue);
+  color: #fff;
+}
+
+.token--selected:hover {
+  background: var(--duo-blue);
+}
+
+/* Quiz bottom bar */
+
+.quiz-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0 8px;
+  border-top: 2px solid var(--duo-border);
+  margin-top: 8px;
+}
+
+.quiz-bottom--correct {
+  border-top-color: var(--duo-green);
+}
+
+.quiz-bottom--wrong {
+  border-top-color: var(--duo-red);
+}
+
+.quiz__result {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--duo-text-muted);
+  min-height: 20px;
+}
+
+.quiz__result--correct {
+  color: var(--duo-green);
+}
+
+.quiz__result--wrong {
+  color: var(--duo-red);
+}
+
+.quiz__actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Duolingo-style buttons */
+
+.btn {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-bottom: 4px solid;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.btn--check {
+  background: var(--duo-green);
+  border-bottom-color: var(--duo-green-dark);
+  color: #fff;
+}
+
+.btn--check:hover {
+  filter: brightness(1.1);
+}
+
+.btn--reset {
+  background: var(--duo-surface-light);
+  border-bottom-color: var(--duo-border);
+  color: var(--duo-text-muted);
+}
+
+.btn--reset:hover {
+  background: #2a4a56;
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px;
+  color: var(--duo-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  flex: 0;
+}
+
+/* Correct/wrong animation */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes celebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.quiz--shake {
+  animation: shake 0.4s ease;
+}
+
+.quiz--celebrate {
+  animation: celebrate 0.4s ease;
+}
+
+/* --- Settings --- */
+
+.settings {
   gap: 12px;
 }
 
@@ -93,82 +441,9 @@ section {
   font-weight: 700;
 }
 
-.quiz {
-  display: grid;
-  gap: 12px;
-  min-height: 210px;
-  border: 1px solid #313a46;
-  border-radius: 8px;
-  padding: 14px;
-  background: #202832;
-}
-
-.quiz__label {
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.quiz__question {
-  color: #aeb8c8;
-}
-
-.quiz__answer,
-.quiz__tokens {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 42px;
-  border: 1px dashed #4d5969;
-  border-radius: 8px;
-  padding: 8px;
-  color: #aeb8c8;
-}
-
-.quiz__answer:empty::before {
-  content: "ここにドラッグするか、下のトークンを順番にクリック";
-}
-
-.quiz__tokens {
-  border-style: solid;
-  background: #171d24;
-}
-
-.token {
-  min-width: 52px;
-  font-family: "SF Mono", Menlo, Consolas, monospace;
-  font-weight: 700;
-  cursor: grab;
-}
-
-.token--dragging {
-  opacity: 0.45;
-}
-
-.token--selected {
-  background: #39506a;
-}
-
-.quiz__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.quiz__actions {
-  display: flex;
-  gap: 8px;
-}
-
-.quiz__result {
-  color: #d7dde7;
-  font-size: 12px;
-}
-
 .meta {
   flex-wrap: wrap;
-  color: #aeb8c8;
+  color: var(--duo-text-muted);
   font-size: 12px;
 }
 
@@ -185,6 +460,7 @@ section {
   justify-self: start;
   padding: 5px 0;
   font-weight: 800;
+  border-radius: 8px;
 }
 
 .command-header__actions {
@@ -200,27 +476,29 @@ section {
 }
 
 .hint {
-  color: #aeb8c8;
+  color: var(--duo-text-muted);
   font-size: 12px;
 }
 
 .settings__status {
-  color: #aeb8c8;
+  color: var(--duo-text-muted);
   font-size: 12px;
 }
+
+/* --- Help dialog --- */
 
 .help-dialog {
   width: 380px;
   max-width: calc(100vw - 32px);
-  border: 1px solid #4d5969;
-  border-radius: 8px;
+  border: 2px solid var(--duo-border);
+  border-radius: 14px;
   padding: 0;
-  background: #171a1f;
+  background: #131f24;
   color: #f4f7fb;
 }
 
 .help-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.55);
 }
 
 .help-dialog__header {
@@ -228,7 +506,7 @@ section {
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid #313a46;
+  border-bottom: 2px solid var(--duo-border);
 }
 
 .help-dialog__body {
@@ -237,7 +515,7 @@ section {
   max-height: 250px;
   overflow: auto;
   padding: 12px 14px 14px;
-  color: #d7dde7;
+  color: var(--duo-text-muted);
   font-size: 13px;
 }
 
@@ -252,8 +530,8 @@ section {
 
 .help-dialog code {
   color: #f4f7fb;
-  background: #0f1216;
-  border: 1px solid #313a46;
-  border-radius: 4px;
-  padding: 1px 4px;
+  background: var(--duo-surface);
+  border: 1px solid var(--duo-border);
+  border-radius: 6px;
+  padding: 1px 5px;
 }

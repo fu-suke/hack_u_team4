@@ -29,7 +29,7 @@ from resident_poc.config import (
 )
 from resident_poc.events import _ControlEvent, _KeyEvent
 from resident_poc.keyboard import _KeyboardInterpreter
-from resident_poc.mac_window import _build_web_window, _top_right_frame
+from resident_poc.mac_window import _build_overlay, _build_web_window, _top_right_frame
 from resident_poc.state import _ResidentState
 from resident_poc.web_bridge import _ScriptMessageHandler
 
@@ -42,6 +42,7 @@ class _ResidentAppController(NSObject):
         self._state = _ResidentState()
         self._global_monitor: object | None = None
         self._window: NSWindow | None = None
+        self._overlay: NSWindow | None = None
         self._webview: WKWebView | None = None
         self._message_handler: _ScriptMessageHandler | None = None
         return self
@@ -54,6 +55,7 @@ class _ResidentAppController(NSObject):
             width,
             height,
         )
+        self._overlay = _build_overlay()
         self._window.makeKeyAndOrderFront_(None)
         self._send_state_to_web()
 
@@ -99,6 +101,8 @@ class _ResidentAppController(NSObject):
     def expand_window(self, reason: str) -> None:
         self._state.disable_timer()
         self._state.view = "expanded"
+        if self._overlay:
+            self._overlay.orderFront_(None)
         self._resize_window(*EXPANDED_SIZE)
         print(f"[resident-poc] expanded reason={reason}", flush=True)
         self._send_state_to_web(status=f"Expanded by {reason}")
@@ -114,6 +118,8 @@ class _ResidentAppController(NSObject):
     def minimize_window(self) -> None:
         self._state.restart_timer()
         self._state.view = "minimized"
+        if self._overlay:
+            self._overlay.orderOut_(None)
         self._resize_window(*MINIMIZED_SIZE)
         print("[resident-poc] minimized", flush=True)
         self._send_state_to_web()
@@ -140,7 +146,8 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _tick_timer(self) -> None:
-        self._send_state_to_web()
+        if self._state.view == "minimized":
+            self._send_state_to_web()
         if self._state.tick_timer_expired():
             self._events.put(_ControlEvent(name="expand", reason="timer"))
 
@@ -175,10 +182,6 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _handle_key_event(self, event: Any) -> None:
-        if self._keyboard.is_quit_hotkey(event):
-            self._events.put(_ControlEvent(name="quit"))
-            return
-
         if self._keyboard.is_toggle_hotkey(event):
             self._events.put(_ControlEvent(name="expand", reason="hotkey"))
             return
@@ -234,4 +237,4 @@ class _ResidentAppController(NSObject):
             None,
             True,
         )
-        AppHelper.runEventLoop()
+        AppHelper.runEventLoop(installInterrupt=True)
