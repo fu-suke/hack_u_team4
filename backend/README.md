@@ -6,17 +6,10 @@
 - `GET /health` - ヘルスチェック
 - `GET /questions/sample` - サンプル問題
 
-## Setup
-
-リポジトリルートで `uv` を使って依存関係をインストール。
+## 実行
 
 ```bash
 uv sync --all-packages
-```
-
-## Start
-
-```bash
 uv run --directory backend uvicorn app.main:app --reload
 ```
 
