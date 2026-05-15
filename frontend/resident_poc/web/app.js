@@ -17,10 +17,58 @@ let quizVersion = 0;
 let renderedQuizVersion = -1;
 
 const quiz = {
-  answer: ["ls", "-la"],
-  tokens: ["-la", "ls"],
+  prompt: "問題を読み込み中…",
+  choices: [],
+  answers: [],
   selected: [],
 };
+
+function choiceFromDataset(dataset) {
+  return {
+    id: Number(dataset.id),
+    label: dataset.label,
+  };
+}
+
+function normalizeQuestion(data) {
+  if (!Array.isArray(data.choices) || !Array.isArray(data.answers)) {
+    throw new Error("Invalid question payload");
+  }
+
+  return {
+    prompt: String(data.prompt),
+    choices: data.choices.map((label, index) => ({
+      id: index + 1,
+      label: String(label),
+    })),
+    answers: data.answers,
+  };
+}
+
+function findSelectedIndex(choice) {
+  for (let index = quiz.selected.length - 1; index >= 0; index--) {
+    if (quiz.selected[index].id === choice.id) return index;
+  }
+  return -1;
+}
+
+async function loadSampleQuestion() {
+  const promptEl = document.querySelector("#quizPrompt");
+  if (promptEl) promptEl.textContent = "問題を読み込み中…";
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/questions/sample");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    Object.assign(quiz, normalizeQuestion(await response.json()), { selected: [] });
+    if (promptEl) promptEl.textContent = quiz.prompt;
+    resetQuizState();
+    renderQuiz(true);
+  } catch (error) {
+    if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
+    const result = document.querySelector("#quizResult");
+    if (result) result.textContent = "バックエンドの起動を確認してね";
+  }
+}
 
 function resetQuizState() {
   quiz.selected = [];
@@ -83,14 +131,15 @@ function createCommandInput(value = "") {
   return input;
 }
 
-function createTokenButton(token, action, className, index = "") {
+function createTokenButton(choice, action, className, index = "") {
   const button = document.createElement("button");
   button.className = className;
   button.type = "button";
-  button.textContent = token;
+  button.textContent = choice.label;
   button.draggable = true;
   button.dataset.action = action;
-  button.dataset.token = token;
+  button.dataset.id = String(choice.id);
+  button.dataset.label = choice.label;
   button.dataset.index = String(index);
   return button;
 }
@@ -114,9 +163,12 @@ function renderQuiz(force = false) {
   if (!force && renderedQuizVersion === quizVersion) return;
   renderedQuizVersion = quizVersion;
 
+  const promptEl = document.querySelector("#quizPrompt");
   const answerEl = document.querySelector("#answer");
   const tokensEl = document.querySelector("#tokens");
   const placeholder = document.querySelector("#answerPlaceholder");
+
+  if (promptEl) promptEl.textContent = quiz.prompt;
 
   // Build new children in a fragment to avoid flicker
   const answerFrag = document.createDocumentFragment();
@@ -128,14 +180,14 @@ function renderQuiz(force = false) {
     );
   }
 
-  const remaining = [...quiz.tokens];
-  for (const token of quiz.selected) {
-    const idx = remaining.indexOf(token);
+  const remaining = [...quiz.choices];
+  for (const choice of quiz.selected) {
+    const idx = remaining.findIndex((item) => item.id === choice.id);
     if (idx >= 0) remaining.splice(idx, 1);
   }
 
-  for (const token of remaining) {
-    tokensFrag.appendChild(createTokenButton(token, "selectToken", "token"));
+  for (const choice of remaining) {
+    tokensFrag.appendChild(createTokenButton(choice, "selectToken", "token"));
   }
 
   answerEl.replaceChildren(answerFrag);
@@ -167,22 +219,22 @@ function render() {
 
   // Reset quiz when entering expanded view
   if (enteredExpanded) {
-    resetQuizState();
+    loadSampleQuestion();
   }
 
   renderQuiz();
   lastRenderedState = state.state;
 }
 
-function moveTokenToAnswer(token, targetIndex = quiz.selected.length) {
+function moveTokenToAnswer(choice, targetIndex = quiz.selected.length) {
   const normalizedIndex = Math.max(0, Math.min(targetIndex, quiz.selected.length));
-  quiz.selected.splice(normalizedIndex, 0, token);
+  quiz.selected.splice(normalizedIndex, 0, choice);
   quizVersion++;
   document.querySelector("#quizResult").textContent = "いい感じ！並び替え中…";
   renderQuiz();
 }
 
-function removeTokenFromAnswer(token, index = quiz.selected.lastIndexOf(token)) {
+function removeTokenFromAnswer(choice, index = findSelectedIndex(choice)) {
   if (index >= 0) {
     quiz.selected.splice(index, 1);
   }
@@ -212,10 +264,11 @@ function answerDropIndex(event) {
 
 function getDragPayload(event) {
   if (activeDrag) return activeDrag;
-  const token = event.dataTransfer.getData("text/plain");
-  if (!token) return null;
+  const id = event.dataTransfer.getData("choice-id");
+  const label = event.dataTransfer.getData("choice-label");
+  if (!id || !label) return null;
   return {
-    token,
+    choice: { id: Number(id), label },
     sourceAction: event.dataTransfer.getData("source-action"),
     sourceIndex: Number(event.dataTransfer.getData("source-index")),
   };
@@ -260,7 +313,12 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "checkQuiz") {
-    const correct = quiz.selected.join(" ") === quiz.answer.join(" ");
+    const selectedIds = quiz.selected.map((choice) => choice.id);
+    const correct = quiz.answers.some(
+      (answer) =>
+        answer.length === selectedIds.length &&
+        answer.every((id, index) => id === selectedIds[index]),
+    );
     const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
@@ -322,10 +380,10 @@ document.addEventListener("click", (event) => {
 
   const action = button.dataset.action;
   if (action === "selectToken") {
-    moveTokenToAnswer(button.dataset.token);
+    moveTokenToAnswer(choiceFromDataset(button.dataset));
   }
   if (action === "unselectToken") {
-    removeTokenFromAnswer(button.dataset.token, Number(button.dataset.index));
+    removeTokenFromAnswer(choiceFromDataset(button.dataset), Number(button.dataset.index));
   }
 });
 
@@ -336,11 +394,13 @@ document.addEventListener("dragstart", (event) => {
   didDrag = true;
   isDragging = true;
   activeDrag = {
-    token: token.dataset.token,
+    choice: choiceFromDataset(token.dataset),
     sourceAction: token.dataset.action,
     sourceIndex: Number(token.dataset.index),
   };
-  event.dataTransfer.setData("text/plain", token.dataset.token);
+  event.dataTransfer.setData("text/plain", token.dataset.label);
+  event.dataTransfer.setData("choice-id", token.dataset.id);
+  event.dataTransfer.setData("choice-label", token.dataset.label);
   event.dataTransfer.setData("source-action", token.dataset.action);
   event.dataTransfer.setData("source-index", token.dataset.index);
   event.dataTransfer.effectAllowed = "move";
@@ -382,7 +442,7 @@ document.addEventListener("drop", (event) => {
   if (!payload) return;
 
   if (answer && payload.sourceAction === "selectToken") {
-    moveTokenToAnswer(payload.token, dropIndex);
+    moveTokenToAnswer(payload.choice, dropIndex);
     return;
   }
   if (answer && payload.sourceAction === "unselectToken") {
@@ -390,7 +450,7 @@ document.addEventListener("drop", (event) => {
     return;
   }
   if (tokens && payload.sourceAction === "unselectToken") {
-    removeTokenFromAnswer(payload.token, payload.sourceIndex);
+    removeTokenFromAnswer(payload.choice, payload.sourceIndex);
   }
 });
 

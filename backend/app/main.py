@@ -1,10 +1,18 @@
 """強制クイズAPIを起動するFastAPIアプリ。"""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers import questions
 
 app = FastAPI(title="Linux Virus Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 app.include_router(questions.router)
 

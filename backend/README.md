@@ -1,10 +1,14 @@
+## Backend
+
+Linux Virus の macOS 常駐バックエンド。
+
 ## API
 
-現在は動作確認用の最小APIのみ用意。
-
-- `GET /` - APIの起動確認
-- `GET /health` - ヘルスチェック
-- `GET /questions/sample` - サンプル問題
+| Method | Path | 入力 | 出力 | 説明 |
+| --- | --- | --- | --- | --- |
+| `GET` | `/` | なし | `{"message": "Linux Virus Backend is running"}` | APIの起動確認 |
+| `GET` | `/health` | なし | `{"status": "ok"}` | ヘルスチェック |
+| `GET` | `/questions/sample` | なし | `{"prompt": string, "choices": string[], "answers": number[][], "tutorial": string}` | サンプル問題をランダムに1問返す |
 
 ## 実行
 
