@@ -1,0 +1,14 @@
+[project]
+name = "linux-virus-backend"
+version = "0.1.0"
+description = "FastAPI backend for Linux Virus."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi[standard]",
+    "python-dotenv",
+    "uvicorn",
+]
+
+[tool.uv]
+package = false

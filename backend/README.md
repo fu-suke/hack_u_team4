@@ -8,19 +8,16 @@
 
 ## Setup
 
-`backend` ディレクトリで仮想環境を作成し、依存関係をインストール。
+リポジトリルートで `uv` を使って依存関係をインストール。
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync --all-packages
 ```
 
 ## Start
 
 ```bash
-uvicorn app.main:app --reload
+uv run --directory backend uvicorn app.main:app --reload
 ```
 
 起動後、以下で確認可能。
