@@ -3,7 +3,7 @@ const state = {
   timerText: "Timer: not set",
   keyCount: 0,
   buffer: "-",
-  commands: ["/focus"],
+  commands: ["<cmd>+v"],
   timerSeconds: 60,
   status: "Idle",
 };
@@ -36,8 +36,6 @@ function resetQuizState() {
   if (quizEl) {
     quizEl.classList.remove("quiz--celebrate", "quiz--shake");
   }
-  const bar = document.querySelector("#progressBar");
-  if (bar) bar.style.width = "30%";
 }
 
 let lastFlipDigits = "";
@@ -164,7 +162,7 @@ function render() {
     secondsInput.value = String(state.timerSeconds);
   }
   if (enteredSettings) {
-    setCommandInputs(state.commands || ["/focus"]);
+    setCommandInputs(state.commands || ["<cmd>+v"]);
   }
 
   // Reset quiz when entering expanded view
@@ -271,8 +269,6 @@ document.addEventListener("click", (event) => {
       result.className = "quiz__result quiz__result--correct";
       bottom.className = "quiz-bottom quiz-bottom--correct";
       quizEl.classList.add("quiz--celebrate");
-      const bar = document.querySelector("#progressBar");
-      if (bar) bar.style.width = "100%";
       window.setTimeout(() => post("minimize"), 1200);
     } else {
       result.textContent = "😅 もう一回やってみよう！";
@@ -285,7 +281,15 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "addCommand") {
-    document.querySelector("#commands").appendChild(createCommandInput());
+    const container = document.querySelector("#commands");
+    if (container.querySelectorAll(".command-input").length >= 10) {
+      document.querySelector('[data-bind="status"]').textContent = "Commands are limited to 10.";
+      return;
+    }
+    const input = createCommandInput();
+    container.appendChild(input);
+    input.focus();
+    input.scrollIntoView({ block: "nearest" });
     return;
   }
 

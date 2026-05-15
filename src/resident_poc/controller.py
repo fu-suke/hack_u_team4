@@ -109,6 +109,7 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def show_settings_window(self) -> None:
+        self._state.suspend_timer_for_settings()
         self._state.view = "settings"
         self._resize_window(*SETTINGS_SIZE)
         print("[resident-poc] settings", flush=True)

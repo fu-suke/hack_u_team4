@@ -161,49 +161,6 @@ section {
   gap: 0;
 }
 
-/* Top bar */
-
-.quiz-topbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
-}
-
-.quiz-topbar__icon {
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--duo-text-muted);
-  font-size: 16px;
-  border: 2px solid var(--duo-border);
-}
-
-.quiz-topbar__icon:hover {
-  background: var(--duo-surface-light);
-}
-
-.quiz-topbar__progress {
-  flex: 1;
-  height: 16px;
-  background: var(--duo-surface-light);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.quiz-topbar__progress-bar {
-  width: 30%;
-  height: 100%;
-  background: var(--duo-green);
-  border-radius: 8px;
-  transition: width 0.5s ease;
-}
-
 /* Quiz card */
 
 .quiz {
@@ -471,7 +428,7 @@ section {
 .commands {
   display: grid;
   gap: 8px;
-  max-height: 96px;
+  max-height: 150px;
   overflow: auto;
 }
 

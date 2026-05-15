@@ -16,6 +16,9 @@ class _ResidentState:
     commands: list[str] = field(default_factory=lambda: DEFAULT_COMMANDS.copy())
     typed_buffer: str = ""
 
+    def __post_init__(self) -> None:
+        self.restart_timer()
+
     def set_timer_from_message(self, body: dict[Any, Any]) -> str:
         seconds = self._timer_seconds_from_message(body)
         self.timer_seconds = seconds
@@ -36,6 +39,9 @@ class _ResidentState:
         return max(0, int(self.deadline - time.monotonic()))
 
     def disable_timer(self) -> None:
+        self.deadline = None
+
+    def suspend_timer_for_settings(self) -> None:
         self.deadline = None
 
     def restart_timer(self) -> None:

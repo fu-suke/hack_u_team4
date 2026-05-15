@@ -24,11 +24,6 @@
       </section>
 
       <section class="expanded" data-panel="expanded">
-        <div class="quiz-topbar">
-          <div class="quiz-topbar__progress">
-            <div class="quiz-topbar__progress-bar" id="progressBar"></div>
-          </div>
-        </div>
         <div class="quiz">
           <div class="quiz__mascot">🐧</div>
           <div class="quiz__label">コマンドを並び替えよう</div>
@@ -72,7 +67,7 @@
           </div>
         </div>
         <div id="commands" class="commands"></div>
-        <div class="hint">Use text such as /focus or shortcuts such as &lt;cmd&gt;+k.</div>
+        <div class="hint">Up to 10 commands. Use text such as /focus or shortcuts such as &lt;cmd&gt;+k.</div>
         <div class="settings__status" data-bind="status">Settings</div>
         <div class="actions">
           <button type="button" data-action="done">Done</button>
@@ -87,6 +82,7 @@
         <div class="help-dialog__body">
           <p>Text commands match typed text exactly.</p>
           <ul>
+            <li><code>&lt;cmd&gt;+v</code></li>
             <li><code>/focus</code></li>
             <li><code>start quiz</code></li>
           </ul>
