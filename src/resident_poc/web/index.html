@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Linux Virus</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main id="app" class="app app--minimized">
+      <section class="minimized" data-panel="minimized">
+        <div class="flip-timer" id="flipTimer">
+          <div class="flip-group">
+            <div class="flip-card" id="fd0">0</div>
+            <div class="flip-card" id="fd1">0</div>
+          </div>
+          <span class="flip-colon">:</span>
+          <div class="flip-group">
+            <div class="flip-card" id="fd2">0</div>
+            <div class="flip-card" id="fd3">0</div>
+          </div>
+        </div>
+        <button class="minimized__settings" type="button" data-action="showSettings" aria-label="Settings">⚙</button>
+      </section>
+
+      <section class="expanded" data-panel="expanded">
+        <div class="quiz">
+          <div class="quiz__mascot">🐧</div>
+          <div class="quiz__label">コマンドを並び替えよう</div>
+          <div class="quiz__question">隠しファイルを含めて、long format でファイル一覧を表示するコマンドに並び替えてください。</div>
+          <div id="answer" class="quiz__answer" aria-label="Answer area">
+            <span id="answerPlaceholder" class="quiz__placeholder">下のトークンを順番にクリックしてね</span>
+          </div>
+          <div id="tokens" class="quiz__tokens" aria-label="Command tokens"></div>
+        </div>
+        <div class="quiz-bottom" id="quizBottom">
+          <span id="quizResult" class="quiz__result">トークンを順番に選んでね！</span>
+          <div class="quiz__actions">
+            <button class="btn btn--reset" type="button" data-action="resetQuiz">リセット</button>
+            <button class="btn btn--check" type="button" data-action="checkQuiz">答え合わせ</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings" data-panel="settings">
+        <div class="topline">
+          <span>Settings</span>
+        </div>
+        <label>
+          <span>Timer seconds</span>
+          <input
+            id="timerSeconds"
+            inputmode="numeric"
+            type="number"
+            min="1"
+            value="60"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </label>
+        <div class="command-header">
+          <span>Commands</span>
+          <div class="command-header__actions">
+            <button class="icon-button" type="button" data-action="addCommand">+</button>
+            <button class="icon-button" type="button" data-action="showHelp">?</button>
+          </div>
+        </div>
+        <div id="commands" class="commands"></div>
+        <div class="hint">Up to 10 commands. Use text such as /focus or shortcuts such as &lt;cmd&gt;+k.</div>
+        <div class="settings__status" data-bind="status">Settings</div>
+        <div class="actions">
+          <button type="button" data-action="done">Done</button>
+        </div>
+      </section>
+
+      <dialog id="helpDialog" class="help-dialog">
+        <div class="help-dialog__header">
+          <strong>Command notation</strong>
+          <button class="icon-button" type="button" data-action="closeHelp">×</button>
+        </div>
+        <div class="help-dialog__body">
+          <p>Text commands match typed text exactly.</p>
+          <ul>
+            <li><code>&lt;cmd&gt;+v</code></li>
+            <li><code>/focus</code></li>
+            <li><code>start quiz</code></li>
+          </ul>
+          <p>Modifier shortcuts use angle brackets before the key.</p>
+          <ul>
+            <li><code>&lt;cmd&gt;+k</code></li>
+            <li><code>&lt;ctrl&gt;+j</code></li>
+            <li><code>&lt;option&gt;+x</code></li>
+            <li><code>&lt;shift&gt;+a</code></li>
+            <li><code>&lt;ctrl+option&gt;+&lt;space&gt;</code></li>
+            <li><code>&lt;cmd+shift&gt;+p</code></li>
+          </ul>
+          <p>Supported modifier names are <code>cmd</code>, <code>ctrl</code>, <code>option</code>, and <code>shift</code>.</p>
+        </div>
+      </dialog>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
