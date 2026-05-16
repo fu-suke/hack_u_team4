@@ -41,7 +41,7 @@ def load_questions(path: Path) -> list[Question]:
                     difficulty=int(row["difficulty"]),
                     choices=json.loads(row["choices"]),
                     answers=json.loads(row["answers"]),
-                    tutorial=row["turorial"],  # TSV のスペルミスに合わせる
+                    tutorial=row.get("turorial") or "",  # TSV のスペルミスに合わせる。未入力は空文字
                 )
             )
     return questions
