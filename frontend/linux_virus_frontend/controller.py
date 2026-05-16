@@ -20,18 +20,18 @@ from objc import super as objc_super
 from PyObjCTools import AppHelper
 from WebKit import WKWebView
 
-from resident_poc.config import (
+from linux_virus_frontend.config import (
     EXPANDED_SIZE,
     MINIMIZED_SIZE,
     POLL_INTERVAL_SECONDS,
     SETTINGS_SIZE,
     TIMER_INTERVAL_SECONDS,
 )
-from resident_poc.events import _ControlEvent, _KeyEvent
-from resident_poc.keyboard import _KeyboardInterpreter
-from resident_poc.mac_window import _build_overlay, _build_web_window, _top_right_frame
-from resident_poc.state import _ResidentState
-from resident_poc.web_bridge import _ScriptMessageHandler
+from linux_virus_frontend.events import _ControlEvent, _KeyEvent
+from linux_virus_frontend.keyboard import _KeyboardInterpreter
+from linux_virus_frontend.mac_window import _build_overlay, _build_web_window, _top_right_frame
+from linux_virus_frontend.state import _ResidentState
+from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 
 
 class _ResidentAppController(NSObject):

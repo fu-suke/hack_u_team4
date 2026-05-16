@@ -9,7 +9,7 @@ from AppKit import (
     NSEventModifierFlagShift,
 )
 
-from resident_poc.config import Q_KEY_CODE, SPACE_KEY_CODE, SPECIAL_KEY_LABELS
+from linux_virus_frontend.config import Q_KEY_CODE, SPACE_KEY_CODE, SPECIAL_KEY_LABELS
 
 
 class _KeyboardInterpreter:

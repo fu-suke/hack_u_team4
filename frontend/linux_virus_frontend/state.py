@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from resident_poc.config import DEFAULT_COMMANDS, DEFAULT_TIMER_SECONDS
+from linux_virus_frontend.config import DEFAULT_COMMANDS, DEFAULT_TIMER_SECONDS
 
 
 @dataclass

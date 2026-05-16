@@ -6,8 +6,8 @@ import sys
 from AppKit import NSApp
 from PyObjCTools import AppHelper
 
-from resident_poc.controller import _ResidentAppController
-from resident_poc.permissions import _request_accessibility_trust
+from linux_virus_frontend.controller import _ResidentAppController
+from linux_virus_frontend.permissions import _request_accessibility_trust
 
 
 def _sigint_handler(_sig: int, _frame: object) -> None:

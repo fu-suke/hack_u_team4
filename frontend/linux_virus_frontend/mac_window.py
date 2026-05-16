@@ -19,8 +19,8 @@ from AppKit import (
 from Foundation import NSURL
 from WebKit import WKUserContentController, WKWebView, WKWebViewConfiguration
 
-from resident_poc.config import EDGE_MARGIN, TOP_MARGIN
-from resident_poc.web_bridge import _ScriptMessageHandler
+from linux_virus_frontend.config import EDGE_MARGIN, TOP_MARGIN
+from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 
 
 def _top_right_frame(width: float, height: float) -> Any:
@@ -95,7 +95,7 @@ def _build_overlay() -> NSWindow:
 
 
 def _load_web_ui(webview: WKWebView) -> None:
-    web_dir = files("resident_poc").joinpath("web")
+    web_dir = files("linux_virus_frontend").joinpath("web")
     index_path = web_dir.joinpath("index.html")
     index_url = NSURL.fileURLWithPath_(str(index_path))
     read_access_url = NSURL.fileURLWithPath_(str(web_dir))
