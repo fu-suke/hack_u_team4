@@ -1,7 +1,7 @@
 const LinuxVirusTimer = (() => {
   let lastFlipDigits = "";
 
-  function updateFlipTimer(timerText) {
+  function updateFlipTimer(timerText, timerMode = "timer") {
     const match = timerText.match(/(\d+)s?$/);
     const totalSeconds = match ? parseInt(match[1], 10) : 0;
     const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -18,6 +18,7 @@ const LinuxVirusTimer = (() => {
         card.classList.add("flipping");
       }
       card.textContent = newDigit;
+      card.classList.toggle("flip-card--sleep", timerMode === "sleep");
     }
 
     lastFlipDigits = digits;

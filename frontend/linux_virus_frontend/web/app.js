@@ -5,6 +5,8 @@ const state = {
   buffer: "-",
   commands: ["<cmd>+v"],
   timerSeconds: 60,
+  sleepMinutes: 0,
+  timerMode: "timer",
   status: "Idle",
 };
 
@@ -25,7 +27,7 @@ function render() {
   const enteredExpanded = state.state === "expanded" && lastRenderedState !== "expanded";
   const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
   app.className = `app app--${state.state}`;
-  LinuxVirusTimer.updateFlipTimer(state.timerText);
+  LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
   setText('[data-bind="status"]', state.status);
   setText('[data-bind="keyCount"]', `Keys: ${state.keyCount}`);
   setText('[data-bind="buffer"]', `Buffer: ${state.buffer}`);
@@ -33,6 +35,10 @@ function render() {
   const secondsInput = document.querySelector("#timerSeconds");
   if (enteredSettings && secondsInput) {
     secondsInput.value = String(state.timerSeconds);
+  }
+  const sleepInput = document.querySelector("#sleepMinutes");
+  if (enteredSettings && sleepInput) {
+    sleepInput.value = String(state.sleepMinutes || 0);
   }
   if (enteredSettings) {
     LinuxVirusSettings.setCommandInputs(state.commands || ["<cmd>+v"]);
@@ -112,6 +118,7 @@ document.addEventListener("click", async (event) => {
   if (action === "done") {
     post("setTimer", {
       seconds: document.querySelector("#timerSeconds").value,
+      sleepMinutes: document.querySelector("#sleepMinutes").value,
       commands: LinuxVirusSettings.getCommandValues(),
     });
     return;

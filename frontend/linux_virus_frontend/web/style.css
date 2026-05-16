@@ -147,6 +147,12 @@ section {
   animation: flip-tick 0.3s ease-in-out;
 }
 
+.flip-card--sleep {
+  border-color: var(--duo-blue);
+  background: linear-gradient(180deg, var(--duo-blue) 49.5%, var(--duo-blue-dark) 49.5%, var(--duo-blue-dark) 50.5%, #126b96 50.5%);
+  color: #fff;
+}
+
 @keyframes flip-tick {
   0% { transform: scaleY(1); }
   50% { transform: scaleY(0.88); }

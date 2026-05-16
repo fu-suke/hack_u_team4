@@ -36,6 +36,9 @@ from linux_virus_frontend.mac_window import _build_overlay, _build_web_window, _
 from linux_virus_frontend.state import _ResidentState
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 
+_WINDOW_TITLE = "Linux Virus"
+_SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
+
 
 class _ResidentAppController(NSObject):
     def init(self) -> _ResidentAppController:
@@ -120,8 +123,8 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def minimize_window(self) -> None:
-        self._state.restart_timer()
         self._state.view = "minimized"
+        self._state.restart_timer()
         if self._overlay:
             self._overlay.orderOut_(None)
         self._resize_window(*MINIMIZED_SIZE)
@@ -160,9 +163,18 @@ class _ResidentAppController(NSObject):
         if self._webview is None:
             return
 
+        self._update_window_title()
         payload = self._state.payload(status)
         script = f"window.residentSetState({json.dumps(payload)});"
         self._webview.evaluateJavaScript_completionHandler_(script, None)
+
+    @python_method
+    def _update_window_title(self) -> None:
+        if self._window is None:
+            return
+
+        title = _SLEEPING_WINDOW_TITLE if self._state.is_sleeping() else _WINDOW_TITLE
+        self._window.setTitle_(title)
 
     @python_method
     def _start_event_monitors(self) -> None:
@@ -187,6 +199,8 @@ class _ResidentAppController(NSObject):
     @python_method
     def _handle_key_event(self, event: Any) -> None:
         if self._keyboard.is_toggle_hotkey(event):
+            if self._state.is_sleeping():
+                return
             self._events.put(_ControlEvent(name="expand", reason="hotkey"))
             return
 
