@@ -3,7 +3,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.database import Base, engine
+from app.models import AnswerLog, Question, User  # noqa: F401 — ensure models are registered
 from app.routers import questions
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Linux Virus Backend")
 

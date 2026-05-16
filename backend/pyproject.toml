@@ -8,6 +8,7 @@ dependencies = [
     "fastapi[standard]",
     "python-dotenv",
     "uvicorn",
+    "sqlalchemy>=2.0",
 ]
 
 [tool.uv]
