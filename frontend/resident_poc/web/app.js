@@ -59,7 +59,7 @@ async function checkAnswer() {
 
   const params = new URLSearchParams({ id: String(quiz.id) });
   for (const choice of quiz.selected) {
-    params.append("answer", choice.label);
+    params.append("answer", String(choice.id));
   }
 
   const response = await fetch(

@@ -12,7 +12,7 @@ Linux Virus の macOS 常駐バックエンド。
 | `POST` | `/users/login` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名でログインする |
 | `GET` | `/questions/sample` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | サンプル問題をランダムに1問返す |
 | `GET` | `/questions` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す |
-| `GET` | `/questions/check?id=...&answer=...&answer=...` | query: `id`, `answer` | `{"is_correct": boolean}` | 問題IDと選択したトークン順で正誤判定する |
+| `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | 問題IDと選択した選択肢番号の順番で正誤判定する |
 | `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | 回答ログを登録する |
 
 
@@ -47,10 +47,10 @@ curl -X POST http://127.0.0.1:8000/users/login \
 ```
 
 回答を判定する例。
-選択したトークンを順番に `answer` として指定する。
+選択した選択肢番号を順番に `answer` として指定する。
 
 ```bash
-curl "http://127.0.0.1:8000/questions/check?id=1&answer=pwd"
+curl "http://127.0.0.1:8000/questions/check?id=1&answer=1"
 ```
 
 回答ログを登録する例。

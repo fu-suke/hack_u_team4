@@ -47,27 +47,8 @@ SAMPLE_QUESTIONS: list[QuestionWithAnswerResponse] = [
 ]
 
 
-def shuffle_question_choices(
-    question: QuestionWithAnswerResponse,
-) -> QuestionWithAnswerResponse:
-    indexed_choices = list(enumerate(question.choices, start=1))
-    random.shuffle(indexed_choices)
-
-    shuffled_choices = [choice for _, choice in indexed_choices]
-
-    return question.model_copy(
-        update={
-            "choices": shuffled_choices,
-        }
-    )
-
-
-def is_correct_answer(question: QuestionWithAnswerResponse, answer: list[str]) -> bool:
-    correct_answers = [
-        [question.choices[index - 1] for index in correct_answer]
-        for correct_answer in question.answers
-    ]
-    return answer in correct_answers
+def is_correct_answer(question: QuestionWithAnswerResponse, answer: list[int]) -> bool:
+    return answer in question.answers
 
 
 def find_sample_question(question_id: int) -> QuestionWithAnswerResponse | None:
@@ -82,13 +63,13 @@ def find_sample_question(question_id: int) -> QuestionWithAnswerResponse | None:
     response_model=QuestionResponse,
 )
 def get_sample_question() -> QuestionResponse:
-    return shuffle_question_choices(random.choice(SAMPLE_QUESTIONS))
+    return random.choice(SAMPLE_QUESTIONS)
 
 
 @router.get("/check", response_model=QuestionCheckResponse)
 def check_question_answer(
     id: int,
-    answer: list[str] = Query(default=[]),
+    answer: list[int] = Query(default=[]),
     db: Session = Depends(get_db),
 ) -> QuestionCheckResponse:
     question = find_sample_question(id)
@@ -110,4 +91,4 @@ def get_question(db: Session = Depends(get_db)) -> QuestionResponse:
     if question is None:
         raise HTTPException(status_code=404, detail="No questions found")
 
-    return shuffle_question_choices(QuestionWithAnswerResponse.model_validate(question))
+    return QuestionWithAnswerResponse.model_validate(question)
