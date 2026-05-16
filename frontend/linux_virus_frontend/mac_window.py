@@ -4,20 +4,24 @@ from importlib.resources import files
 from typing import Any
 
 from AppKit import (
-    NSBackingStoreBuffered,
-    NSColor,
-    NSFloatingWindowLevel,
-    NSMakeRect,
-    NSScreen,
-    NSWindow,
-    NSWindowCollectionBehaviorCanJoinAllSpaces,
-    NSWindowCollectionBehaviorFullScreenAuxiliary,
-    NSWindowCollectionBehaviorStationary,
-    NSWindowStyleMaskBorderless,
-    NSWindowStyleMaskTitled,
+    NSBackingStoreBuffered,  # ty: ignore[unresolved-import]
+    NSColor,  # ty: ignore[unresolved-import]
+    NSFloatingWindowLevel,  # ty: ignore[unresolved-import]
+    NSMakeRect,  # ty: ignore[unresolved-import]
+    NSScreen,  # ty: ignore[unresolved-import]
+    NSWindow,  # ty: ignore[unresolved-import]
+    NSWindowCollectionBehaviorCanJoinAllSpaces,  # ty: ignore[unresolved-import]
+    NSWindowCollectionBehaviorFullScreenAuxiliary,  # ty: ignore[unresolved-import]
+    NSWindowCollectionBehaviorStationary,  # ty: ignore[unresolved-import]
+    NSWindowStyleMaskBorderless,  # ty: ignore[unresolved-import]
+    NSWindowStyleMaskTitled,  # ty: ignore[unresolved-import]
 )
-from Foundation import NSURL
-from WebKit import WKUserContentController, WKWebView, WKWebViewConfiguration
+from Foundation import NSURL  # ty: ignore[unresolved-import]
+from WebKit import (
+    WKUserContentController,  # ty: ignore[unresolved-import]
+    WKWebView,  # ty: ignore[unresolved-import]
+    WKWebViewConfiguration,  # ty: ignore[unresolved-import]
+)
 
 from linux_virus_frontend.config import EDGE_MARGIN, TOP_MARGIN
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler

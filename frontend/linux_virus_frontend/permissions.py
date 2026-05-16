@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import sys
 
-from HIServices import AXIsProcessTrustedWithOptions, kAXTrustedCheckOptionPrompt
+from HIServices import (
+    AXIsProcessTrustedWithOptions,  # ty: ignore[unresolved-import]
+    kAXTrustedCheckOptionPrompt,  # ty: ignore[unresolved-import]
+)
 
 
 def _request_accessibility_trust() -> bool:

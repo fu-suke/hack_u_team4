@@ -8,169 +8,7 @@ const state = {
   status: "Idle",
 };
 
-const DEFAULT_USER_ID = 0;
-
 let lastRenderedState = state.state;
-let didDrag = false;
-let isDragging = false;
-let activeDrag = null;
-let suppressTokenClickUntil = 0;
-let quizVersion = 0;
-let renderedQuizVersion = -1;
-
-const quiz = {
-  id: null,
-  prompt: "問題を読み込み中…",
-  choices: [],
-  selected: [],
-  answerLogged: false,
-};
-
-function choiceFromDataset(dataset) {
-  return {
-    id: Number(dataset.id),
-    label: dataset.label,
-  };
-}
-
-function normalizeQuestion(data) {
-  const questionId = Number(data.id);
-  if (
-    !Number.isInteger(questionId) ||
-    !Array.isArray(data.choices)
-  ) {
-    throw new Error("Invalid question payload");
-  }
-
-  return {
-    id: questionId,
-    prompt: String(data.prompt),
-    choices: shuffleChoices(
-      data.choices.map((label, index) => ({
-        id: index + 1,
-        label: String(label),
-      })),
-    ),
-  };
-}
-
-function shuffleChoices(choices) {
-  const shuffled = [...choices];
-  for (let index = shuffled.length - 1; index > 0; index--) {
-    const nextIndex = Math.floor(Math.random() * (index + 1));
-    [shuffled[index], shuffled[nextIndex]] = [shuffled[nextIndex], shuffled[index]];
-  }
-  return shuffled;
-}
-
-async function checkAnswer() {
-  if (quiz.id === null) {
-    throw new Error("Question is not loaded");
-  }
-
-  const params = new URLSearchParams({ id: String(quiz.id) });
-  for (const choice of quiz.selected) {
-    params.append("answer", String(choice.id));
-  }
-
-  const response = await fetch(
-    `http://127.0.0.1:8000/questions/check?${params}`,
-  );
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-  const data = await response.json();
-  return Boolean(data.is_correct);
-}
-
-async function submitAnswerLog(isCorrect) {
-  if (quiz.id === null || quiz.answerLogged) return;
-  quiz.answerLogged = true;
-
-  try {
-    const response = await fetch("http://127.0.0.1:8000/answer_logs", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        user_id: DEFAULT_USER_ID,
-        question_id: quiz.id,
-        is_correct: isCorrect,
-      }),
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  } catch (error) {
-    console.error("Failed to submit answer log", error);
-  }
-}
-
-function findSelectedIndex(choice) {
-  for (let index = quiz.selected.length - 1; index >= 0; index--) {
-    if (quiz.selected[index].id === choice.id) return index;
-  }
-  return -1;
-}
-
-async function loadSampleQuestion() {
-  const promptEl = document.querySelector("#quizPrompt");
-  if (promptEl) promptEl.textContent = "問題を読み込み中…";
-
-  try {
-    const response = await fetch("http://127.0.0.1:8000/questions");
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    Object.assign(quiz, normalizeQuestion(await response.json()), {
-      selected: [],
-      answerLogged: false,
-    });
-    if (promptEl) promptEl.textContent = quiz.prompt;
-    resetQuizState();
-    renderQuiz(true);
-  } catch (error) {
-    if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
-    const result = document.querySelector("#quizResult");
-    if (result) result.textContent = "バックエンドの起動を確認してね";
-  }
-}
-
-function resetQuizState() {
-  quiz.selected = [];
-  quizVersion++;
-  const result = document.querySelector("#quizResult");
-  const bottom = document.querySelector("#quizBottom");
-  const quizEl = document.querySelector(".quiz");
-  if (result) {
-    result.textContent = "トークンを順番に選んでね！";
-    result.className = "quiz__result";
-  }
-  if (bottom) bottom.className = "quiz-bottom";
-  if (quizEl) {
-    quizEl.classList.remove("quiz--celebrate", "quiz--shake");
-  }
-}
-
-let lastFlipDigits = "";
-
-function updateFlipTimer(timerText) {
-  const match = timerText.match(/(\d+)s?$/);
-  const totalSeconds = match ? parseInt(match[1], 10) : 0;
-  const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const ss = String(totalSeconds % 60).padStart(2, "0");
-  const digits = mm + ss;
-
-  for (let i = 0; i < 4; i++) {
-    const card = document.querySelector(`#fd${i}`);
-    if (!card) continue;
-    const newDigit = digits[i];
-    if (lastFlipDigits && lastFlipDigits[i] !== newDigit) {
-      card.classList.remove("flipping");
-      void card.offsetWidth;
-      card.classList.add("flipping");
-    }
-    card.textContent = newDigit;
-  }
-
-  lastFlipDigits = digits;
-}
 
 function post(action, payload = {}) {
   window.webkit.messageHandlers.resident.postMessage({ action, ...payload });
@@ -182,91 +20,12 @@ function setText(selector, value) {
   }
 }
 
-function createCommandInput(value = "") {
-  const input = document.createElement("input");
-  input.className = "command-input";
-  input.type = "text";
-  input.value = value;
-  input.autocomplete = "off";
-  input.autocapitalize = "off";
-  input.spellcheck = false;
-  return input;
-}
-
-function createTokenButton(choice, action, className, index = "") {
-  const button = document.createElement("button");
-  button.className = className;
-  button.type = "button";
-  button.textContent = choice.label;
-  button.draggable = true;
-  button.dataset.action = action;
-  button.dataset.id = String(choice.id);
-  button.dataset.label = choice.label;
-  button.dataset.index = String(index);
-  return button;
-}
-
-function setCommandInputs(commands) {
-  const container = document.querySelector("#commands");
-  container.replaceChildren();
-  for (const command of commands.length ? commands : [""]) {
-    container.appendChild(createCommandInput(command));
-  }
-}
-
-function getCommandValues() {
-  return Array.from(document.querySelectorAll(".command-input"))
-    .map((input) => input.value.trim())
-    .filter(Boolean);
-}
-
-function renderQuiz(force = false) {
-  if (isDragging) return;
-  if (!force && renderedQuizVersion === quizVersion) return;
-  renderedQuizVersion = quizVersion;
-
-  const promptEl = document.querySelector("#quizPrompt");
-  const answerEl = document.querySelector("#answer");
-  const tokensEl = document.querySelector("#tokens");
-  const placeholder = document.querySelector("#answerPlaceholder");
-
-  if (promptEl) promptEl.textContent = quiz.prompt;
-
-  // Build new children in a fragment to avoid flicker
-  const answerFrag = document.createDocumentFragment();
-  const tokensFrag = document.createDocumentFragment();
-
-  for (const [index, token] of quiz.selected.entries()) {
-    answerFrag.appendChild(
-      createTokenButton(token, "unselectToken", "token token--selected", index),
-    );
-  }
-
-  const remaining = [...quiz.choices];
-  for (const choice of quiz.selected) {
-    const idx = remaining.findIndex((item) => item.id === choice.id);
-    if (idx >= 0) remaining.splice(idx, 1);
-  }
-
-  for (const choice of remaining) {
-    tokensFrag.appendChild(createTokenButton(choice, "selectToken", "token"));
-  }
-
-  answerEl.replaceChildren(answerFrag);
-  tokensEl.replaceChildren(tokensFrag);
-
-  // Show/hide placeholder
-  if (placeholder) {
-    placeholder.style.display = quiz.selected.length ? "none" : "";
-  }
-}
-
 function render() {
   const app = document.querySelector("#app");
   const enteredExpanded = state.state === "expanded" && lastRenderedState !== "expanded";
   const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
   app.className = `app app--${state.state}`;
-  updateFlipTimer(state.timerText);
+  LinuxVirusTimer.updateFlipTimer(state.timerText);
   setText('[data-bind="status"]', state.status);
   setText('[data-bind="keyCount"]', `Keys: ${state.keyCount}`);
   setText('[data-bind="buffer"]', `Buffer: ${state.buffer}`);
@@ -276,83 +35,14 @@ function render() {
     secondsInput.value = String(state.timerSeconds);
   }
   if (enteredSettings) {
-    setCommandInputs(state.commands || ["<cmd>+v"]);
+    LinuxVirusSettings.setCommandInputs(state.commands || ["<cmd>+v"]);
   }
-
-  // Reset quiz when entering expanded view
   if (enteredExpanded) {
-    loadSampleQuestion();
+    LinuxVirusQuiz.loadQuestion();
   }
 
-  renderQuiz();
+  LinuxVirusQuiz.renderQuiz();
   lastRenderedState = state.state;
-}
-
-function moveTokenToAnswer(choice, targetIndex = quiz.selected.length) {
-  const normalizedIndex = Math.max(0, Math.min(targetIndex, quiz.selected.length));
-  quiz.selected.splice(normalizedIndex, 0, choice);
-  quizVersion++;
-  document.querySelector("#quizResult").textContent = "いい感じ！並び替え中…";
-  renderQuiz();
-}
-
-function removeTokenFromAnswer(choice, index = findSelectedIndex(choice)) {
-  if (index >= 0) {
-    quiz.selected.splice(index, 1);
-  }
-  quizVersion++;
-  document.querySelector("#quizResult").textContent = "トークンを戻したよ";
-  renderQuiz();
-}
-
-function reorderAnswerToken(fromIndex, toIndex) {
-  if (fromIndex < 0 || fromIndex >= quiz.selected.length) return;
-  const [token] = quiz.selected.splice(fromIndex, 1);
-  const dest = fromIndex < toIndex ? toIndex - 1 : toIndex;
-  quiz.selected.splice(Math.max(0, dest), 0, token);
-  quizVersion++;
-  document.querySelector("#quizResult").textContent = "並び替えたよ！";
-  renderQuiz();
-}
-
-function answerDropIndex(event) {
-  const targetToken = event.target.closest("#answer .token");
-  if (!targetToken) return quiz.selected.length;
-  const rect = targetToken.getBoundingClientRect();
-  const index = Number(targetToken.dataset.index);
-  const afterTarget = event.clientX > rect.left + rect.width / 2;
-  return index + (afterTarget ? 1 : 0);
-}
-
-function getDragPayload(event) {
-  if (activeDrag) return activeDrag;
-  const id = event.dataTransfer.getData("choice-id");
-  const label = event.dataTransfer.getData("choice-label");
-  if (!id || !label) return null;
-  return {
-    choice: { id: Number(id), label },
-    sourceAction: event.dataTransfer.getData("source-action"),
-    sourceIndex: Number(event.dataTransfer.getData("source-index")),
-  };
-}
-
-function clearDragState(suppressClick = true) {
-  for (const token of document.querySelectorAll(".token--dragging")) {
-    token.classList.remove("token--dragging");
-  }
-  for (const dropZone of document.querySelectorAll(".dragover")) {
-    dropZone.classList.remove("dragover");
-  }
-
-  activeDrag = null;
-  isDragging = false;
-
-  if (!suppressClick) return;
-  didDrag = true;
-  suppressTokenClickUntil = Date.now() + 300;
-  window.setTimeout(() => {
-    if (Date.now() >= suppressTokenClickUntil) didDrag = false;
-  }, 300);
 }
 
 window.residentSetState = (nextState) => {
@@ -364,13 +54,12 @@ document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
   if (!button) return;
 
-  // Token clicks are handled by the dedicated token listener below
   if (button.classList.contains("token")) return;
 
   const action = button.dataset.action;
   if (action === "resetQuiz") {
-    resetQuizState();
-    renderQuiz();
+    LinuxVirusQuiz.resetQuizState();
+    LinuxVirusQuiz.renderQuiz();
     return;
   }
 
@@ -380,7 +69,7 @@ document.addEventListener("click", async (event) => {
     const quizEl = document.querySelector(".quiz");
     let correct = false;
     try {
-      correct = await checkAnswer();
+      correct = await LinuxVirusQuiz.checkAndLogAnswer();
     } catch (error) {
       console.error("Failed to check answer", error);
       result.textContent = "判定できませんでした。";
@@ -388,7 +77,7 @@ document.addEventListener("click", async (event) => {
       bottom.className = "quiz-bottom quiz-bottom--wrong";
       return;
     }
-    submitAnswerLog(correct);
+
     if (correct) {
       result.textContent = "🎉 正解！すごい！";
       result.className = "quiz__result quiz__result--correct";
@@ -406,32 +95,24 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "addCommand") {
-    const container = document.querySelector("#commands");
-    if (container.querySelectorAll(".command-input").length >= 10) {
-      document.querySelector('[data-bind="status"]').textContent = "Commands are limited to 10.";
-      return;
-    }
-    const input = createCommandInput();
-    container.appendChild(input);
-    input.focus();
-    input.scrollIntoView({ block: "nearest" });
+    LinuxVirusSettings.addCommandInput();
     return;
   }
 
   if (action === "showHelp") {
-    document.querySelector("#helpDialog").showModal();
+    LinuxVirusSettings.showHelp();
     return;
   }
 
   if (action === "closeHelp") {
-    document.querySelector("#helpDialog").close();
+    LinuxVirusSettings.closeHelp();
     return;
   }
 
   if (action === "done") {
     post("setTimer", {
       seconds: document.querySelector("#timerSeconds").value,
-      commands: getCommandValues(),
+      commands: LinuxVirusSettings.getCommandValues(),
     });
     return;
   }
@@ -439,86 +120,22 @@ document.addEventListener("click", async (event) => {
   post(action);
 });
 
-// Use click (not pointerup) for token selection to avoid drag conflicts
 document.addEventListener("click", (event) => {
-  if (didDrag || Date.now() < suppressTokenClickUntil) return;
+  if (LinuxVirusDrag.isClickSuppressed()) return;
   const button = event.target.closest(".token");
   if (!button) return;
 
   const action = button.dataset.action;
   if (action === "selectToken") {
-    moveTokenToAnswer(choiceFromDataset(button.dataset));
+    LinuxVirusQuiz.moveTokenToAnswer(LinuxVirusQuiz.choiceFromDataset(button.dataset));
   }
   if (action === "unselectToken") {
-    removeTokenFromAnswer(choiceFromDataset(button.dataset), Number(button.dataset.index));
+    LinuxVirusQuiz.removeTokenFromAnswer(
+      LinuxVirusQuiz.choiceFromDataset(button.dataset),
+      Number(button.dataset.index),
+    );
   }
 });
 
-document.addEventListener("dragstart", (event) => {
-  const token = event.target.closest(".token");
-  if (!token) return;
-
-  didDrag = true;
-  isDragging = true;
-  activeDrag = {
-    choice: choiceFromDataset(token.dataset),
-    sourceAction: token.dataset.action,
-    sourceIndex: Number(token.dataset.index),
-  };
-  event.dataTransfer.setData("text/plain", token.dataset.label);
-  event.dataTransfer.setData("choice-id", token.dataset.id);
-  event.dataTransfer.setData("choice-label", token.dataset.label);
-  event.dataTransfer.setData("source-action", token.dataset.action);
-  event.dataTransfer.setData("source-index", token.dataset.index);
-  event.dataTransfer.effectAllowed = "move";
-  token.classList.add("token--dragging");
-});
-
-document.addEventListener("dragend", () => {
-  clearDragState();
-});
-
-document.addEventListener("dragover", (event) => {
-  const dropZone = event.target.closest("#answer, #tokens");
-  if (!dropZone || !activeDrag) return;
-
-  event.preventDefault();
-  event.dataTransfer.dropEffect = "move";
-  dropZone.classList.add("dragover");
-});
-
-document.addEventListener("dragleave", (event) => {
-  const dropZone = event.target.closest("#answer, #tokens");
-  if (!dropZone || (event.relatedTarget && dropZone.contains(event.relatedTarget))) return;
-  dropZone.classList.remove("dragover");
-});
-
-document.addEventListener("drop", (event) => {
-  const answer = event.target.closest("#answer");
-  const tokens = event.target.closest("#tokens");
-  if (!answer && !tokens) {
-    clearDragState();
-    return;
-  }
-
-  event.preventDefault();
-
-  const payload = getDragPayload(event);
-  const dropIndex = answer ? answerDropIndex(event) : quiz.selected.length;
-  clearDragState();
-  if (!payload) return;
-
-  if (answer && payload.sourceAction === "selectToken") {
-    moveTokenToAnswer(payload.choice, dropIndex);
-    return;
-  }
-  if (answer && payload.sourceAction === "unselectToken") {
-    reorderAnswerToken(payload.sourceIndex, dropIndex);
-    return;
-  }
-  if (tokens && payload.sourceAction === "unselectToken") {
-    removeTokenFromAnswer(payload.choice, payload.sourceIndex);
-  }
-});
-
+LinuxVirusDrag.install();
 render();

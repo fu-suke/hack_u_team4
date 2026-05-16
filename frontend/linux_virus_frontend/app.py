@@ -3,7 +3,7 @@ from __future__ import annotations
 import signal
 import sys
 
-from AppKit import NSApp
+from AppKit import NSApp  # ty: ignore[unresolved-import]
 from PyObjCTools import AppHelper
 
 from linux_virus_frontend.controller import _ResidentAppController

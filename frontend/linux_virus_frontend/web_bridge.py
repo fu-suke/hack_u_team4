@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from Foundation import NSObject
-from objc import super as objc_super
+from Foundation import NSObject  # ty: ignore[unresolved-import]
+from objc import super as objc_super  # ty: ignore[unresolved-import]
 
 
 class _ScriptMessageHandler(NSObject):

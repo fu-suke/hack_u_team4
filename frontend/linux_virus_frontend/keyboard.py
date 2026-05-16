@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 from AppKit import (
-    NSEventModifierFlagCommand,
-    NSEventModifierFlagControl,
-    NSEventModifierFlagOption,
-    NSEventModifierFlagShift,
+    NSEventModifierFlagCommand,  # ty: ignore[unresolved-import]
+    NSEventModifierFlagControl,  # ty: ignore[unresolved-import]
+    NSEventModifierFlagOption,  # ty: ignore[unresolved-import]
+    NSEventModifierFlagShift,  # ty: ignore[unresolved-import]
 )
 
 from linux_virus_frontend.config import Q_KEY_CODE, SPACE_KEY_CODE, SPECIAL_KEY_LABELS

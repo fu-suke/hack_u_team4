@@ -7,18 +7,21 @@ from collections.abc import Mapping
 from typing import Any
 
 from AppKit import (
-    NSApp,
-    NSApplication,
-    NSApplicationActivationPolicyAccessory,
-    NSEvent,
-    NSEventMaskKeyDown,
-    NSWindow,
+    NSApp,  # ty: ignore[unresolved-import]
+    NSApplication,  # ty: ignore[unresolved-import]
+    NSApplicationActivationPolicyAccessory,  # ty: ignore[unresolved-import]
+    NSEvent,  # ty: ignore[unresolved-import]
+    NSEventMaskKeyDown,  # ty: ignore[unresolved-import]
+    NSWindow,  # ty: ignore[unresolved-import]
 )
-from Foundation import NSObject, NSTimer
+from Foundation import (
+    NSObject,  # ty: ignore[unresolved-import]
+    NSTimer,  # ty: ignore[unresolved-import]
+)
 from objc import python_method
-from objc import super as objc_super
+from objc import super as objc_super  # ty: ignore[unresolved-import]
 from PyObjCTools import AppHelper
-from WebKit import WKWebView
+from WebKit import WKWebView  # ty: ignore[unresolved-import]
 
 from linux_virus_frontend.config import (
     EXPANDED_SIZE,
