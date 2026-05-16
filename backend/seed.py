@@ -24,7 +24,13 @@ def load_users(path: Path) -> list[User]:
     users = []
     with open(path, encoding="utf-8", newline="") as f:
         for row in csv.DictReader(f, delimiter="\t"):
-            users.append(User(name=row["name"], created_at=_parse_dt(row["created_at"])))
+            users.append(
+                User(
+                    id=int(row["id"]),
+                    name=row["name"],
+                    created_at=_parse_dt(row["created_at"]),
+                )
+            )
     return users
 
 

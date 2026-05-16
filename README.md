@@ -1,6 +1,7 @@
 # Linux Virus
 
-Python で macOS 常駐アプリ風の挙動を検証する Linux Virus のクライアントです。
+Linux Virus は、macOS に常駐して特定のタイミングで Linux コマンドのクイズを表示する学習支援アプリです。
+Python 製の常駐ウィンドウと FastAPI 製のバックエンドで構成されています。
 
 - 起動時は小さい常時前面ウィンドウを画面右上に表示します。
 - 最小表示ではタイマー表示と `Settings` ボタンだけを見せます。
@@ -20,18 +21,19 @@ brew install uv
 
 ## 実行
 
-リポジトリルートで実行します。
+初回またはデータを初期状態に戻したい場合は、DB の初期データを投入します。
 
 ```bash
 uv sync --all-packages
-uv run honcho start
+uv run --directory backend python seed.py --force
 ```
 
-個別に起動する場合は、以下を別々のターミナルで実行します。
+アプリを起動する場合は、リポジトリルートで以下を実行します。
 
 ```bash
-uv run --directory backend uvicorn app.main:app --reload
-uv run --package linux-virus-frontend linux-virus-frontend
+uv sync --all-packages
+uv run --directory backend python seed.py
+uv run honcho start
 ```
 
 ## macOS 権限

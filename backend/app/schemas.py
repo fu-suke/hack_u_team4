@@ -7,6 +7,10 @@ class UserCreate(BaseModel):
     name: str
 
 
+class UserLogin(BaseModel):
+    name: str
+
+
 class UserResponse(BaseModel):
     id: int
     name: str
@@ -27,13 +31,20 @@ class QuestionCreate(BaseModel):
 class QuestionResponse(BaseModel):
     id: int
     prompt: str
-    category: list[str]
-    difficulty: int
     choices: list[str]
-    answers: list[list[int]]
     tutorial: str
 
     model_config = {"from_attributes": True}
+
+
+class QuestionWithAnswerResponse(QuestionResponse):
+    category: list[str]
+    difficulty: int
+    answers: list[list[int]]
+
+
+class QuestionCheckResponse(BaseModel):
+    is_correct: bool
 
 
 class AnswerLogCreate(BaseModel):

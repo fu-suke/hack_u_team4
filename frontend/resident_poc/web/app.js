@@ -8,6 +8,8 @@ const state = {
   status: "Idle",
 };
 
+const DEFAULT_USER_ID = 0;
+
 let lastRenderedState = state.state;
 let didDrag = false;
 let isDragging = false;
@@ -17,10 +19,11 @@ let quizVersion = 0;
 let renderedQuizVersion = -1;
 
 const quiz = {
+  id: null,
   prompt: "問題を読み込み中…",
   choices: [],
-  answers: [],
   selected: [],
+  answerLogged: false,
 };
 
 function choiceFromDataset(dataset) {
@@ -31,18 +34,63 @@ function choiceFromDataset(dataset) {
 }
 
 function normalizeQuestion(data) {
-  if (!Array.isArray(data.choices) || !Array.isArray(data.answers)) {
+  const questionId = Number(data.id);
+  if (
+    !Number.isInteger(questionId) ||
+    !Array.isArray(data.choices)
+  ) {
     throw new Error("Invalid question payload");
   }
 
   return {
+    id: questionId,
     prompt: String(data.prompt),
     choices: data.choices.map((label, index) => ({
       id: index + 1,
       label: String(label),
     })),
-    answers: data.answers,
   };
+}
+
+async function checkAnswer() {
+  if (quiz.id === null) {
+    throw new Error("Question is not loaded");
+  }
+
+  const params = new URLSearchParams({ id: String(quiz.id) });
+  for (const choice of quiz.selected) {
+    params.append("answer", choice.label);
+  }
+
+  const response = await fetch(
+    `http://127.0.0.1:8000/questions/check?${params}`,
+  );
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+  const data = await response.json();
+  return Boolean(data.is_correct);
+}
+
+async function submitAnswerLog(isCorrect) {
+  if (quiz.id === null || quiz.answerLogged) return;
+  quiz.answerLogged = true;
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/answer_logs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: DEFAULT_USER_ID,
+        question_id: quiz.id,
+        is_correct: isCorrect,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  } catch (error) {
+    console.error("Failed to submit answer log", error);
+  }
 }
 
 function findSelectedIndex(choice) {
@@ -57,9 +105,12 @@ async function loadSampleQuestion() {
   if (promptEl) promptEl.textContent = "問題を読み込み中…";
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/questions/sample");
+    const response = await fetch("http://127.0.0.1:8000/questions");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    Object.assign(quiz, normalizeQuestion(await response.json()), { selected: [] });
+    Object.assign(quiz, normalizeQuestion(await response.json()), {
+      selected: [],
+      answerLogged: false,
+    });
     if (promptEl) promptEl.textContent = quiz.prompt;
     resetQuizState();
     renderQuiz(true);
@@ -298,7 +349,7 @@ window.residentSetState = (nextState) => {
   render();
 };
 
-document.addEventListener("click", (event) => {
+document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
   if (!button) return;
 
@@ -313,15 +364,20 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "checkQuiz") {
-    const selectedIds = quiz.selected.map((choice) => choice.id);
-    const correct = quiz.answers.some(
-      (answer) =>
-        answer.length === selectedIds.length &&
-        answer.every((id, index) => id === selectedIds[index]),
-    );
     const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
+    let correct = false;
+    try {
+      correct = await checkAnswer();
+    } catch (error) {
+      console.error("Failed to check answer", error);
+      result.textContent = "判定できませんでした。";
+      result.className = "quiz__result quiz__result--wrong";
+      bottom.className = "quiz-bottom quiz-bottom--wrong";
+      return;
+    }
+    submitAnswerLog(correct);
     if (correct) {
       result.textContent = "🎉 正解！すごい！";
       result.className = "quiz__result quiz__result--correct";
