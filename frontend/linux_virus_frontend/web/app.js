@@ -45,11 +45,22 @@ function normalizeQuestion(data) {
   return {
     id: questionId,
     prompt: String(data.prompt),
-    choices: data.choices.map((label, index) => ({
-      id: index + 1,
-      label: String(label),
-    })),
+    choices: shuffleChoices(
+      data.choices.map((label, index) => ({
+        id: index + 1,
+        label: String(label),
+      })),
+    ),
   };
+}
+
+function shuffleChoices(choices) {
+  const shuffled = [...choices];
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    const nextIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[nextIndex]] = [shuffled[nextIndex], shuffled[index]];
+  }
+  return shuffled;
 }
 
 async function checkAnswer() {
