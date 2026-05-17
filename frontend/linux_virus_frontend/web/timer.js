@@ -2,8 +2,10 @@ const LinuxVirusTimer = (() => {
   let lastFlipDigits = "";
 
   function updateFlipTimer(timerText, timerMode = "timer") {
-    const match = timerText.match(/(\d+)s?$/);
-    const totalSeconds = match ? parseInt(match[1], 10) : 0;
+    const safeText = typeof timerText === "string" ? timerText : "";
+    const match = safeText.match(/(\d+)\s*s?\b/);
+    const parsed = match ? parseInt(match[1], 10) : NaN;
+    const totalSeconds = Number.isFinite(parsed) ? Math.max(0, Math.min(parsed, 5999)) : 0;
     const mm = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
     const ss = String(totalSeconds % 60).padStart(2, "0");
     const digits = mm + ss;

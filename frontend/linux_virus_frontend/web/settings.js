@@ -4,6 +4,7 @@ const LinuxVirusSettings = (() => {
     input.className = "command-input";
     input.type = "text";
     input.value = value;
+    input.maxLength = 64;
     input.autocomplete = "off";
     input.autocapitalize = "off";
     input.spellcheck = false;

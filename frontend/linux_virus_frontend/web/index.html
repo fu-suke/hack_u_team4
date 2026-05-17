@@ -47,7 +47,7 @@
           <div id="tokens" class="quiz__tokens" aria-label="Command tokens"></div>
         </div>
         <div class="quiz-bottom" id="quizBottom">
-          <span id="quizResult" class="quiz__result">トークンを順番に選んでね！</span>
+          <span id="quizResult" class="quiz__result" role="status" aria-live="polite">トークンを順番に選んでね！</span>
           <div class="quiz__actions">
             <button id="resetQuiz" class="btn btn--reset" type="button" data-action="resetQuiz">
               リセット
@@ -64,6 +64,15 @@
             >
               閉じる
             </button>
+            <button
+              id="retryQuiz"
+              class="btn btn--check"
+              type="button"
+              data-action="retryQuiz"
+              hidden
+            >
+              再試行
+            </button>
           </div>
         </div>
       </section>
@@ -79,6 +88,7 @@
           <input
             id="userName"
             type="text"
+            maxlength="64"
             autocomplete="username"
             autocapitalize="off"
             spellcheck="false"

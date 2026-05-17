@@ -52,12 +52,25 @@ function render() {
     LinuxVirusUser.renderUserScreen();
   }
 
-  LinuxVirusQuiz.renderQuiz();
+  if (state.state === "expanded") {
+    LinuxVirusQuiz.renderQuiz();
+  }
   lastRenderedState = state.state;
 }
 
 window.residentSetState = (nextState) => {
-  Object.assign(state, nextState);
+  const activeEl = document.activeElement;
+  const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName"]);
+  const activeIsProtected =
+    activeEl && (protectedIds.has(activeEl.id) || activeEl.classList?.contains("command-input"));
+
+  const incoming = { ...nextState };
+  if (activeIsProtected) {
+    delete incoming.timerSeconds;
+    delete incoming.sleepMinutes;
+    delete incoming.commands;
+  }
+  Object.assign(state, incoming);
   render();
 };
 
@@ -69,11 +82,17 @@ document.addEventListener("click", async (event) => {
 
   const action = button.dataset.action;
   if (action === "resetQuiz") {
+    if (LinuxVirusQuiz.isBusy()) return;
     document.querySelector("#resetQuiz").hidden = false;
     document.querySelector("#checkQuiz").hidden = false;
     document.querySelector("#closeExplanation").hidden = true;
     LinuxVirusQuiz.resetQuizState();
     LinuxVirusQuiz.renderQuiz();
+    return;
+  }
+
+  if (action === "retryQuiz") {
+    LinuxVirusQuiz.loadQuestion();
     return;
   }
 
@@ -83,19 +102,25 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "checkQuiz") {
+    if (LinuxVirusQuiz.isBusy()) return;
     const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
+    result.textContent = "判定中…";
+    result.className = "quiz__result";
     let answerResult = null;
     try {
       answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
     } catch (error) {
       console.error("Failed to check answer", error);
-      result.textContent = "判定できませんでした。";
+      result.textContent = error && error.isNetwork
+        ? "バックエンドに接続できません。"
+        : "判定できませんでした。";
       result.className = "quiz__result quiz__result--wrong";
       bottom.className = "quiz-bottom quiz-bottom--wrong";
       return;
     }
+    if (!answerResult) return;
 
     if (answerResult.correct) {
       result.textContent = `🎉 正解！ ${answerResult.tutorial}`;

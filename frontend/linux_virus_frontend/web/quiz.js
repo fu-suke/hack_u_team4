@@ -3,6 +3,8 @@ const LinuxVirusQuiz = (() => {
 
   let quizVersion = 0;
   let renderedQuizVersion = -1;
+  let isLoading = false;
+  let isChecking = false;
 
   const quiz = {
     id: null,
@@ -88,8 +90,15 @@ const LinuxVirusQuiz = (() => {
   }
 
   async function loadQuestion() {
+    if (isLoading) return;
+    isLoading = true;
     const promptEl = document.querySelector("#quizPrompt");
+    const quizEl = document.querySelector(".quiz");
+    const result = document.querySelector("#quizResult");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
+    if (quizEl) quizEl.setAttribute("aria-busy", "true");
+    setActionsDisabled(true);
+    document.querySelector("#retryQuiz")?.setAttribute("hidden", "");
 
     try {
       Object.assign(quiz, normalizeQuestion(await LinuxVirusApi.fetchQuestion()), {
@@ -102,8 +111,27 @@ const LinuxVirusQuiz = (() => {
     } catch (error) {
       console.error("Failed to load question", error);
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
-      const result = document.querySelector("#quizResult");
-      if (result) result.textContent = "バックエンドの起動を確認してね";
+      if (result) {
+        result.textContent =
+          error && error.isNetwork
+            ? "バックエンドに接続できません。再試行してください。"
+            : "問題の取得に失敗しました。";
+        result.className = "quiz__result quiz__result--wrong";
+      }
+      document.querySelector("#retryQuiz")?.removeAttribute("hidden");
+      document.querySelector("#resetQuiz").hidden = true;
+      document.querySelector("#checkQuiz").hidden = true;
+    } finally {
+      if (quizEl) quizEl.removeAttribute("aria-busy");
+      setActionsDisabled(false);
+      isLoading = false;
+    }
+  }
+
+  function setActionsDisabled(disabled) {
+    for (const id of ["resetQuiz", "checkQuiz", "closeExplanation", "retryQuiz"]) {
+      const el = document.querySelector(`#${id}`);
+      if (el) el.disabled = disabled;
     }
   }
 
@@ -177,23 +205,34 @@ const LinuxVirusQuiz = (() => {
     if (quiz.id === null) {
       throw new Error("Question is not loaded");
     }
-
-    const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
-    if (!quiz.answerLogged) {
-      quiz.answerLogged = true;
-      LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch((err) => {
-        console.error("Failed to submit answer log", err);
-      });
+    if (isChecking) return null;
+    isChecking = true;
+    setActionsDisabled(true);
+    try {
+      const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
+      if (!quiz.answerLogged) {
+        quiz.answerLogged = true;
+        LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch(
+          (err) => {
+            console.error("Failed to submit answer log", err);
+          },
+        );
+      }
+      return { correct, tutorial: quiz.tutorial };
+    } finally {
+      isChecking = false;
+      setActionsDisabled(false);
     }
-    return {
-      correct,
-      tutorial: quiz.tutorial,
-    };
+  }
+
+  function isBusy() {
+    return isLoading || isChecking;
   }
 
   return {
     checkAndLogAnswer,
     choiceFromDataset,
+    isBusy,
     loadQuestion,
     moveTokenToAnswer,
     removeTokenFromAnswer,

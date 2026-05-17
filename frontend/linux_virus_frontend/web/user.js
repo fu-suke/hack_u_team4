@@ -2,6 +2,7 @@ const LinuxVirusUser = (() => {
   const DEFAULT_USER_ID = 0;
 
   let currentUser = null;
+  let isSubmitting = false;
 
   function currentUserId() {
     return currentUser ? currentUser.id : DEFAULT_USER_ID;
@@ -61,12 +62,16 @@ const LinuxVirusUser = (() => {
   }
 
   async function submitUserAction(successText, failureText, action) {
+    if (isSubmitting) return;
     const name = readName();
     if (!name) {
       showMessage("ユーザー名を入力してください", false);
       return;
     }
 
+    isSubmitting = true;
+    setUserButtonsDisabled(true);
+    showMessage("送信中…", true);
     try {
       const user = await action(name);
       saveUser(user);
@@ -76,10 +81,18 @@ const LinuxVirusUser = (() => {
       }, 1000);
     } catch (error) {
       console.error(failureText, error);
-      const input = document.querySelector("#userName");
-      if (input) input.value = "";
-      showMessage(failureText, false);
-      window.setTimeout(clearMessage, 1000);
+      const detail = error && error.isNetwork ? "（バックエンドに接続できません）" : "";
+      showMessage(`${failureText}${detail}`, false);
+    } finally {
+      isSubmitting = false;
+      setUserButtonsDisabled(false);
+    }
+  }
+
+  function setUserButtonsDisabled(disabled) {
+    for (const action of ["loginUser", "createUser"]) {
+      const btn = document.querySelector(`[data-action="${action}"]`);
+      if (btn) btn.disabled = disabled;
     }
   }
 

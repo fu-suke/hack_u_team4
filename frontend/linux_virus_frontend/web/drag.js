@@ -3,6 +3,7 @@ const LinuxVirusDrag = (() => {
   let isActive = false;
   let activeDrag = null;
   let suppressTokenClickUntil = 0;
+  let installed = false;
 
   function isDragging() {
     return isActive;
@@ -53,6 +54,8 @@ const LinuxVirusDrag = (() => {
   }
 
   function install() {
+    if (installed) return;
+    installed = true;
     document.addEventListener("dragstart", (event) => {
       const token = event.target.closest(".token");
       if (!token) return;

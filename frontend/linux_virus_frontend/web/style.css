@@ -14,7 +14,7 @@
   --duo-surface: #1a2e35;
   --duo-surface-light: #233d47;
   --duo-border: #37464f;
-  --duo-text-muted: #93a8b4;
+  --duo-text-muted: #b8cad6;
 }
 
 * {
@@ -45,6 +45,18 @@ button {
 
 button:active {
   transform: scale(0.96);
+}
+
+button:disabled,
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  filter: saturate(0.6);
+  transform: none;
+}
+
+[aria-busy="true"] {
+  opacity: 0.7;
 }
 
 input {
