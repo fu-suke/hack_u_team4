@@ -37,7 +37,7 @@
 **レスポンス(404 Not Found)**:
 ```json
 {
-  "detail": "No questions available"
+  "detail": "No questions found"
 }
 ```
 

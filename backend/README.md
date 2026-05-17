@@ -11,7 +11,7 @@ Linux Virus の macOS 常駐バックエンド。
 | `POST` | `/users` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザーを登録する |
 | `POST` | `/users/login` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名でログインする |
 | `GET` | `/questions/sample` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | サンプル問題をランダムに1問返す |
-| `GET` | `/questions` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す |
+| `GET` | `/questions/random` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す |
 | `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | 問題IDと選択した選択肢番号の順番で正誤判定する |
 | `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | 回答ログを登録する |
 
