@@ -48,37 +48,32 @@
 
 ---
 
-### 2.2 `POST /check`
+### 2.2 `GET /questions/check`
 
-ユーザの解答の正誤を判定する。
+ユーザの解答の正誤を判定する。ログの記録は行わない。
 
-**リクエスト**:
-```json
-{
-  "question_id": 1,
-  "answer": [1, 3, 2]
-}
-```
+**リクエスト(クエリパラメータ)**:
 
-| フィールド | 型 | 説明 |
+| パラメータ | 型 | 説明 |
 |---|---|---|
-| `question_id` | int | 問題の ID |
-| `answer` | int[] | ユーザが並べた選択肢の元 ID 配列(シャッフル後の表示位置ではない) |
+| `id` | int | 問題の ID |
+| `answer` | int[] | ユーザが並べた選択肢の元 ID 配列(繰り返し指定)(シャッフル後の表示位置ではない) |
+
+例: `GET /questions/check?id=1&answer=1&answer=3&answer=2`
 
 **レスポンス(200 OK)**:
 ```json
 {
-  "is_correct": true,
+  "is_correct": true
 }
 ```
 
 **備考**:
 - バックエンドは DB の `answers`(複数の正解パターン)と比較し、いずれかと一致すれば `is_correct: true`
-- `tutorial` は判定結果と合わせて返す(誤答時のフィードバックに使用)
 
 ---
 
-### 2.3 `POST /log`
+### 2.3 `POST /answer_logs`
 
 ユーザの解答ログを記録する。**初回の判定結果のみ**送信される。
 
@@ -91,7 +86,7 @@
 }
 ```
 
-**レスポンス(200 OK)**:
+**レスポンス(201 Created)**:
 ```json
 {
   "id": 42,
@@ -143,7 +138,7 @@ sequenceDiagram
 
     Note over WebUI,Backend: 正誤判定フェーズ
 
-    WebUI->>Backend: POST /check<br/>{ question_id, answer }
+    WebUI->>Backend: GET /questions/check<br/>?id={question_id}&answer={id1}&answer={id2}...
     Backend->>DB: SELECT 問題の answers
     DB-->>Backend: answers (例: [[1, 3, 2], [1, 2, 3]])
     Backend->>Backend: ユーザの answer と比較
@@ -154,7 +149,7 @@ sequenceDiagram
 
     WebUI->>WebUI: 「ログ送信済みフラグ」を確認<br/>(フロント側で管理)
     alt 初回の判定(フラグが false)
-        WebUI->>Backend: POST /log<br/>{ user_id, question_id, is_correct }
+        WebUI->>Backend: POST /answer_logs<br/>{ user_id, question_id, is_correct }
         Backend->>DB: INSERT INTO answer_logs
         DB-->>Backend: 記録完了
         Backend-->>WebUI: 200 OK
