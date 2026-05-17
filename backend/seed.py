@@ -42,6 +42,7 @@ def load_questions(path: Path) -> list[Question]:
                 break
             questions.append(
                 Question(
+                    id=int(row["id"]),
                     prompt=row["prompt"],
                     category=json.loads(row["category"]),
                     difficulty=int(row["difficulty"]),
@@ -59,6 +60,7 @@ def load_answer_logs(path: Path) -> list[AnswerLog]:
         for row in csv.DictReader(f, delimiter="\t"):
             logs.append(
                 AnswerLog(
+                    id=int(row["id"]),
                     user_id=int(row["user_id"]),
                     question_id=int(row["question_id"]),
                     is_correct=bool(int(row["is_correct"])),
@@ -99,15 +101,11 @@ def seed() -> None:
 
 
 def seed_force() -> None:
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()
     try:
-        db.query(AnswerLog).delete()
-        db.query(Question).delete()
-        db.query(User).delete()
-        db.flush()
-
         users = load_users(USERS_TSV)
         db.add_all(users)
         db.flush()
@@ -120,7 +118,7 @@ def seed_force() -> None:
         db.add_all(logs)
 
         db.commit()
-        print(f"users={len(users)}, questions={len(questions)}, answer_logs={len(logs)} 件を投入しました（既存データを削除済み）。")
+        print(f"users={len(users)}, questions={len(questions)}, answer_logs={len(logs)} 件を投入しました（テーブルを再作成済み）。")
     finally:
         db.close()
 
