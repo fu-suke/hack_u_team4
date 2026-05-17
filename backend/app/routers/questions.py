@@ -83,7 +83,7 @@ def check_question_answer(
 
 
 @router.get(
-    "",
+    "/random",
     response_model=QuestionResponse,
 )
 def get_question(db: Session = Depends(get_db)) -> QuestionResponse:

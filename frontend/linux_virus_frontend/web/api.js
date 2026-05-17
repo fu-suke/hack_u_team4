@@ -3,7 +3,7 @@ const LinuxVirusApi = (() => {
   const DEFAULT_USER_ID = 0;
 
   async function fetchQuestion() {
-    const response = await fetch(`${BASE_URL}/questions`);
+    const response = await fetch(`${BASE_URL}/questions/random`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
   }
