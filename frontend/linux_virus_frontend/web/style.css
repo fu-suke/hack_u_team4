@@ -294,10 +294,15 @@ section {
   font-weight: 700;
   color: var(--duo-text-muted);
   min-height: 20px;
+  line-height: 1.45;
 }
 
 .quiz__result--correct {
   color: var(--duo-green);
+}
+
+.quiz__result--explanation {
+  font-size: 16px;
 }
 
 .quiz__result--wrong {
@@ -348,6 +353,12 @@ section {
 
 .btn--reset:hover {
   background: #2a4a56;
+}
+
+.btn--close-explanation {
+  background: var(--duo-blue);
+  border-bottom-color: var(--duo-blue-dark);
+  color: #fff;
 }
 
 .btn--ghost {

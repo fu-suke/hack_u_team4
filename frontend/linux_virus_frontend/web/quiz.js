@@ -1,10 +1,13 @@
 const LinuxVirusQuiz = (() => {
+  const DEFAULT_TUTORIAL = "この問題の解説はまだ登録されていません。";
+
   let quizVersion = 0;
   let renderedQuizVersion = -1;
 
   const quiz = {
     id: null,
     prompt: "問題を読み込み中…",
+    tutorial: "",
     choices: [],
     selected: [],
     answerLogged: false,
@@ -35,6 +38,7 @@ const LinuxVirusQuiz = (() => {
     return {
       id: questionId,
       prompt: String(data.prompt),
+      tutorial: String(data.tutorial || DEFAULT_TUTORIAL),
       choices: shuffleChoices(
         data.choices.map((label, index) => ({
           id: index + 1,
@@ -75,6 +79,9 @@ const LinuxVirusQuiz = (() => {
       result.className = "quiz__result";
     }
     if (bottom) bottom.className = "quiz-bottom";
+    document.querySelector("#resetQuiz").hidden = false;
+    document.querySelector("#checkQuiz").hidden = false;
+    document.querySelector("#closeExplanation").hidden = true;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--shake");
     }
@@ -178,7 +185,10 @@ const LinuxVirusQuiz = (() => {
         console.error("Failed to submit answer log", err);
       });
     }
-    return correct;
+    return {
+      correct,
+      tutorial: quiz.tutorial,
+    };
   }
 
   return {

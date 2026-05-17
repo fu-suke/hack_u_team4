@@ -36,8 +36,21 @@
         <div class="quiz-bottom" id="quizBottom">
           <span id="quizResult" class="quiz__result">トークンを順番に選んでね！</span>
           <div class="quiz__actions">
-            <button class="btn btn--reset" type="button" data-action="resetQuiz">リセット</button>
-            <button class="btn btn--check" type="button" data-action="checkQuiz">答え合わせ</button>
+            <button id="resetQuiz" class="btn btn--reset" type="button" data-action="resetQuiz">
+              リセット
+            </button>
+            <button id="checkQuiz" class="btn btn--check" type="button" data-action="checkQuiz">
+              答え合わせ
+            </button>
+            <button
+              id="closeExplanation"
+              class="btn btn--close-explanation"
+              type="button"
+              data-action="closeExplanation"
+              hidden
+            >
+              閉じる
+            </button>
           </div>
         </div>
       </section>

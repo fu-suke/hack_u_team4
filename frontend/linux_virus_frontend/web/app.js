@@ -64,8 +64,16 @@ document.addEventListener("click", async (event) => {
 
   const action = button.dataset.action;
   if (action === "resetQuiz") {
+    document.querySelector("#resetQuiz").hidden = false;
+    document.querySelector("#checkQuiz").hidden = false;
+    document.querySelector("#closeExplanation").hidden = true;
     LinuxVirusQuiz.resetQuizState();
     LinuxVirusQuiz.renderQuiz();
+    return;
+  }
+
+  if (action === "closeExplanation") {
+    post("minimize");
     return;
   }
 
@@ -73,9 +81,9 @@ document.addEventListener("click", async (event) => {
     const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
-    let correct = false;
+    let answerResult = null;
     try {
-      correct = await LinuxVirusQuiz.checkAndLogAnswer();
+      answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
     } catch (error) {
       console.error("Failed to check answer", error);
       result.textContent = "判定できませんでした。";
@@ -84,16 +92,21 @@ document.addEventListener("click", async (event) => {
       return;
     }
 
-    if (correct) {
-      result.textContent = "🎉 正解！すごい！";
-      result.className = "quiz__result quiz__result--correct";
+    if (answerResult.correct) {
+      result.textContent = `🎉 正解！ ${answerResult.tutorial}`;
+      result.className = "quiz__result quiz__result--correct quiz__result--explanation";
       bottom.className = "quiz-bottom quiz-bottom--correct";
       quizEl.classList.add("quiz--celebrate");
-      window.setTimeout(() => post("minimize"), 1200);
+      document.querySelector("#resetQuiz").hidden = true;
+      document.querySelector("#checkQuiz").hidden = true;
+      document.querySelector("#closeExplanation").hidden = false;
     } else {
       result.textContent = "😅 もう一回やってみよう！";
       result.className = "quiz__result quiz__result--wrong";
       bottom.className = "quiz-bottom quiz-bottom--wrong";
+      document.querySelector("#resetQuiz").hidden = true;
+      document.querySelector("#checkQuiz").hidden = true;
+      document.querySelector("#closeExplanation").hidden = true;
       quizEl.classList.add("quiz--shake");
       window.setTimeout(() => quizEl.classList.remove("quiz--shake"), 450);
     }
