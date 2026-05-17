@@ -174,7 +174,9 @@ const LinuxVirusQuiz = (() => {
     const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
     if (!quiz.answerLogged) {
       quiz.answerLogged = true;
-      await LinuxVirusApi.submitAnswerLog(quiz.id, correct);
+      LinuxVirusApi.submitAnswerLog(quiz.id, correct).catch((err) => {
+        console.error("Failed to submit answer log", err);
+      });
     }
     return correct;
   }
