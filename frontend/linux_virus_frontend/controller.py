@@ -83,6 +83,8 @@ class _ResidentAppController(NSObject):
         action = str(message.get("action", ""))
         if action == "showSettings":
             self.show_settings_window()
+        if action == "showUser":
+            self.show_user_window()
         if action == "minimize":
             self.minimize_window()
         if action == "expand":
@@ -122,9 +124,23 @@ class _ResidentAppController(NSObject):
         self._send_state_to_web(status="Settings")
 
     @python_method
+    def show_user_window(self) -> None:
+        self._state.suspend_timer_for_settings()
+        self._state.view = "user"
+        self._resize_window(*SETTINGS_SIZE)
+        print("[resident-poc] user", flush=True)
+        self._send_state_to_web(status="User")
+
+    @python_method
     def minimize_window(self) -> None:
         self._state.view = "minimized"
-        self._state.restart_timer()
+        if (
+            self._state.suspended_timer_seconds is not None
+            or self._state.suspended_sleep_seconds is not None
+        ):
+            self._state.resume_suspended_timer()
+        elif self._state.deadline is None and self._state.sleep_deadline is None:
+            self._state.restart_timer()
         if self._overlay:
             self._overlay.orderOut_(None)
         self._resize_window(*MINIMIZED_SIZE)

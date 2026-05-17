@@ -75,7 +75,8 @@ section {
 
 .app--minimized [data-panel="minimized"],
 .app--expanded [data-panel="expanded"],
-.app--settings [data-panel="settings"] {
+.app--settings [data-panel="settings"],
+.app--user [data-panel="user"] {
   display: flex;
 }
 
@@ -87,7 +88,15 @@ section {
   gap: 10px;
 }
 
-.minimized__settings {
+.minimized__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.minimized__settings,
+.minimized__user {
+  position: relative;
   width: 32px;
   height: 32px;
   padding: 0;
@@ -102,8 +111,34 @@ section {
   flex-shrink: 0;
 }
 
-.minimized__settings:hover {
+.minimized__settings:hover,
+.minimized__user:hover {
   background: var(--duo-surface-light);
+}
+
+.minimized__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid #131f24;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.minimized__badge--logged-in {
+  background: var(--duo-green);
+  color: #fff;
+}
+
+.minimized__badge--logged-out {
+  background: var(--duo-gold);
+  color: #131f24;
 }
 
 /* Flip clock */
@@ -162,7 +197,8 @@ section {
 /* --- Expanded (Quiz) --- */
 
 .expanded,
-.settings {
+.settings,
+.user-panel {
   flex-direction: column;
   gap: 0;
 }
@@ -402,6 +438,10 @@ section {
   gap: 12px;
 }
 
+.user-panel {
+  gap: 14px;
+}
+
 .topline,
 .actions,
 .meta {
@@ -422,6 +462,7 @@ section {
 }
 
 .settings label,
+.user-panel label,
 .command-header {
   display: grid;
   grid-template-columns: 120px 1fr;
@@ -457,6 +498,29 @@ section {
 .settings__status {
   color: var(--duo-text-muted);
   font-size: 12px;
+}
+
+.user-current {
+  color: var(--duo-text-muted);
+  font-size: 13px;
+}
+
+.user-message {
+  min-height: 22px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.user-message--success {
+  color: var(--duo-green);
+}
+
+.user-message--error {
+  color: var(--duo-red);
+}
+
+.user-actions {
+  margin-top: auto;
 }
 
 /* --- Help dialog --- */

@@ -26,7 +26,9 @@ function render() {
   const app = document.querySelector("#app");
   const enteredExpanded = state.state === "expanded" && lastRenderedState !== "expanded";
   const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
+  const enteredUser = state.state === "user" && lastRenderedState !== "user";
   app.className = `app app--${state.state}`;
+  LinuxVirusUser.updateBadge();
   LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
   setText('[data-bind="status"]', state.status);
   setText('[data-bind="keyCount"]', `Keys: ${state.keyCount}`);
@@ -45,6 +47,9 @@ function render() {
   }
   if (enteredExpanded) {
     LinuxVirusQuiz.loadQuestion();
+  }
+  if (enteredUser) {
+    LinuxVirusUser.renderUserScreen();
   }
 
   LinuxVirusQuiz.renderQuiz();
@@ -125,6 +130,16 @@ document.addEventListener("click", async (event) => {
 
   if (action === "closeHelp") {
     LinuxVirusSettings.closeHelp();
+    return;
+  }
+
+  if (action === "loginUser") {
+    LinuxVirusUser.login();
+    return;
+  }
+
+  if (action === "createUser") {
+    LinuxVirusUser.create();
     return;
   }
 

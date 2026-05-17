@@ -20,7 +20,20 @@
             <div class="flip-card" id="fd3">0</div>
           </div>
         </div>
-        <button class="minimized__settings" type="button" data-action="showSettings" aria-label="Settings">⚙</button>
+        <div class="minimized__actions">
+          <button class="minimized__user" type="button" data-action="showUser" aria-label="User">
+            👤
+            <span id="userBadge" class="minimized__badge minimized__badge--logged-out">?</span>
+          </button>
+          <button
+            class="minimized__settings"
+            type="button"
+            data-action="showSettings"
+            aria-label="Settings"
+          >
+            ⚙
+          </button>
+        </div>
       </section>
 
       <section class="expanded" data-panel="expanded">
@@ -52,6 +65,29 @@
               閉じる
             </button>
           </div>
+        </div>
+      </section>
+
+      <section class="user-panel" data-panel="user">
+        <div class="topline">
+          <button class="icon-button" type="button" data-action="minimize" aria-label="Back">←</button>
+          <span>User</span>
+        </div>
+        <div id="currentUserLabel" class="user-current">Not logged in</div>
+        <label>
+          <span>User name</span>
+          <input
+            id="userName"
+            type="text"
+            autocomplete="username"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+        </label>
+        <div id="userMessage" class="user-message"></div>
+        <div class="actions user-actions">
+          <button class="btn btn--check" type="button" data-action="loginUser">ログイン</button>
+          <button class="btn btn--reset" type="button" data-action="createUser">新規ユーザー追加</button>
         </div>
       </section>
 
@@ -128,6 +164,7 @@
       </dialog>
     </main>
     <script src="./api.js"></script>
+    <script src="./user.js"></script>
     <script src="./timer.js"></script>
     <script src="./settings.js"></script>
     <script src="./quiz.js"></script>
