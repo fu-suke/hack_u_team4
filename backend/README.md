@@ -10,11 +10,9 @@ Linux Virus の macOS 常駐バックエンド。
 | `GET` | `/health` | なし | `{"status": "ok"}` | ヘルスチェック |
 | `POST` | `/users` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザーを登録する |
 | `POST` | `/users/login` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名でログインする |
-| `GET` | `/questions/sample` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | サンプル問題をランダムに1問返す |
-| `GET` | `/questions/random` | なし | `{"id": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す |
-| `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | 問題IDと選択した選択肢番号の順番で正誤判定する |
-| `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | 回答ログを登録する |
-
+| `GET` | `/questions/random` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す。`choices` は DB 格納時の元順序で返し、シャッフルはフロント側で行う。`answers` は返さない。問題がない場合は `404` |
+| `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | `id` は問題 ID。`answer` はユーザが並べた選択肢の元 ID 配列で、繰り返し指定する。DB の複数正解パターンと比較して判定し、ログは記録しない |
+| `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | ユーザ ID、問題 ID、初回判定時の正誤を回答ログとして登録する。初回かどうかはフロント側で判定し、バックエンドはリクエストが来たら記録する |
 
 ## 実行
 

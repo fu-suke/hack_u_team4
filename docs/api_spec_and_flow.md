@@ -1,7 +1,7 @@
-# Linux Virus API 仕様書 & データフロー
+# Linux Virus データフロー
 
 ## 概要
-本ドキュメントは、Linux Virus アプリケーションのバックエンド API 仕様と、ユーザの一連の解答フローにおけるコンポーネント間のやり取りをまとめたものです。
+本ドキュメントは、Linux Virus アプリケーションにおけるユーザの一連の解答フローと、コンポーネント間のやり取りをまとめたものです。
 
 ---
 
@@ -16,93 +16,7 @@
 
 ---
 
-## 2. API 仕様
-
-### 2.1 `GET /questions/random`
-
-ランダムに 1 問取得する。
-
-**リクエスト**: なし
-
-**レスポンス(200 OK)**:
-```json
-{
-  "id": 1,
-  "prompt": "隠しファイルを含めて、long format でファイル一覧を表示する。",
-  "choices": ["ls", "-l", "-a", "-h"],
-  "tutorial": "`ls` はファイル一覧を表示するコマンド。..."
-}
-```
-
-**レスポンス(404 Not Found)**:
-```json
-{
-  "detail": "No questions found"
-}
-```
-
-**備考**:
-- `choices` の並びは DB 格納時の元順序(=元 ID は順に 1, 2, 3, ...)
-- シャッフルはフロント側で行う
-- `answers` フィールドは返さない(正解情報はクライアントに渡さない)
-
----
-
-### 2.2 `GET /questions/check`
-
-ユーザの解答の正誤を判定する。ログの記録は行わない。
-
-**リクエスト(クエリパラメータ)**:
-
-| パラメータ | 型 | 説明 |
-|---|---|---|
-| `id` | int | 問題の ID |
-| `answer` | int[] | ユーザが並べた選択肢の元 ID 配列(繰り返し指定)(シャッフル後の表示位置ではない) |
-
-例: `GET /questions/check?id=1&answer=1&answer=3&answer=2`
-
-**レスポンス(200 OK)**:
-```json
-{
-  "is_correct": true
-}
-```
-
-**備考**:
-- バックエンドは DB の `answers`(複数の正解パターン)と比較し、いずれかと一致すれば `is_correct: true`
-
----
-
-### 2.3 `POST /answer_logs`
-
-ユーザの解答ログを記録する。**初回の判定結果のみ**送信される。
-
-**リクエスト**:
-```json
-{
-  "user_id": 1,
-  "question_id": 1,
-  "is_correct": true
-}
-```
-
-**レスポンス(201 Created)**:
-```json
-{
-  "id": 42,
-  "user_id": 1,
-  "question_id": 1,
-  "is_correct": true,
-  "answered_at": "2026-05-25T10:15:32"
-}
-```
-
-**備考**:
-- フロント側で「初回かどうか」を判定して送信する(バックエンドはリクエストが来たら必ず記録する)
-
----
-
-## 3. シーケンス図
+## 2. シーケンス図
 
 ユーザがキー検知をトリガにして問題を解き、画面制限が解除されるまでの一連の流れを示す。
 
@@ -126,7 +40,7 @@ sequenceDiagram
     WebUI->>Backend: GET /questions/random
     Backend->>DB: SELECT 問題をランダムに 1 件
     DB-->>Backend: 問題データ
-    Backend-->>WebUI: { id, prompt, choices, tutorial }
+    Backend-->>WebUI: { id, difficulty, prompt, choices, tutorial }
     WebUI->>WebUI: choices をフロントでシャッフル
     WebUI->>User: 問題文と選択肢を表示
 
@@ -152,7 +66,7 @@ sequenceDiagram
         WebUI->>Backend: POST /answer_logs<br/>{ user_id, question_id, is_correct }
         Backend->>DB: INSERT INTO answer_logs
         DB-->>Backend: 記録完了
-        Backend-->>WebUI: 200 OK
+        Backend-->>WebUI: 201 Created
         WebUI->>WebUI: ログ送信済みフラグを true に
     else 2 回目以降(フラグが true)
         WebUI->>WebUI: ログ送信をスキップ
@@ -172,20 +86,20 @@ sequenceDiagram
 
 ---
 
-## 4. データの流れの要点
+## 3. データの流れの要点
 
-### 4.1 選択肢のシャッフルとID管理
+### 3.1 選択肢のシャッフルとID管理
 - DB には `choices` が元順序で格納されている(元 ID は 1, 2, 3, ...)
 - バックエンドは元順序のままフロントに返す
 - フロントはシャッフルして表示するが、元 ID を保持しておく
 - 解答提出時は元 ID 列をバックエンドに送る
 - バックエンドは DB の `answers`(元 ID で記録)と直接比較できる
 
-### 4.2 ログ記録の「初回のみ」ルール
+### 3.2 ログ記録の「初回のみ」ルール
 - フロント側で「ログ送信済みフラグ」を問題ごとに管理
 - 同じ問題でリトライしても 2 回目以降は POST しない
 - 問題が新しく表示された時点でフラグはリセットされる
 
-### 4.3 制限解除のトリガ
+### 3.3 制限解除のトリガ
 - 正解時: フロントから `minimize` メッセージを Python 側に送り、オーバーレイを非表示にして操作制限を解除
 - 不正解時: 「誤り」と解説を表示するのみ。操作制限は解除されず、ユーザは正解するまで解答フェーズを繰り返す

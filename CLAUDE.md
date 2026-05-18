@@ -65,7 +65,7 @@ uv run ty check
 | `models.py` | SQLAlchemy モデル: `User`, `Question`, `AnswerLog` |
 | `schemas.py` | Pydantic スキーマ |
 | `database.py` | SQLite 接続・セッション管理 |
-| `routers/questions.py` | `GET /questions` (ランダム出題), `GET /questions/sample`, `GET /questions/check` |
+| `routers/questions.py` | `GET /questions/random` (ランダム出題), `GET /questions/check` |
 | `routers/answer_logs.py` | `POST /answer_logs` (回答記録) |
 | `routers/users.py` | ユーザー管理 |
 

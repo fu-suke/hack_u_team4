@@ -30,6 +30,7 @@ class QuestionCreate(BaseModel):
 
 class QuestionResponse(BaseModel):
     id: int
+    difficulty: int
     prompt: str
     choices: list[str]
     tutorial: str
@@ -39,7 +40,6 @@ class QuestionResponse(BaseModel):
 
 class QuestionWithAnswerResponse(QuestionResponse):
     category: list[str]
-    difficulty: int
     answers: list[list[int]]
 
 
