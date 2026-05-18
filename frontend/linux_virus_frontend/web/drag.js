@@ -78,6 +78,7 @@ const LinuxVirusDrag = (() => {
 
     document.addEventListener("dragend", () => {
       clearDragState();
+      LinuxVirusQuiz.renderQuiz(true);
     });
 
     document.addEventListener("dragover", (event) => {
@@ -109,6 +110,10 @@ const LinuxVirusDrag = (() => {
       const dropIndex = answer ? answerDropIndex(event) : LinuxVirusQuiz.selectedLength();
       clearDragState();
       if (!payload) return;
+      if (!LinuxVirusQuiz.hasChoiceId(payload.choice.id)) {
+        LinuxVirusQuiz.renderQuiz(true);
+        return;
+      }
 
       if (answer && payload.sourceAction === "selectToken") {
         LinuxVirusQuiz.moveTokenToAnswer(payload.choice, dropIndex);

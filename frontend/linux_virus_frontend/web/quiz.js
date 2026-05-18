@@ -110,6 +110,9 @@ const LinuxVirusQuiz = (() => {
       renderQuiz(true);
     } catch (error) {
       console.error("Failed to load question", error);
+      quiz.id = null;
+      quiz.choices = [];
+      quiz.selected = [];
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
       if (result) {
         result.textContent =
@@ -136,7 +139,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function renderQuiz(force = false) {
-    if (LinuxVirusDrag.isDragging()) return;
+    if (!force && LinuxVirusDrag.isDragging()) return;
     if (!force && renderedQuizVersion === quizVersion) return;
     renderedQuizVersion = quizVersion;
 
@@ -229,9 +232,15 @@ const LinuxVirusQuiz = (() => {
     return isLoading || isChecking;
   }
 
+  function hasChoiceId(id) {
+    const target = Number(id);
+    return quiz.choices.some((choice) => choice.id === target);
+  }
+
   return {
     checkAndLogAnswer,
     choiceFromDataset,
+    hasChoiceId,
     isBusy,
     loadQuestion,
     moveTokenToAnswer,

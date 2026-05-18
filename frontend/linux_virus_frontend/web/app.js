@@ -97,6 +97,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "closeExplanation") {
+    LinuxVirusQuiz.loadQuestion();
     post("minimize");
     return;
   }
@@ -120,7 +121,12 @@ document.addEventListener("click", async (event) => {
       bottom.className = "quiz-bottom quiz-bottom--wrong";
       return;
     }
-    if (!answerResult) return;
+    if (!answerResult) {
+      result.textContent = "トークンを順番に選んでね！";
+      result.className = "quiz__result";
+      bottom.className = "quiz-bottom";
+      return;
+    }
 
     if (answerResult.correct) {
       result.textContent = `🎉 正解！ ${answerResult.tutorial}`;
@@ -134,8 +140,8 @@ document.addEventListener("click", async (event) => {
       result.textContent = "😅 もう一回やってみよう！";
       result.className = "quiz__result quiz__result--wrong";
       bottom.className = "quiz-bottom quiz-bottom--wrong";
-      document.querySelector("#resetQuiz").hidden = true;
-      document.querySelector("#checkQuiz").hidden = true;
+      document.querySelector("#resetQuiz").hidden = false;
+      document.querySelector("#checkQuiz").hidden = false;
       document.querySelector("#closeExplanation").hidden = true;
       quizEl.classList.add("quiz--shake");
       window.setTimeout(() => quizEl.classList.remove("quiz--shake"), 450);
