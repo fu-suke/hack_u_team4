@@ -31,8 +31,6 @@ uv run --directory backend python seed.py --force
 アプリを起動する場合は、リポジトリルートで以下を実行します。
 
 ```bash
-uv sync --all-packages
-uv run --directory backend python seed.py
 uv run honcho start
 ```
 

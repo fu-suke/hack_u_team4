@@ -1,73 +1,46 @@
 """初期データ投入スクリプト。users / questions / answer_logs を一括投入する。"""
 
-import csv
-import json
 import sys
-from datetime import datetime
 from pathlib import Path
+
+import yaml
 
 from app.database import Base, SessionLocal, engine
 from app.models import AnswerLog, Question, User  # noqa: F401 — register models
 
 BASE = Path(__file__).parent
-QUESTIONS_TSV = BASE / "sample_questions.tsv"
-USERS_TSV = BASE / "sample_users.tsv"
-ANSWER_LOGS_TSV = BASE / "sample_answer_logs.tsv"
-SEED_COUNT = 20
+QUESTIONS_YAML = BASE / "app" / "questions.yaml"
 
 
-def _parse_dt(s: str) -> datetime:
-    return datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
-
-
-def load_users(path: Path) -> list[User]:
-    users = []
-    with open(path, encoding="utf-8", newline="") as f:
-        for row in csv.DictReader(f, delimiter="\t"):
-            users.append(
-                User(
-                    id=int(row["id"]),
-                    name=row["name"],
-                    created_at=_parse_dt(row["created_at"]),
-                )
-            )
-    return users
+def load_users() -> list[User]:
+    return [User(id=1, name="ゲスト")]
 
 
 def load_questions(path: Path) -> list[Question]:
-    questions = []
-    with open(path, encoding="utf-8", newline="") as f:
-        for i, row in enumerate(csv.DictReader(f, delimiter="\t")):
-            if i >= SEED_COUNT:
-                break
-            questions.append(
-                Question(
-                    id=int(row["id"]),
-                    prompt=row["prompt"],
-                    category=json.loads(row["category"]),
-                    difficulty=int(row["difficulty"]),
-                    choices=json.loads(row["choices"]),
-                    answers=json.loads(row["answers"]),
-                    tutorial=row.get("turorial") or "",  # TSV のスペルミスに合わせる。未入力は空文字
-                )
+    with open(path, encoding="utf-8") as f:
+        rows = yaml.safe_load(f)
+
+    if not isinstance(rows, list):
+        raise ValueError(f"{path} must contain a list of questions")
+
+    questions: list[Question] = []
+    for i, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            raise ValueError(f"{path} question #{i} must be a mapping")
+
+        questions.append(
+            Question(
+                id=i,
+                prompt=row["prompt"],
+                category=row["category"],
+                difficulty=int(row["difficulty"]),
+                choices=row["choices"],
+                answers=row["answers"],
+                tutorial=row.get("tutorial") or "",
             )
+        )
+
     return questions
-
-
-def load_answer_logs(path: Path) -> list[AnswerLog]:
-    logs = []
-    with open(path, encoding="utf-8", newline="") as f:
-        for row in csv.DictReader(f, delimiter="\t"):
-            logs.append(
-                AnswerLog(
-                    id=int(row["id"]),
-                    user_id=int(row["user_id"]),
-                    question_id=int(row["question_id"]),
-                    is_correct=bool(int(row["is_correct"])),
-                    answered_at=_parse_dt(row["answered_at"]),
-                )
-            )
-    return logs
 
 
 def seed() -> None:
@@ -83,15 +56,15 @@ def seed() -> None:
             print("強制的に再投入するには --force オプションを使用してください。")
             return
 
-        users = load_users(USERS_TSV)
+        users = load_users()
         db.add_all(users)
         db.flush()
 
-        questions = load_questions(QUESTIONS_TSV)
+        questions = load_questions(QUESTIONS_YAML)
         db.add_all(questions)
         db.flush()
 
-        logs = load_answer_logs(ANSWER_LOGS_TSV)
+        logs: list[AnswerLog] = []
         db.add_all(logs)
 
         db.commit()
@@ -106,15 +79,15 @@ def seed_force() -> None:
 
     db = SessionLocal()
     try:
-        users = load_users(USERS_TSV)
+        users = load_users()
         db.add_all(users)
         db.flush()
 
-        questions = load_questions(QUESTIONS_TSV)
+        questions = load_questions(QUESTIONS_YAML)
         db.add_all(questions)
         db.flush()
 
-        logs = load_answer_logs(ANSWER_LOGS_TSV)
+        logs: list[AnswerLog] = []
         db.add_all(logs)
 
         db.commit()
