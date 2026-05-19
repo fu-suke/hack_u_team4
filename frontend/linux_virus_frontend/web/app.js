@@ -129,6 +129,7 @@ document.addEventListener("click", async (event) => {
     }
 
     if (answerResult.correct) {
+      LinuxVirusQuiz.lockInteractions();
       result.textContent = `🎉 正解！ ${answerResult.tutorial}`;
       result.className = "quiz__result quiz__result--correct quiz__result--explanation";
       bottom.className = "quiz-bottom quiz-bottom--correct";
@@ -190,6 +191,7 @@ document.addEventListener("click", (event) => {
   if (LinuxVirusDrag.isClickSuppressed()) return;
   const button = event.target.closest(".token");
   if (!button) return;
+  if (LinuxVirusQuiz.isInteractionLocked()) return;
 
   const action = button.dataset.action;
   if (action === "selectToken") {

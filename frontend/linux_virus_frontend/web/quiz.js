@@ -14,6 +14,7 @@ const LinuxVirusQuiz = (() => {
     choices: [],
     selected: [],
     answerLogged: false,
+    interactionLocked: false,
   };
 
   const PENGUIN_BY_DIFFICULTY = {
@@ -80,7 +81,8 @@ const LinuxVirusQuiz = (() => {
     button.className = className;
     button.type = "button";
     button.textContent = choice.label;
-    button.draggable = true;
+    button.draggable = !quiz.interactionLocked;
+    button.disabled = quiz.interactionLocked;
     button.dataset.action = action;
     button.dataset.id = String(choice.id);
     button.dataset.label = choice.label;
@@ -97,6 +99,7 @@ const LinuxVirusQuiz = (() => {
 
   function resetQuizState() {
     quiz.selected = [];
+    quiz.interactionLocked = false;
     quizVersion++;
     const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
@@ -129,6 +132,7 @@ const LinuxVirusQuiz = (() => {
       Object.assign(quiz, normalizeQuestion(await LinuxVirusApi.fetchQuestion()), {
         selected: [],
         answerLogged: false,
+        interactionLocked: false,
       });
       if (promptEl) promptEl.textContent = quiz.prompt;
       resetQuizState();
@@ -139,6 +143,7 @@ const LinuxVirusQuiz = (() => {
       quiz.difficulty = 1;
       quiz.choices = [];
       quiz.selected = [];
+      quiz.interactionLocked = false;
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
       if (result) {
         result.textContent =
@@ -205,6 +210,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function moveTokenToAnswer(choice, targetIndex = quiz.selected.length) {
+    if (quiz.interactionLocked) return;
     const normalizedIndex = Math.max(0, Math.min(targetIndex, quiz.selected.length));
     quiz.selected.splice(normalizedIndex, 0, choice);
     quizVersion++;
@@ -213,6 +219,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function removeTokenFromAnswer(choice, index = findSelectedIndex(choice)) {
+    if (quiz.interactionLocked) return;
     if (index >= 0) {
       quiz.selected.splice(index, 1);
     }
@@ -222,6 +229,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function reorderAnswerToken(fromIndex, toIndex) {
+    if (quiz.interactionLocked) return;
     if (fromIndex < 0 || fromIndex >= quiz.selected.length) return;
     const [token] = quiz.selected.splice(fromIndex, 1);
     const dest = fromIndex < toIndex ? toIndex - 1 : toIndex;
@@ -259,6 +267,16 @@ const LinuxVirusQuiz = (() => {
     return isLoading || isChecking;
   }
 
+  function lockInteractions() {
+    quiz.interactionLocked = true;
+    quizVersion++;
+    renderQuiz(true);
+  }
+
+  function isInteractionLocked() {
+    return quiz.interactionLocked;
+  }
+
   function hasChoiceId(id) {
     const target = Number(id);
     return quiz.choices.some((choice) => choice.id === target);
@@ -268,8 +286,10 @@ const LinuxVirusQuiz = (() => {
     checkAndLogAnswer,
     choiceFromDataset,
     hasChoiceId,
+    isInteractionLocked,
     isBusy,
     loadQuestion,
+    lockInteractions,
     moveTokenToAnswer,
     removeTokenFromAnswer,
     renderQuiz,

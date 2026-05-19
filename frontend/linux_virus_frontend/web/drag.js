@@ -59,6 +59,10 @@ const LinuxVirusDrag = (() => {
     document.addEventListener("dragstart", (event) => {
       const token = event.target.closest(".token");
       if (!token) return;
+      if (LinuxVirusQuiz.isInteractionLocked()) {
+        event.preventDefault();
+        return;
+      }
 
       didDrag = true;
       isActive = true;
@@ -83,6 +87,7 @@ const LinuxVirusDrag = (() => {
 
     document.addEventListener("dragover", (event) => {
       const dropZone = event.target.closest("#answer, #tokens");
+      if (LinuxVirusQuiz.isInteractionLocked()) return;
       if (!dropZone || !activeDrag) return;
 
       event.preventDefault();
@@ -97,6 +102,10 @@ const LinuxVirusDrag = (() => {
     });
 
     document.addEventListener("drop", (event) => {
+      if (LinuxVirusQuiz.isInteractionLocked()) {
+        clearDragState();
+        return;
+      }
       const answer = event.target.closest("#answer");
       const tokens = event.target.closest("#tokens");
       if (!answer && !tokens) {
