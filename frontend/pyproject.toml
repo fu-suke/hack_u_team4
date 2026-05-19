@@ -34,4 +34,4 @@ select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
 unresolved-import = "ignore"
 
 [tool.setuptools.package-data]
-linux_virus_frontend = ["web/*"]
+linux_virus_frontend = ["web/*", "image/*"]

@@ -226,9 +226,18 @@ section {
   overflow-y: auto;
 }
 
+.quiz__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .quiz__mascot {
-  font-size: 36px;
-  line-height: 1;
+  width: 72px;
+  height: 68px;
+  object-fit: contain;
+  display: block;
+  flex: 0 0 auto;
 }
 
 .quiz__label {

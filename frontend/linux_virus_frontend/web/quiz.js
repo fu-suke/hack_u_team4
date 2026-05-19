@@ -8,11 +8,18 @@ const LinuxVirusQuiz = (() => {
 
   const quiz = {
     id: null,
+    difficulty: 1,
     prompt: "問題を読み込み中…",
     tutorial: "",
     choices: [],
     selected: [],
     answerLogged: false,
+  };
+
+  const PENGUIN_BY_DIFFICULTY = {
+    1: "../image/penguin_small.png",
+    2: "../image/penguin_medium.png",
+    3: "../image/penguin_big.png",
   };
 
   function choiceFromDataset(dataset) {
@@ -39,6 +46,7 @@ const LinuxVirusQuiz = (() => {
 
     return {
       id: questionId,
+      difficulty: normalizeDifficulty(data.difficulty),
       prompt: String(data.prompt),
       tutorial: String(data.tutorial || DEFAULT_TUTORIAL),
       choices: shuffleChoices(
@@ -48,6 +56,23 @@ const LinuxVirusQuiz = (() => {
         })),
       ),
     };
+  }
+
+  function normalizeDifficulty(value) {
+    const difficulty = Number(value);
+    if (difficulty === 2 || difficulty === 3) return difficulty;
+    return 1;
+  }
+
+  function updateMascot() {
+    const mascot = document.querySelector("#quizMascot");
+    if (!mascot) return;
+
+    const src = PENGUIN_BY_DIFFICULTY[quiz.difficulty] || PENGUIN_BY_DIFFICULTY[1];
+    if (mascot.getAttribute("src") !== src) {
+      mascot.setAttribute("src", src);
+    }
+    mascot.setAttribute("alt", `Difficulty ${quiz.difficulty} Linux penguin`);
   }
 
   function createTokenButton(choice, action, className, index = "") {
@@ -111,6 +136,7 @@ const LinuxVirusQuiz = (() => {
     } catch (error) {
       console.error("Failed to load question", error);
       quiz.id = null;
+      quiz.difficulty = 1;
       quiz.choices = [];
       quiz.selected = [];
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
@@ -149,6 +175,7 @@ const LinuxVirusQuiz = (() => {
     const placeholder = document.querySelector("#answerPlaceholder");
 
     if (promptEl) promptEl.textContent = quiz.prompt;
+    updateMascot();
 
     const answerFrag = document.createDocumentFragment();
     const tokensFrag = document.createDocumentFragment();

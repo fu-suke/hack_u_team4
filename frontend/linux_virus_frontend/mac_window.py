@@ -99,8 +99,9 @@ def _build_overlay() -> NSWindow:
 
 
 def _load_web_ui(webview: WKWebView) -> None:
-    web_dir = files("linux_virus_frontend").joinpath("web")
+    package_dir = files("linux_virus_frontend")
+    web_dir = package_dir.joinpath("web")
     index_path = web_dir.joinpath("index.html")
     index_url = NSURL.fileURLWithPath_(str(index_path))
-    read_access_url = NSURL.fileURLWithPath_(str(web_dir))
+    read_access_url = NSURL.fileURLWithPath_(str(package_dir))
     webview.loadFileURL_allowingReadAccessToURL_(index_url, read_access_url)
