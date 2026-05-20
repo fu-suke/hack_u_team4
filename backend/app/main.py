@@ -6,7 +6,7 @@ from sqlalchemy import text
 
 from app.database import Base, engine
 from app.models import AnswerLog, Question, User  # noqa: F401 — ensure models are registered
-from app.routers import answer_logs, questions, users
+from app.routers import answer_logs, questions, users, virus
 
 Base.metadata.create_all(bind=engine)
 
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(answer_logs.router)
 app.include_router(questions.router)
 app.include_router(users.router)
+app.include_router(virus.router)
 
 
 @app.get("/")

@@ -44,17 +44,8 @@ const LinuxVirusApi = (() => {
   }
 
   async function fetchVirusQuestion() {
-    // const response = await request("/virus");
-    // return response.json();
-    return {
-      id: 1,
-      difficulty: 3,
-      prompt: "感染問題: カレントディレクトリの絶対パスを表示するコマンドを完成させてください。",
-      choices: ["pwd"],
-      answers: [[1]],
-      tutorial: "pwd は現在のディレクトリの絶対パスを表示します。",
-      virus_count: 1,
-    };
+    const response = await request("/virus");
+    return response.json();
   }
 
   async function checkAnswer(questionId, selectedChoices) {
@@ -97,12 +88,19 @@ const LinuxVirusApi = (() => {
   }
 
   async function decreaseVirusQuestion(questionId) {
-    // await request("/virus/decrease", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ question_id: questionId }),
-    // });
-    void questionId;
+    await request("/virus/decrease", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question_id: questionId }),
+    });
+  }
+
+  async function increaseVirusQuestion(questionId) {
+    await request("/virus/increase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question_id: questionId }),
+    });
   }
 
   return {
@@ -111,6 +109,7 @@ const LinuxVirusApi = (() => {
     createUser,
     fetchQuestion,
     fetchVirusQuestion,
+    increaseVirusQuestion,
     loginUser,
     decreaseVirusQuestion,
     submitAnswerLog,

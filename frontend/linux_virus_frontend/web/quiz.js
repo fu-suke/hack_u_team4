@@ -259,9 +259,7 @@ const LinuxVirusQuiz = (() => {
     isChecking = true;
     setActionsDisabled(true);
     try {
-      const correct = quiz.mode === "virus"
-        ? isLocalAnswerCorrect()
-        : await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
+      const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
         if (quiz.mode === "virus" && correct) {
@@ -275,6 +273,11 @@ const LinuxVirusQuiz = (() => {
               console.error("Failed to submit answer log", err);
             },
           );
+          if (!correct) {
+            LinuxVirusApi.increaseVirusQuestion(quiz.id).catch((err) => {
+              console.error("Failed to increase virus question", err);
+            });
+          }
         }
       }
       return { correct, tutorial: quiz.tutorial };
@@ -300,14 +303,6 @@ const LinuxVirusQuiz = (() => {
 
   function isVirusMode() {
     return quiz.mode === "virus";
-  }
-
-  function isLocalAnswerCorrect() {
-    const selectedIds = quiz.selected.map((choice) => choice.id);
-    return quiz.answers.some((answer) =>
-      answer.length === selectedIds.length
-      && answer.every((id, index) => id === selectedIds[index])
-    );
   }
 
   function hasChoiceId(id) {

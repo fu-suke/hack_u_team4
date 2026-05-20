@@ -13,9 +13,9 @@ Linux Virus の macOS 常駐バックエンド。
 | `GET` | `/questions/random` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す。`choices` は DB 格納時の元順序で返し、シャッフルはフロント側で行う。`answers` は返さない。問題がない場合は `404` |
 | `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | `id` は問題 ID。`answer` はユーザが並べた選択肢の元 ID 配列で、繰り返し指定する。DB の複数正解パターンと比較して判定し、ログは記録しない |
 | `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | ユーザ ID、問題 ID、初回判定時の正誤を回答ログとして登録する。初回かどうかはフロント側で判定し、バックエンドはリクエストが来たら記録する |
-| `GET` | `/virus` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string, "virus_count": number}` | virus テーブルで `count` が最も大きい問題を1問返す。`answers` は返さない。virus テーブルが空、または対象の問題が存在しない場合は `404` |
-| `POST` | `/virus/increase` | `{"question_id": number}` | `{"question_id": number, "count": number}` | 通常出題で初回誤答した問題の感染レベルを `+1` する。行がなければ `count: 1` で作成する |
-| `POST` | `/virus/decrease` | `{"question_id": number}` | `{"question_id": number, "count": number}` | virus 出題で初回正解した問題の感染レベルを `-1` する。`count` が 0 以下になった場合は行を削除し、レスポンスの `count` は `0` とする |
+| `GET` | `/virus` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | `virus_count` が 1 以上の問題から、各問題の `virus_count / sum(virus_count)` の確率で1問返す。レスポンス形式は `/questions/random` と同じで、`answers` は返さない。対象の問題がない場合は `404` |
+| `POST` | `/virus/increase` | `{"question_id": number}` | `{"question_id": number, "virus_count": number}` | 通常出題で初回誤答した問題の `virus_count` を `+1` する |
+| `POST` | `/virus/decrease` | `{"question_id": number}` | `{"question_id": number, "virus_count": number}` | virus 出題で初回正解した問題の `virus_count` を `-1` する。更新後の値が 0 未満にならないようにし、最小値は `0` とする |
 
 ## 実行
 

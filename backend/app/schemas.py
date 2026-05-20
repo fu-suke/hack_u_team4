@@ -34,7 +34,6 @@ class QuestionResponse(BaseModel):
     prompt: str
     choices: list[str]
     tutorial: str
-    virus_count: int
 
     model_config = {"from_attributes": True}
 
@@ -46,6 +45,15 @@ class QuestionWithAnswerResponse(QuestionResponse):
 
 class QuestionCheckResponse(BaseModel):
     is_correct: bool
+
+
+class VirusQuestionUpdate(BaseModel):
+    question_id: int
+
+
+class VirusQuestionResponse(BaseModel):
+    question_id: int
+    virus_count: int
 
 
 class AnswerLogCreate(BaseModel):
