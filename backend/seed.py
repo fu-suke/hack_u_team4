@@ -23,6 +23,9 @@ def load_questions(path: Path) -> list[Question]:
     if not isinstance(rows, list):
         raise ValueError(f"{path} must contain a list of questions")
 
+    # 感染機能の動作確認用ダミーデータ（i=1〜5 に virus_count を付与）
+    _dummy_virus_counts = {1: 3, 2: 7, 3: 1, 4: 12, 5: 5}
+
     questions: list[Question] = []
     for i, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
@@ -37,6 +40,7 @@ def load_questions(path: Path) -> list[Question]:
                 choices=row["choices"],
                 answers=row["answers"],
                 tutorial=row.get("tutorial") or "",
+                virus_count=_dummy_virus_counts.get(i, 0),
             )
         )
 

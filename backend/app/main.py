@@ -2,12 +2,19 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.database import Base, engine
 from app.models import AnswerLog, Question, User  # noqa: F401 — ensure models are registered
 from app.routers import answer_logs, questions, users
 
 Base.metadata.create_all(bind=engine)
+
+with engine.connect() as _conn:
+    _cols = [row[1] for row in _conn.execute(text("PRAGMA table_info(questions)"))]
+    if "virus_count" not in _cols:
+        _conn.execute(text("ALTER TABLE questions ADD COLUMN virus_count INTEGER NOT NULL DEFAULT 0"))
+        _conn.commit()
 
 app = FastAPI(title="Linux Virus Backend")
 
