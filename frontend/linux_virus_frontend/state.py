@@ -10,6 +10,7 @@ from linux_virus_frontend.config import (
     DEFAULT_TIMER_SECONDS,
     MAX_SLEEP_MINUTES,
     MAX_TIMER_SECONDS,
+    PUBLIC_CONFIG,
 )
 
 
@@ -152,6 +153,7 @@ class _ResidentState:
             "sleepMinutes": self.sleep_minutes_for_input(),
             "timerMode": "sleep" if self.is_sleeping_or_suspended_sleep() else "timer",
             "status": status or self.status_text(),
+            "config": PUBLIC_CONFIG,
         }
 
     def timer_text(self) -> str:
@@ -218,11 +220,5 @@ class _ResidentState:
                 commands = [str(command).strip() for command in raw_values]
                 commands = [command for command in commands if command]
                 return commands or DEFAULT_COMMANDS.copy()
-
-        raw_command = body.get("command")
-        if raw_command is not None:
-            command = str(raw_command).strip()
-            if command:
-                return [command]
 
         return DEFAULT_COMMANDS.copy()

@@ -1,6 +1,4 @@
 const LinuxVirusQuiz = (() => {
-  const DEFAULT_TUTORIAL = "この問題の解説はまだ登録されていません。";
-
   let quizVersion = 0;
   let renderedQuizVersion = -1;
   let isLoading = false;
@@ -15,12 +13,6 @@ const LinuxVirusQuiz = (() => {
     selected: [],
     answerLogged: false,
     interactionLocked: false,
-  };
-
-  const PENGUIN_BY_DIFFICULTY = {
-    1: "../image/penguin_small.png",
-    2: "../image/penguin_medium.png",
-    3: "../image/penguin_big.png",
   };
 
   function choiceFromDataset(dataset) {
@@ -49,7 +41,7 @@ const LinuxVirusQuiz = (() => {
       id: questionId,
       difficulty: normalizeDifficulty(data.difficulty),
       prompt: String(data.prompt),
-      tutorial: String(data.tutorial || DEFAULT_TUTORIAL),
+      tutorial: String(data.tutorial || LinuxVirusConfig.get("defaultTutorial", "")),
       choices: shuffleChoices(
         data.choices.map((label, index) => ({
           id: index + 1,
@@ -69,7 +61,9 @@ const LinuxVirusQuiz = (() => {
     const mascot = document.querySelector("#quizMascot");
     if (!mascot) return;
 
-    const src = PENGUIN_BY_DIFFICULTY[quiz.difficulty] || PENGUIN_BY_DIFFICULTY[1];
+    const images = LinuxVirusConfig.get("penguinImages", {});
+    const src = images[String(quiz.difficulty)] || images["1"];
+    if (!src) return;
     if (mascot.getAttribute("src") !== src) {
       mascot.setAttribute("src", src);
     }

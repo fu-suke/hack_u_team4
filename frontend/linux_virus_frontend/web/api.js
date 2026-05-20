@@ -1,7 +1,4 @@
 const LinuxVirusApi = (() => {
-  const BASE_URL = "http://127.0.0.1:8000";
-  const DEFAULT_TIMEOUT_MS = 8000;
-
   class ApiError extends Error {
     constructor(message, { status = 0, cause = null } = {}) {
       super(message);
@@ -13,11 +10,15 @@ const LinuxVirusApi = (() => {
   }
 
   async function request(path, options = {}) {
-    const { timeoutMs = DEFAULT_TIMEOUT_MS, ...init } = options;
+    const { timeoutMs = LinuxVirusConfig.get("apiTimeoutMs"), ...init } = options;
+    const baseUrl = LinuxVirusConfig.get("apiBaseUrl");
+    if (!baseUrl) {
+      throw new ApiError("API URL is not configured", { status: 0 });
+    }
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${BASE_URL}${path}`, {
+      const response = await fetch(`${baseUrl}${path}`, {
         ...init,
         signal: controller.signal,
       });

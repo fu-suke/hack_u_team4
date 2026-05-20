@@ -3,11 +3,12 @@ const state = {
   timerText: "Timer: not set",
   keyCount: 0,
   buffer: "-",
-  commands: ["<cmd>+v"],
-  timerSeconds: 60,
+  commands: [],
+  timerSeconds: 0,
   sleepMinutes: 0,
   timerMode: "timer",
   status: "Idle",
+  config: {},
 };
 
 let lastRenderedState = state.state;
@@ -28,6 +29,8 @@ function render() {
   const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
   const enteredUser = state.state === "user" && lastRenderedState !== "user";
   app.className = `app app--${state.state}`;
+  LinuxVirusConfig.update(state.config);
+  applyConfigToDom();
   LinuxVirusUser.updateBadge();
   LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
   setText('[data-bind="status"]', state.status);
@@ -43,7 +46,9 @@ function render() {
     sleepInput.value = String(state.sleepMinutes || 0);
   }
   if (enteredSettings) {
-    LinuxVirusSettings.setCommandInputs(state.commands || ["<cmd>+v"]);
+    LinuxVirusSettings.setCommandInputs(
+      state.commands?.length ? state.commands : LinuxVirusConfig.get("defaultCommands", []),
+    );
   }
   if (enteredExpanded) {
     LinuxVirusQuiz.loadQuestion();
@@ -58,6 +63,18 @@ function render() {
   lastRenderedState = state.state;
 }
 
+function applyConfigToDom() {
+  const secondsInput = document.querySelector("#timerSeconds");
+  if (secondsInput) {
+    secondsInput.max = String(LinuxVirusConfig.get("maxTimerSeconds", ""));
+  }
+
+  const sleepInput = document.querySelector("#sleepMinutes");
+  if (sleepInput) {
+    sleepInput.max = String(LinuxVirusConfig.get("maxSleepMinutes", ""));
+  }
+}
+
 window.residentSetState = (nextState) => {
   const activeEl = document.activeElement;
   const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName"]);
@@ -65,6 +82,7 @@ window.residentSetState = (nextState) => {
     activeEl && (protectedIds.has(activeEl.id) || activeEl.classList?.contains("command-input"));
 
   const incoming = { ...nextState };
+  if (incoming.config) LinuxVirusConfig.update(incoming.config);
   if (activeIsProtected) {
     delete incoming.timerSeconds;
     delete incoming.sleepMinutes;

@@ -414,6 +414,7 @@ name = "linux-virus-frontend"
 version = "0.1.0"
 source = { editable = "frontend" }
 dependencies = [
+    { name = "pydantic-settings" },
     { name = "pyobjc-framework-applicationservices" },
     { name = "pyobjc-framework-cocoa" },
     { name = "pyobjc-framework-webkit" },
@@ -427,6 +428,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "pydantic-settings", specifier = ">=2.0.0" },
     { name = "pyobjc-framework-applicationservices", specifier = ">=12.1" },
     { name = "pyobjc-framework-cocoa", specifier = ">=12.1" },
     { name = "pyobjc-framework-webkit", specifier = ">=12.1" },

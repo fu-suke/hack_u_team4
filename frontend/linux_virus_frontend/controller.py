@@ -222,17 +222,10 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _on_local_key_down(self, event: Any) -> Any:
-        if self._keyboard.is_quit_hotkey(event):
-            self._events.put(_ControlEvent(name="quit", reason="hotkey"))
-            return None
         return event
 
     @python_method
     def _handle_key_event(self, event: Any) -> None:
-        if self._keyboard.is_quit_hotkey(event):
-            self._events.put(_ControlEvent(name="quit", reason="hotkey"))
-            return
-
         if self._keyboard.is_toggle_hotkey(event):
             if self._state.is_sleeping():
                 return

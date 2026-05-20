@@ -9,7 +9,9 @@ from AppKit import (
     NSEventModifierFlagShift,  # ty: ignore[unresolved-import]
 )
 
-from linux_virus_frontend.config import Q_KEY_CODE, SPACE_KEY_CODE, SPECIAL_KEY_LABELS
+from linux_virus_frontend.config import SPECIAL_KEY_LABELS
+
+_SPACE_KEY_CODE = 49
 
 
 class _KeyboardInterpreter:
@@ -18,14 +20,7 @@ class _KeyboardInterpreter:
         flags = event.modifierFlags()
         has_control = bool(flags & NSEventModifierFlagControl)
         has_option = bool(flags & NSEventModifierFlagOption)
-        return key_code == SPACE_KEY_CODE and has_control and has_option
-
-    def is_quit_hotkey(self, event: Any) -> bool:
-        key_code = event.keyCode()
-        flags = event.modifierFlags()
-        has_control = bool(flags & NSEventModifierFlagControl)
-        has_option = bool(flags & NSEventModifierFlagOption)
-        return key_code == Q_KEY_CODE and has_control and has_option
+        return key_code == _SPACE_KEY_CODE and has_control and has_option
 
     def format_key(self, event: Any) -> str:
         combo = self._format_modifier_combo(event)

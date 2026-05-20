@@ -5,6 +5,7 @@ description = "macOS resident frontend for Linux Virus with a floating icon, glo
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "pydantic-settings>=2.0.0",
     "pyobjc-framework-ApplicationServices>=12.1",
     "pyobjc-framework-Cocoa>=12.1",
     "pyobjc-framework-WebKit>=12.1",

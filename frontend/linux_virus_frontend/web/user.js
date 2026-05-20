@@ -1,11 +1,9 @@
 const LinuxVirusUser = (() => {
-  const DEFAULT_USER_ID = 0;
-
   let currentUser = null;
   let isSubmitting = false;
 
   function currentUserId() {
-    return currentUser ? currentUser.id : DEFAULT_USER_ID;
+    return currentUser ? currentUser.id : LinuxVirusConfig.get("defaultUserId", 0);
   }
 
   function updateBadge() {
