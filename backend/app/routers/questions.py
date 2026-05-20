@@ -15,8 +15,25 @@ from app.schemas import (
 router = APIRouter(prefix="/questions", tags=["questions"])
 
 
+def answer_to_tokens(choices: list[str], answer: list[int]) -> list[str] | None:
+    tokens: list[str] = []
+    for choice_id in answer:
+        index = choice_id - 1
+        if index < 0 or index >= len(choices):
+            return None
+        tokens.append(choices[index])
+    return tokens
+
+
 def is_correct_answer(question: QuestionWithAnswerResponse, answer: list[int]) -> bool:
-    return answer in question.answers
+    answer_tokens = answer_to_tokens(question.choices, answer)
+    if answer_tokens is None:
+        return False
+
+    for correct_answer in question.answers:
+        if answer_tokens == answer_to_tokens(question.choices, correct_answer):
+            return True
+    return False
 
 
 @router.get("/check", response_model=QuestionCheckResponse)
