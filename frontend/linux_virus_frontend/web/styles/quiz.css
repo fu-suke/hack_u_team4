@@ -1,0 +1,249 @@
+/* --- Expanded (Quiz) panel --- */
+
+.expanded {
+  flex-direction: column;
+  gap: 0;
+}
+
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.quiz__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quiz__mascot {
+  width: 72px;
+  height: 68px;
+  object-fit: contain;
+  display: block;
+  flex: 0 0 auto;
+  transform-origin: 50% 80%;
+  animation: mascot-wobble 3.6s ease-in-out infinite;
+}
+
+.quiz__label {
+  font-size: 22px;
+  font-weight: 800;
+  color: #f4f7fb;
+}
+
+.quiz__question {
+  color: var(--duo-text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.quiz__answer,
+.quiz__tokens {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 52px;
+  border: 2px dashed var(--duo-border);
+  border-radius: 12px;
+  padding: 10px;
+  color: var(--duo-text-muted);
+  font-size: 13px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.quiz__placeholder {
+  color: var(--duo-text-muted);
+  font-size: 13px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.quiz__answer.dragover,
+.quiz__tokens.dragover {
+  border-color: var(--duo-blue);
+  background: rgba(28, 176, 246, 0.06);
+}
+
+.quiz__tokens {
+  border-style: solid;
+  border-color: var(--duo-border);
+  background: var(--duo-surface);
+}
+
+/* Tokens (Duolingo 3D pill buttons) */
+
+.token {
+  min-width: 52px;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: grab;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px;
+  background: var(--duo-surface-light);
+  color: #f4f7fb;
+  transition: transform 0.1s, box-shadow 0.1s, opacity 0.15s;
+  user-select: none;
+}
+
+.token:hover {
+  background: #2a4a56;
+}
+
+.token:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.token--dragging {
+  opacity: 0.4;
+}
+
+.token--selected {
+  background: var(--duo-blue-dark);
+  border-color: var(--duo-blue);
+  color: #fff;
+}
+
+.token--selected:hover {
+  background: var(--duo-blue);
+}
+
+/* Quiz bottom bar */
+
+.quiz-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 0 8px;
+  border-top: 2px solid var(--duo-border);
+  margin-top: 8px;
+}
+
+.quiz-bottom--correct {
+  border-top-color: var(--duo-green);
+}
+
+.quiz-bottom--wrong {
+  border-top-color: var(--duo-red);
+}
+
+.quiz__result {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--duo-text-muted);
+  min-height: 20px;
+  line-height: 1.45;
+}
+
+.quiz__result--correct {
+  color: var(--duo-green);
+}
+
+.quiz__result--explanation {
+  font-size: 16px;
+}
+
+.quiz__result--wrong {
+  color: var(--duo-red);
+}
+
+.quiz__actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Duolingo-style buttons */
+
+.btn {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+  border-bottom: 4px solid;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.btn--check {
+  background: var(--duo-green);
+  border-bottom-color: var(--duo-green-dark);
+  color: #fff;
+}
+
+.btn--check:hover {
+  filter: brightness(1.1);
+}
+
+.btn--reset {
+  background: var(--duo-surface-light);
+  border-bottom-color: var(--duo-border);
+  color: var(--duo-text-muted);
+}
+
+.btn--reset:hover {
+  background: #2a4a56;
+}
+
+.btn--close-explanation {
+  background: var(--duo-blue);
+  border-bottom-color: var(--duo-blue-dark);
+  color: #fff;
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 2px solid var(--duo-border);
+  border-bottom-width: 4px;
+  color: var(--duo-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  flex: 0;
+}
+
+/* Correct/wrong animation */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes celebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes mascot-wobble {
+  0%, 100% { transform: translate(0, 0) rotate(-2deg); }
+  50%      { transform: translate(2px, -3px) rotate(2deg); }
+}
+
+.quiz--shake {
+  animation: shake 0.4s ease;
+}
+
+.quiz--celebrate {
+  animation: celebrate 0.4s ease;
+}

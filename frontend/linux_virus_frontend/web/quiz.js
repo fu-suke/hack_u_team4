@@ -11,6 +11,8 @@ const LinuxVirusQuiz = (() => {
     tutorial: "",
     choices: [],
     selected: [],
+    answers: [],
+    mode: "normal",
     answerLogged: false,
     interactionLocked: false,
   };
@@ -31,17 +33,23 @@ const LinuxVirusQuiz = (() => {
     return shuffled;
   }
 
-  function normalizeQuestion(data) {
+  function normalizeQuestion(data, mode = "normal") {
     const questionId = Number(data.id);
     if (!Number.isInteger(questionId) || !Array.isArray(data.choices)) {
       throw new Error("Invalid question payload");
     }
+
+    const answers = Array.isArray(data.answers)
+      ? data.answers.map((answer) => (Array.isArray(answer) ? answer.map(Number) : []))
+      : [];
 
     return {
       id: questionId,
       difficulty: normalizeDifficulty(data.difficulty),
       prompt: String(data.prompt),
       tutorial: String(data.tutorial || LinuxVirusConfig.get("defaultTutorial", "")),
+      answers,
+      mode,
       choices: shuffleChoices(
         data.choices.map((label, index) => ({
           id: index + 1,
@@ -62,12 +70,17 @@ const LinuxVirusQuiz = (() => {
     if (!mascot) return;
 
     const images = LinuxVirusConfig.get("penguinImages", {});
-    const src = images[String(quiz.difficulty)] || images["1"];
+    const src = quiz.mode === "virus"
+      ? images.virus || images["3"] || images["1"]
+      : images[String(quiz.difficulty)] || images["1"];
     if (!src) return;
     if (mascot.getAttribute("src") !== src) {
       mascot.setAttribute("src", src);
     }
-    mascot.setAttribute("alt", `Difficulty ${quiz.difficulty} Linux penguin`);
+    const alt = quiz.mode === "virus"
+      ? "Virus Linux penguin"
+      : `Difficulty ${quiz.difficulty} Linux penguin`;
+    mascot.setAttribute("alt", alt);
   }
 
   function createTokenButton(choice, action, className, index = "") {
@@ -111,7 +124,7 @@ const LinuxVirusQuiz = (() => {
     }
   }
 
-  async function loadQuestion() {
+  async function loadQuestion(mode = "normal") {
     if (isLoading) return;
     isLoading = true;
     const promptEl = document.querySelector("#quizPrompt");
@@ -123,7 +136,10 @@ const LinuxVirusQuiz = (() => {
     document.querySelector("#retryQuiz")?.setAttribute("hidden", "");
 
     try {
-      Object.assign(quiz, normalizeQuestion(await LinuxVirusApi.fetchQuestion()), {
+      const data = mode === "virus"
+        ? await LinuxVirusApi.fetchVirusQuestion()
+        : await LinuxVirusApi.fetchQuestion();
+      Object.assign(quiz, normalizeQuestion(data, mode), {
         selected: [],
         answerLogged: false,
         interactionLocked: false,
@@ -137,6 +153,8 @@ const LinuxVirusQuiz = (() => {
       quiz.difficulty = 1;
       quiz.choices = [];
       quiz.selected = [];
+      quiz.answers = [];
+      quiz.mode = mode;
       quiz.interactionLocked = false;
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
       if (result) {
@@ -241,14 +259,23 @@ const LinuxVirusQuiz = (() => {
     isChecking = true;
     setActionsDisabled(true);
     try {
-      const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
+      const correct = quiz.mode === "virus"
+        ? isLocalAnswerCorrect()
+        : await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
-        LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch(
-          (err) => {
-            console.error("Failed to submit answer log", err);
-          },
-        );
+        if (quiz.mode === "virus" && correct) {
+          LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
+            console.error("Failed to decrease virus question", err);
+          });
+        }
+        if (quiz.mode !== "virus") {
+          LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch(
+            (err) => {
+              console.error("Failed to submit answer log", err);
+            },
+          );
+        }
       }
       return { correct, tutorial: quiz.tutorial };
     } finally {
@@ -271,6 +298,18 @@ const LinuxVirusQuiz = (() => {
     return quiz.interactionLocked;
   }
 
+  function isVirusMode() {
+    return quiz.mode === "virus";
+  }
+
+  function isLocalAnswerCorrect() {
+    const selectedIds = quiz.selected.map((choice) => choice.id);
+    return quiz.answers.some((answer) =>
+      answer.length === selectedIds.length
+      && answer.every((id, index) => id === selectedIds[index])
+    );
+  }
+
   function hasChoiceId(id) {
     const target = Number(id);
     return quiz.choices.some((choice) => choice.id === target);
@@ -282,6 +321,7 @@ const LinuxVirusQuiz = (() => {
     hasChoiceId,
     isInteractionLocked,
     isBusy,
+    isVirusMode,
     loadQuestion,
     lockInteractions,
     moveTokenToAnswer,

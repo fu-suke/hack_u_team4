@@ -30,6 +30,7 @@ class FrontendSettings(BaseSettings):
 
     poll_interval_seconds: float = 0.1
     timer_interval_seconds: float = 0.2
+    virus_poll_interval_minutes: int = 5
 
     special_key_labels: dict[int, str] = Field(
         default_factory=lambda: {
@@ -63,6 +64,7 @@ class FrontendSettings(BaseSettings):
             "maxTimerSeconds": self.max_timer_seconds,
             "maxSleepMinutes": self.max_sleep_minutes,
             "defaultCommands": self.default_commands,
+            "virusPollIntervalMinutes": self.virus_poll_interval_minutes,
             "defaultUserId": self.default_user_id,
             "defaultTutorial": self.default_tutorial,
             "penguinImages": {
@@ -90,6 +92,7 @@ SETTINGS_SIZE = SETTINGS.settings_size
 
 POLL_INTERVAL_SECONDS = SETTINGS.poll_interval_seconds
 TIMER_INTERVAL_SECONDS = SETTINGS.timer_interval_seconds
+VIRUS_POLL_INTERVAL_MINUTES = SETTINGS.virus_poll_interval_minutes
 
 SPECIAL_KEY_LABELS = SETTINGS.special_key_labels
 

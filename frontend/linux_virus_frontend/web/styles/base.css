@@ -1,0 +1,93 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  background: #131f24;
+  color: #f4f7fb;
+  --duo-green: #58cc02;
+  --duo-green-dark: #46a302;
+  --duo-red: #ff4b4b;
+  --duo-red-dark: #cc3c3c;
+  --duo-blue: #1cb0f6;
+  --duo-blue-dark: #1899d6;
+  --duo-gold: #ffc800;
+  --duo-surface: #1a2e35;
+  --duo-surface-light: #233d47;
+  --duo-border: #37464f;
+  --duo-text-muted: #b8cad6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #131f24;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 6px 14px;
+  background: var(--duo-surface-light);
+  color: #f4f7fb;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+button:disabled,
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  filter: saturate(0.6);
+  transform: none;
+}
+
+[aria-busy="true"] {
+  opacity: 0.7;
+}
+
+input {
+  width: 100%;
+  border: 2px solid var(--duo-border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--duo-surface);
+  color: #f4f7fb;
+}
+
+input:focus {
+  border-color: var(--duo-blue);
+  outline: none;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+}
+
+section {
+  display: none;
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+}
+
+.app--minimized [data-panel="minimized"],
+.app--expanded [data-panel="expanded"],
+.app--settings [data-panel="settings"],
+.app--user [data-panel="user"] {
+  display: flex;
+}

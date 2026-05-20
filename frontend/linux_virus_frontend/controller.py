@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import queue
 import sys
+import time
 from collections.abc import Mapping
 from typing import Any
 
@@ -29,6 +30,7 @@ from linux_virus_frontend.config import (
     POLL_INTERVAL_SECONDS,
     SETTINGS_SIZE,
     TIMER_INTERVAL_SECONDS,
+    VIRUS_POLL_INTERVAL_MINUTES,
 )
 from linux_virus_frontend.events import _ControlEvent, _KeyEvent
 from linux_virus_frontend.keyboard import _KeyboardInterpreter
@@ -38,6 +40,7 @@ from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 
 _WINDOW_TITLE = "Linux Virus"
 _SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
+_VIRUS_WINDOW_TITLE = "Linux Virus Infection"
 
 
 class _ResidentAppController(NSObject):
@@ -52,6 +55,10 @@ class _ResidentAppController(NSObject):
         self._overlay: NSWindow | None = None
         self._webview: WKWebView | None = None
         self._message_handler: _ScriptMessageHandler | None = None
+        self._virus_window: NSWindow | None = None
+        self._virus_webview: WKWebView | None = None
+        self._virus_message_handler: _ScriptMessageHandler | None = None
+        self._virus_deadline: float | None = None
         return self
 
     @python_method
@@ -66,7 +73,10 @@ class _ResidentAppController(NSObject):
         self._window.makeKeyAndOrderFront_(None)
         self._send_state_to_web()
 
-    def windowWillClose_(self, _notification: object) -> None:
+    def windowWillClose_(self, notification: Any) -> None:
+        if self._virus_window is not None and notification.object() == self._virus_window:
+            self._clear_virus_window()
+            return
         self.shutdown()
 
     def pollEvents_(self, _timer: NSTimer) -> None:
@@ -94,6 +104,8 @@ class _ResidentAppController(NSObject):
             self.shutdown()
         if action == "setTimer":
             self._set_timer_from_message(message)
+        if action == "closeVirus":
+            self.close_virus_window()
 
     @python_method
     def _normalize_script_message(self, body: Any) -> dict[str, Any] | None:
@@ -110,8 +122,7 @@ class _ResidentAppController(NSObject):
     def expand_window(self, reason: str) -> None:
         self._state.disable_timer()
         self._state.view = "expanded"
-        if self._overlay:
-            self._overlay.orderFront_(None)
+        self._sync_overlay_visibility()
         self._resize_window(*EXPANDED_SIZE)
         print(f"[resident-poc] expanded reason={reason}", flush=True)
         self._send_state_to_web(status=f"Expanded by {reason}")
@@ -142,8 +153,7 @@ class _ResidentAppController(NSObject):
             self._state.resume_suspended_timer()
         elif self._state.deadline is None and self._state.sleep_deadline is None:
             self._state.restart_timer()
-        if self._overlay:
-            self._overlay.orderOut_(None)
+        self._sync_overlay_visibility()
         self._resize_window(*MINIMIZED_SIZE)
         print("[resident-poc] minimized", flush=True)
         self._send_state_to_web()
@@ -174,6 +184,7 @@ class _ResidentAppController(NSObject):
             self._send_state_to_web()
         if self._state.tick_timer_expired():
             self._events.put(_ControlEvent(name="expand", reason="timer"))
+        self._tick_virus_timer()
 
     @python_method
     def _send_state_to_web(self, status: str | None = None) -> None:
@@ -184,6 +195,87 @@ class _ResidentAppController(NSObject):
         payload = self._state.payload(status)
         script = f"window.residentSetState({json.dumps(payload)});"
         self._webview.evaluateJavaScript_completionHandler_(script, None)
+
+    @python_method
+    def _send_virus_state_to_web(self) -> None:
+        if self._virus_webview is None:
+            return
+
+        payload = self._state.payload("Infection")
+        payload["state"] = "expanded"
+        payload["quizMode"] = "virus"
+        script = f"window.residentSetState({json.dumps(payload)});"
+        self._virus_webview.evaluateJavaScript_completionHandler_(script, None)
+
+    @python_method
+    def _tick_virus_timer(self) -> None:
+        if self._state.is_sleeping_or_suspended_sleep():
+            self._restart_virus_timer()
+            return
+
+        if self._virus_window is not None:
+            self._send_virus_state_to_web()
+            return
+
+        if self._virus_deadline is None:
+            self._restart_virus_timer()
+            return
+
+        if time.monotonic() < self._virus_deadline:
+            return
+
+        self.show_virus_window()
+
+    @python_method
+    def _restart_virus_timer(self) -> None:
+        self._virus_deadline = time.monotonic() + VIRUS_POLL_INTERVAL_MINUTES * 60
+
+    @python_method
+    def show_virus_window(self) -> None:
+        if self._virus_window is not None:
+            self._sync_overlay_visibility()
+            self._virus_window.makeKeyAndOrderFront_(None)
+            self._send_virus_state_to_web()
+            return
+
+        self._virus_window, self._virus_webview, self._virus_message_handler = _build_web_window(
+            self,
+            *EXPANDED_SIZE,
+        )
+        self._virus_window.setTitle_(_VIRUS_WINDOW_TITLE)
+        self._sync_overlay_visibility()
+        self._virus_window.makeKeyAndOrderFront_(None)
+        self._send_virus_state_to_web()
+        print("[resident-poc] virus_window opened", flush=True)
+
+    @python_method
+    def close_virus_window(self) -> None:
+        if self._virus_window is not None:
+            window = self._virus_window
+            window.setDelegate_(None)
+            self._clear_virus_window()
+            window.close()
+        else:
+            self._restart_virus_timer()
+
+    @python_method
+    def _clear_virus_window(self) -> None:
+        self._virus_window = None
+        self._virus_webview = None
+        self._virus_message_handler = None
+        self._sync_overlay_visibility()
+        self._restart_virus_timer()
+
+    @python_method
+    def _sync_overlay_visibility(self) -> None:
+        if self._overlay is None:
+            return
+
+        if self._state.view == "expanded" or self._virus_window is not None:
+            self._overlay.orderFront_(None)
+            return
+
+        self._overlay.orderOut_(None)
 
     @python_method
     def _update_window_title(self) -> None:
@@ -226,6 +318,12 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _handle_key_event(self, event: Any) -> None:
+        if self._keyboard.is_virus_hotkey(event):
+            if self._state.is_sleeping_or_suspended_sleep():
+                return
+            self._events.put(_ControlEvent(name="virus", reason="hotkey"))
+            return
+
         if self._keyboard.is_toggle_hotkey(event):
             if self._state.is_sleeping():
                 return
@@ -251,6 +349,8 @@ class _ResidentAppController(NSObject):
             if isinstance(event, _ControlEvent):
                 if event.name == "expand":
                     self.expand_window(event.reason)
+                if event.name == "virus":
+                    self.show_virus_window()
                 if event.name == "quit":
                     self.shutdown()
                 continue
@@ -268,6 +368,7 @@ class _ResidentAppController(NSObject):
         app = NSApplication.sharedApplication()
         app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
         self.build_window()
+        self._restart_virus_timer()
         self._start_event_monitors()
         NSTimer.scheduledTimerWithTimeInterval_target_selector_userInfo_repeats_(
             POLL_INTERVAL_SECONDS,

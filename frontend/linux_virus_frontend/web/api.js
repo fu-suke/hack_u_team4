@@ -43,6 +43,20 @@ const LinuxVirusApi = (() => {
     return response.json();
   }
 
+  async function fetchVirusQuestion() {
+    // const response = await request("/virus");
+    // return response.json();
+    return {
+      id: 1,
+      difficulty: 3,
+      prompt: "感染問題: カレントディレクトリの絶対パスを表示するコマンドを完成させてください。",
+      choices: ["pwd"],
+      answers: [[1]],
+      tutorial: "pwd は現在のディレクトリの絶対パスを表示します。",
+      virus_count: 1,
+    };
+  }
+
   async function checkAnswer(questionId, selectedChoices) {
     const params = new URLSearchParams({ id: String(questionId) });
     for (const choice of selectedChoices) {
@@ -82,12 +96,23 @@ const LinuxVirusApi = (() => {
     });
   }
 
+  async function decreaseVirusQuestion(questionId) {
+    // await request("/virus/decrease", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ question_id: questionId }),
+    // });
+    void questionId;
+  }
+
   return {
     ApiError,
     checkAnswer,
     createUser,
     fetchQuestion,
+    fetchVirusQuestion,
     loginUser,
+    decreaseVirusQuestion,
     submitAnswerLog,
   };
 })();

@@ -9,6 +9,7 @@ const state = {
   timerMode: "timer",
   status: "Idle",
   config: {},
+  quizMode: "normal",
 };
 
 let lastRenderedState = state.state;
@@ -28,7 +29,8 @@ function render() {
   const enteredExpanded = state.state === "expanded" && lastRenderedState !== "expanded";
   const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
   const enteredUser = state.state === "user" && lastRenderedState !== "user";
-  app.className = `app app--${state.state}`;
+  const virusClass = state.quizMode === "virus" ? " app--virus" : "";
+  app.className = `app app--${state.state}${virusClass}`;
   LinuxVirusConfig.update(state.config);
   applyConfigToDom();
   LinuxVirusUser.updateBadge();
@@ -51,7 +53,7 @@ function render() {
     );
   }
   if (enteredExpanded) {
-    LinuxVirusQuiz.loadQuestion();
+    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
   }
   if (enteredUser) {
     LinuxVirusUser.renderUserScreen();
@@ -110,13 +112,17 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "retryQuiz") {
-    LinuxVirusQuiz.loadQuestion();
+    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
     return;
   }
 
   if (action === "closeExplanation") {
-    LinuxVirusQuiz.loadQuestion();
-    post("minimize");
+    if (LinuxVirusQuiz.isVirusMode()) {
+      post("closeVirus");
+    } else {
+      LinuxVirusQuiz.loadQuestion("normal");
+      post("minimize");
+    }
     return;
   }
 

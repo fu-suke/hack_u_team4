@@ -4,7 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Linux Virus</title>
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/minimized.css" />
+    <link rel="stylesheet" href="./styles/quiz.css" />
+    <link rel="stylesheet" href="./styles/settings.css" />
+    <link rel="stylesheet" href="./styles/virus.css" />
   </head>
   <body>
     <main id="app" class="app app--minimized">
@@ -37,6 +41,25 @@
       </section>
 
       <section class="expanded" data-panel="expanded">
+        <div class="virus-overlay" aria-hidden="true">
+          <span class="virus-blob virus-blob--1"></span>
+          <span class="virus-blob virus-blob--2"></span>
+          <span class="virus-blob virus-blob--3"></span>
+          <span class="virus-blob virus-blob--4"></span>
+          <span class="virus-particle virus-particle--1"></span>
+          <span class="virus-particle virus-particle--2"></span>
+          <span class="virus-particle virus-particle--3"></span>
+          <span class="virus-particle virus-particle--4"></span>
+          <span class="virus-particle virus-particle--5"></span>
+          <span class="virus-scar virus-scar--1"></span>
+          <span class="virus-scar virus-scar--2"></span>
+          <span class="virus-vignette"></span>
+        </div>
+        <div class="virus-banner" aria-hidden="true">
+          <span class="virus-banner__dot"></span>
+          <span class="virus-banner__text">⚠ VIRUS DETECTED ⚠</span>
+          <span class="virus-banner__dot"></span>
+        </div>
         <div class="quiz">
           <div class="quiz__header">
             <img

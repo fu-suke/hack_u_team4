@@ -12,6 +12,7 @@ from AppKit import (
 from linux_virus_frontend.config import SPECIAL_KEY_LABELS
 
 _SPACE_KEY_CODE = 49
+_V_KEY_CODE = 9
 
 
 class _KeyboardInterpreter:
@@ -21,6 +22,13 @@ class _KeyboardInterpreter:
         has_control = bool(flags & NSEventModifierFlagControl)
         has_option = bool(flags & NSEventModifierFlagOption)
         return key_code == _SPACE_KEY_CODE and has_control and has_option
+
+    def is_virus_hotkey(self, event: Any) -> bool:
+        key_code = event.keyCode()
+        flags = event.modifierFlags()
+        has_control = bool(flags & NSEventModifierFlagControl)
+        has_option = bool(flags & NSEventModifierFlagOption)
+        return key_code == _V_KEY_CODE and has_control and has_option
 
     def format_key(self, event: Any) -> str:
         combo = self._format_modifier_combo(event)

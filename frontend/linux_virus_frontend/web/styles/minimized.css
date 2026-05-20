@@ -1,0 +1,113 @@
+/* --- Minimized panel + flip clock --- */
+
+.minimized {
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.minimized__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.minimized__settings,
+.minimized__user {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--duo-text-muted);
+  font-size: 16px;
+  border: 2px solid var(--duo-border);
+  flex-shrink: 0;
+}
+
+.minimized__settings:hover,
+.minimized__user:hover {
+  background: var(--duo-surface-light);
+}
+
+.minimized__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px solid #131f24;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.minimized__badge--logged-in {
+  background: var(--duo-green);
+  color: #fff;
+}
+
+.minimized__badge--logged-out {
+  background: var(--duo-gold);
+  color: #131f24;
+}
+
+/* Flip clock */
+
+.flip-timer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.flip-group {
+  display: flex;
+  gap: 3px;
+}
+
+.flip-colon {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--duo-text-muted);
+  padding: 0 1px;
+  line-height: 1;
+}
+
+.flip-card {
+  width: 28px;
+  height: 38px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--duo-surface-light) 49.5%, var(--duo-border) 49.5%, var(--duo-border) 50.5%, var(--duo-surface) 50.5%);
+  border: 1px solid var(--duo-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: #f4f7fb;
+  line-height: 1;
+}
+
+.flip-card.flipping {
+  animation: flip-tick 0.3s ease-in-out;
+}
+
+.flip-card--sleep {
+  border-color: var(--duo-blue);
+  background: linear-gradient(180deg, var(--duo-blue) 49.5%, var(--duo-blue-dark) 49.5%, var(--duo-blue-dark) 50.5%, #126b96 50.5%);
+  color: #fff;
+}
+
+@keyframes flip-tick {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(0.88); }
+  100% { transform: scaleY(1); }
+}
