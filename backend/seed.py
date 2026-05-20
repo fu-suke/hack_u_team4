@@ -9,7 +9,7 @@ from app.database import Base, SessionLocal, engine
 from app.models import AnswerLog, Question, User  # noqa: F401 — register models
 
 BASE = Path(__file__).parent
-QUESTIONS_YAML = BASE / "app" / "questions.yaml"
+QUESTIONS_YAML = BASE / "questions.yaml"
 
 
 def load_users() -> list[User]:
