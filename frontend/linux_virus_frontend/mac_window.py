@@ -62,6 +62,7 @@ def _build_web_window(
     window.setDelegate_(controller)
 
     configuration = WKWebViewConfiguration.alloc().init()
+    configuration.setMediaTypesRequiringUserActionForPlayback_(0)
     user_content = WKUserContentController.alloc().init()
     message_handler = _ScriptMessageHandler.alloc().initWithController_(controller)
     user_content.addScriptMessageHandler_name_(message_handler, "resident")

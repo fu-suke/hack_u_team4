@@ -54,6 +54,7 @@ function render() {
   }
   if (enteredExpanded) {
     LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
+    LinuxVirusSound.play(state.quizMode === "virus" ? "virusQuestion" : "normalQuestion");
   }
   if (enteredUser) {
     LinuxVirusUser.renderUserScreen();
@@ -103,6 +104,7 @@ document.addEventListener("click", async (event) => {
   const action = button.dataset.action;
   if (action === "resetQuiz") {
     if (LinuxVirusQuiz.isBusy()) return;
+    LinuxVirusSound.play("cancel");
     document.querySelector("#resetQuiz").hidden = false;
     document.querySelector("#checkQuiz").hidden = false;
     document.querySelector("#closeExplanation").hidden = true;
@@ -153,6 +155,7 @@ document.addEventListener("click", async (event) => {
     }
 
     if (answerResult.correct) {
+      LinuxVirusSound.play("correct");
       LinuxVirusQuiz.lockInteractions();
       result.textContent = `🎉 正解！ ${answerResult.tutorial}`;
       result.className = "quiz__result quiz__result--correct quiz__result--explanation";
@@ -162,6 +165,7 @@ document.addEventListener("click", async (event) => {
       document.querySelector("#checkQuiz").hidden = true;
       document.querySelector("#closeExplanation").hidden = false;
     } else {
+      LinuxVirusSound.play("incorrect");
       result.textContent = "😅 もう一回やってみよう！";
       result.className = "quiz__result quiz__result--wrong";
       bottom.className = "quiz-bottom quiz-bottom--wrong";
@@ -219,9 +223,11 @@ document.addEventListener("click", (event) => {
 
   const action = button.dataset.action;
   if (action === "selectToken") {
+    LinuxVirusSound.play("click");
     LinuxVirusQuiz.moveTokenToAnswer(LinuxVirusQuiz.choiceFromDataset(button.dataset));
   }
   if (action === "unselectToken") {
+    LinuxVirusSound.play("click");
     LinuxVirusQuiz.removeTokenFromAnswer(
       LinuxVirusQuiz.choiceFromDataset(button.dataset),
       Number(button.dataset.index),
