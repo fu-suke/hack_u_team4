@@ -1,0 +1,909 @@
+- difficulty: 1
+  category: ["cat"]
+  prompt: ファイル `file.txt` の内容を表示する。
+  choices: ["cat", "file.txt", "ls"]
+  answers: [[1, 2]]
+  tutorial: "`cat` はファイルの中身を表示するコマンド。`ls` はファイル一覧を表示するコマンドで、ファイルの中身は見られない。"
+
+- difficulty: 1
+  category: ["cat"]
+  prompt: ファイル `app.log` の内容を表示する。
+  choices: ["cat", "app.log", "echo"]
+  answers: [[1, 2]]
+  tutorial: "`cat` はファイルの中身を表示するコマンド。`echo` は引数の文字列をそのまま出力するコマンドで、ファイルの中身を読むことはできない。"
+
+- difficulty: 1
+  category: ["cd"]
+  prompt: 1つ上のディレクトリへ移動する。
+  choices: ["cd", "..", "pwd"]
+  answers: [[1, 2]]
+  tutorial: "`..` は親ディレクトリを表す特殊な記号。`cd ..` で1つ上に移動できる。`pwd` は現在地を表示するだけで、移動はできない。"
+
+- difficulty: 1
+  category: ["cd"]
+  prompt: ホームディレクトリへ移動する。
+  choices: ["cd", "~", "/"]
+  answers: [[1, 2]]
+  tutorial: "`~` はホームディレクトリ(`/home/ユーザー名`)を表す記号。`/` はルートディレクトリで、システム全体の最上位を指す。"
+
+- difficulty: 1
+  category: ["cd"]
+  prompt: ディレクトリ `/var/log` へ移動する。
+  choices: ["cd", "/var/log", "ls"]
+  answers: [[1, 2]]
+  tutorial: "`cd` は change directory の略で、指定したディレクトリへ移動する。`ls` は一覧表示用で、移動はできない。"
+
+- difficulty: 1
+  category: ["cd"]
+  prompt: 直前にいたディレクトリへ戻る。
+  choices: ["cd", "-", ".."]
+  answers: [[1, 2]]
+  tutorial: "`cd -` は直前にいたディレクトリへ戻る便利なコマンド。`..` は親ディレクトリを表す記号で、必ずしも直前にいた場所ではない。"
+
+- difficulty: 1
+  category: ["cp"]
+  prompt: ファイル `a.txt` を `b.txt` という名前でコピーする。
+  choices: ["cp", "a.txt", "b.txt", "mv"]
+  answers: [[1, 2, 3]]
+  tutorial: "`cp` は copy の略で、ファイルをコピーする。`mv` はファイルの移動や名前変更で、コピー(元ファイルを残す)はできない。"
+
+- difficulty: 1
+  category: ["cp"]
+  prompt: ファイル `config.yml` を `config.yml.bak` という名前でコピーする。
+  choices: ["cp", "config.yml", "config.yml.bak"]
+  answers: [[1, 2, 3]]
+  tutorial: "`cp` は引数を「コピー元 コピー先」の順に指定する。バックアップ用に `.bak` を付けてコピーするのはよくあるパターン。"
+
+- difficulty: 1
+  category: ["df"]
+  prompt: ディスク全体の使用状況を表示する。
+  choices: ["df", "du"]
+  answers: [[1]]
+  tutorial: "`df` は disk free の略で、ファイルシステム全体の空き容量を表示する。`du` はディレクトリやファイル単位の使用量を調べるコマンド。"
+
+- difficulty: 1
+  category: ["du"]
+  prompt: ディレクトリ `/var/log` 配下の使用容量を表示する。
+  choices: ["du", "/var/log", "df"]
+  answers: [[1, 2]]
+  tutorial: "`du` は disk usage の略で、指定したディレクトリ配下の使用量を表示する。`df` はディスク全体の空き容量を見るコマンドで、特定ディレクトリの調査には向かない。"
+
+- difficulty: 1
+  category: ["echo"]
+  prompt: 文字列 `Hello` を画面に表示する。
+  choices: ["echo", "\"Hello\"", "cat"]
+  answers: [[1, 2]]
+  tutorial: "`echo` は引数の文字列をそのまま画面に表示するコマンド。`cat` はファイルの中身を表示するコマンドで、文字列をそのまま出力する用途には使わない。"
+
+- difficulty: 1
+  category: ["echo"]
+  prompt: 文字列 `Hello World` を画面に表示する。
+  choices: ["echo", "\"Hello World\"", "print"]
+  answers: [[1, 2]]
+  tutorial: "`echo` は引数をそのまま画面に出力するシェル組み込みコマンド。`print` というコマンドはLinux標準には存在しない(プログラミング言語の関数と混同しやすい)。"
+
+- difficulty: 1
+  category: ["find"]
+  prompt: カレントディレクトリ配下のすべてのファイル・ディレクトリを表示する。
+  choices: ["find", ".", "ls"]
+  answers: [[1, 2]]
+  tutorial: "`find` は指定したディレクトリ配下を再帰的に検索するコマンド。`.` はカレントディレクトリを表す。`ls` は一覧表示用で、再帰検索はオプションが必要(かつ用途が異なる)。"
+
+- difficulty: 1
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を表示する。
+  choices: ["grep", "\"error\"", "app.log"]
+  answers: [[1, 2, 3]]
+  tutorial: "`grep` はファイルからパターンに一致する行を抽出するコマンド。検索パターン、対象ファイルの順に指定する。"
+
+- difficulty: 1
+  category: ["head"]
+  prompt: ファイル `access.log` の先頭部分を表示する。
+  choices: ["head", "access.log", "tail"]
+  answers: [[1, 2]]
+  tutorial: "`head` はファイルの先頭部分(デフォルトでは10行)を表示するコマンド。`tail` は逆に末尾部分を表示するコマンド。"
+
+- difficulty: 1
+  category: ["head"]
+  prompt: ファイル `data.csv` の先頭部分を表示する。
+  choices: ["head", "data.csv", "top"]
+  answers: [[1, 2]]
+  tutorial: "`head` はファイルの先頭部分を表示するコマンド。`top` はシステムのプロセス監視用コマンドで、ファイル表示には使わない(名前が似ているので注意)。"
+
+- difficulty: 1
+  category: ["kill"]
+  prompt: PID `1234` のプロセスを終了させる。
+  choices: ["kill", "1234", "ps"]
+  answers: [[1, 2]]
+  tutorial: "`kill` はプロセスにシグナルを送るコマンドで、引数にPID(プロセスID)を指定する。`ps` はプロセス一覧を表示するコマンドで、終了はできない。"
+
+- difficulty: 1
+  category: ["ls"]
+  prompt: カレントディレクトリのファイル一覧を表示する。
+  choices: ["ls", "cat"]
+  answers: [[1]]
+  tutorial: "`ls` はディレクトリ内のファイル一覧を表示するコマンド。`cat` はファイルの中身を表示するコマンドで、一覧表示には使えない。"
+
+- difficulty: 1
+  category: ["ls"]
+  prompt: ディレクトリ `/etc` のファイル一覧を表示する。
+  choices: ["ls", "/etc", "cd"]
+  answers: [[1, 2]]
+  tutorial: "`ls` は引数にディレクトリを指定すると、そのディレクトリの中身を表示する。`cd` はディレクトリ移動用で、表示はしない。"
+
+- difficulty: 1
+  category: ["ls"]
+  prompt: ホームディレクトリのファイル一覧を表示する。
+  choices: ["ls", "~", "/"]
+  answers: [[1, 2]]
+  tutorial: "`~` はホームディレクトリ(`/home/ユーザー名`)を表す記号。`/` はルートディレクトリで、システム全体の最上位を指す別の場所。"
+
+- difficulty: 1
+  category: ["mkdir"]
+  prompt: カレントディレクトリに `test` という名前のディレクトリを作成する。
+  choices: ["mkdir", "test", "touch"]
+  answers: [[1, 2]]
+  tutorial: "`mkdir` は make directory の略で、ディレクトリを作成する。`touch` は空ファイルを作成するコマンドで、ディレクトリは作れない。"
+
+- difficulty: 1
+  category: ["mkdir"]
+  prompt: カレントディレクトリに `project` という名前のディレクトリを作成する。
+  choices: ["mkdir", "project", "cd"]
+  answers: [[1, 2]]
+  tutorial: "`mkdir` は make directory の略で、新しいディレクトリを作成する。`cd` は既存のディレクトリへ移動するコマンドで、作成はできない。"
+
+- difficulty: 1
+  category: ["mkdir"]
+  prompt: カレントディレクトリに `src` `bin` `docs` の3つのディレクトリをまとめて作成する。
+  choices: ["mkdir", "src", "bin", "docs"]
+  answers: [[1, 2, 3, 4], [1, 2, 4, 3], [1, 3, 2, 4], [1, 3, 4, 2], [1, 4, 2, 3], [1, 4, 3, 2]]
+  tutorial: "`mkdir` は引数を複数渡すと、それらをまとめて作成する。指定順は任意でよい。"
+
+- difficulty: 1
+  category: ["mv"]
+  prompt: ファイル `old.txt` を `new.txt` という名前に変更する。
+  choices: ["mv", "old.txt", "new.txt", "cp"]
+  answers: [[1, 2, 3]]
+  tutorial: "`mv` は move の略で、ファイルの移動や名前変更を行う。`cp` はコピーを作るコマンドで、元ファイルが残ってしまう。"
+
+- difficulty: 1
+  category: ["mv"]
+  prompt: ファイル `report.txt` をディレクトリ `/tmp` へ移動する。
+  choices: ["mv", "report.txt", "/tmp", "cp"]
+  answers: [[1, 2, 3]]
+  tutorial: "`mv` はファイルを別の場所に移動するコマンド。`cp` はコピーで元ファイルが残ってしまうため、移動には使わない。"
+
+- difficulty: 1
+  category: ["ps"]
+  prompt: 現在のシェルで実行中のプロセス一覧を表示する。
+  choices: ["ps", "kill"]
+  answers: [[1]]
+  tutorial: "`ps` は process status の略で、実行中のプロセス一覧を表示する。`kill` はプロセスを終了させるコマンドで、表示用途には使えない。"
+
+- difficulty: 1
+  category: ["pwd"]
+  prompt: カレントディレクトリの絶対パスを表示する。
+  choices: ["pwd", "cd"]
+  answers: [[1]]
+  tutorial: "`pwd` は print working directory の略で、現在の作業ディレクトリの絶対パスを表示する。`cd` はディレクトリを移動するコマンドで、表示用途には使えない。"
+
+- difficulty: 1
+  category: ["rm"]
+  prompt: ファイル `file.txt` を削除する。
+  choices: ["rm", "file.txt", "mv"]
+  answers: [[1, 2]]
+  tutorial: "`rm` は remove の略で、ファイルを削除する。`mv` はファイルの移動や名前変更を行うコマンドで、削除はできない。"
+
+- difficulty: 1
+  category: ["rm"]
+  prompt: ファイル `temp.txt` を削除する。
+  choices: ["rm", "temp.txt", "rmdir"]
+  answers: [[1, 2]]
+  tutorial: "`rm` はファイルを削除するコマンド。`rmdir` は**空ディレクトリ**専用の削除コマンドで、ファイル削除には使えない。"
+
+- difficulty: 1
+  category: ["rm"]
+  prompt: ファイル `a.txt` と `b.txt` をまとめて削除する。
+  choices: ["rm", "a.txt", "b.txt"]
+  answers: [[1, 2, 3], [1, 3, 2]]
+  tutorial: "`rm` は引数を複数渡すと、それらをまとめて削除する。指定順は任意でよい。"
+
+- difficulty: 1
+  category: ["sort"]
+  prompt: ファイル `names.txt` の内容を並べ替えて表示する。
+  choices: ["sort", "names.txt", "uniq"]
+  answers: [[1, 2]]
+  tutorial: "`sort` は行を並べ替えるコマンド(デフォルトはアルファベット順)。`uniq` は重複行を取り除くコマンドで、並べ替えはしない。"
+
+- difficulty: 1
+  category: ["sort"]
+  prompt: ファイル `users.txt` の内容を並べ替えて表示する。
+  choices: ["sort", "users.txt", "order"]
+  answers: [[1, 2]]
+  tutorial: "`sort` は行を並べ替えるコマンド。`order` というコマンドはLinux標準には存在しない(SQLのキーワードと混同しないよう注意)。"
+
+- difficulty: 1
+  category: ["tail"]
+  prompt: ファイル `app.log` の末尾部分を表示する。
+  choices: ["tail", "app.log", "head"]
+  answers: [[1, 2]]
+  tutorial: "`tail` はファイルの末尾部分(デフォルトでは10行)を表示するコマンド。ログ確認でよく使う。`head` は逆に先頭部分を表示する。"
+
+- difficulty: 1
+  category: ["tail"]
+  prompt: ファイル `error.log` の末尾部分を表示する。
+  choices: ["tail", "error.log", "end"]
+  answers: [[1, 2]]
+  tutorial: "`tail` はファイルの末尾部分を表示するコマンド。`end` というコマンドはLinux標準には存在しない。"
+
+- difficulty: 1
+  category: ["touch"]
+  prompt: カレントディレクトリに `file.txt` という空ファイルを作成する。
+  choices: ["touch", "file.txt", "mkdir"]
+  answers: [[1, 2]]
+  tutorial: "`touch` は空ファイルを作成するコマンド(本来はタイムスタンプ更新用)。`mkdir` はディレクトリ作成用で、ファイルは作れない。"
+
+- difficulty: 1
+  category: ["touch"]
+  prompt: カレントディレクトリに `app.log` という空ファイルを作成する。
+  choices: ["touch", "app.log", "cat"]
+  answers: [[1, 2]]
+  tutorial: "`touch` は空ファイルを作成する。`cat` はファイルの中身を表示するコマンドで、作成用途には使わない。"
+
+- difficulty: 1
+  category: ["uniq"]
+  prompt: ファイル `sorted.txt` から連続する重複行を取り除いて表示する。
+  choices: ["uniq", "sorted.txt", "sort"]
+  answers: [[1, 2]]
+  tutorial: "`uniq` は連続する重複行を1つにまとめるコマンド(連続していない重複は除去できないため、通常は `sort` と組み合わせる)。`sort` は並べ替え用で、重複除去そのものはできない。"
+
+- difficulty: 1
+  category: ["wc"]
+  prompt: ファイル `data.txt` の行数・単語数・文字数を表示する。
+  choices: ["wc", "data.txt", "cat"]
+  answers: [[1, 2]]
+  tutorial: "`wc` は word count の略で、行数・単語数・文字数を表示するコマンド。`cat` はファイルの中身そのものを表示するだけで、カウントはしない。"
+
+- difficulty: 1
+  category: ["wc"]
+  prompt: ファイル `access.log` の行数・単語数・文字数を表示する。
+  choices: ["wc", "access.log", "count"]
+  answers: [[1, 2]]
+  tutorial: "`wc` は word count の略で、行数・単語数・文字数をまとめて表示する。`count` というコマンドはLinux標準には存在しない。"
+
+- difficulty: 2
+  category: ["cat"]
+  prompt: ファイル `notes.txt` の内容を行番号付きで表示する。
+  choices: ["cat", "-n", "notes.txt", "-l", "-b"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-n` は number の略で、表示時に行番号を付けるオプション。`-l` は `cat` には存在しないオプション(他のコマンドのものと混同しないよう注意)。`-b` は空行を除いて行番号を付けるオプションで、すべての行に番号を付けたい今回の要件には合わない。"
+
+- difficulty: 2
+  category: ["cat"]
+  prompt: ファイル `file1.txt` と `file2.txt` の内容を連結して表示する。
+  choices: ["cat", "file1.txt", "file2.txt", "less", "|"]
+  answers: [[1, 2, 3], [1, 3, 2]]
+  tutorial: "`cat` は本来 con**cat**enate(連結)の略で、複数ファイルを引数に渡すと順に連結して表示する。ファイルの指定順は任意。`less` はページャで対話的にファイルを閲覧するコマンド、`|` はパイプ記号で、いずれも複数ファイルの連結表示には使わない。"
+
+- difficulty: 2
+  category: ["chmod"]
+  prompt: ファイル `script.sh` に実行権限を追加する。
+  choices: ["chmod", "+x", "script.sh", "-x", "+w"]
+  answers: [[1, 2, 3]]
+  tutorial: "`+x` は実行権限(execute)を追加する記号モード。`-x` は逆に実行権限を**削除**する記号で、今回の要件とは逆の動作。`+w` は書き込み権限(write)を追加する記号で、実行権限とは別の権限。"
+
+- difficulty: 2
+  category: ["chmod"]
+  prompt: ファイル `script.sh` の権限を `755` に変更する。
+  choices: ["chmod", "755", "script.sh", "644", "777"]
+  answers: [[1, 2, 3]]
+  tutorial: "`755` は所有者に読み書き実行(rwx)、その他に読み実行(r-x)を与える定番の権限で、実行可能なスクリプトでよく使う。`644` は実行権限を含まないので、スクリプト用途には不向き。`777` は全員に全権限を与える設定で、セキュリティ上ほとんど使うべきではない。"
+
+- difficulty: 2
+  category: ["chmod"]
+  prompt: ファイル `script.sh` に実行権限を追加する。
+  choices: ["chmod", "+x", "script.sh", "-x", "+w"]
+  answers: [[1, 2, 3]]
+  tutorial: "`+x` は実行権限(execute)を追加する記号モード。`-x` は逆に実行権限を**削除**する記号で、今回の要件とは逆の動作になる。`+w` は書き込み権限を追加するオプションで、実行権限とは別。"
+
+- difficulty: 2
+  category: ["chmod"]
+  prompt: ディレクトリ `project/` 配下のすべてのファイル・ディレクトリの権限を、再帰的に `755` に変更する。
+  choices: ["chmod", "-R", "755", "project/", "644", "-r"]
+  answers: [[1, 2, 3, 4], [1, 3, 2, 4]]
+  tutorial: "`-R` は Recursive の略で、ディレクトリ配下を再帰的に処理するオプション。`-R` と `755` の順序は任意。`644` は実行権限を含まない別の権限値で、今回の要件とは異なる。`chmod` のオプションは大文字の `-R` で、小文字の `-r` は存在しない(他コマンドと混同しないよう注意)。"
+
+- difficulty: 2
+  category: ["cp"]
+  prompt: ディレクトリ `src/` をその中身ごと `backup/` という名前でコピーする。
+  choices: ["cp", "-r", "src/", "backup/", "-f", "-i"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-r` は recursive の略で、ディレクトリを中身ごとコピーするのに必須。ディレクトリのコピーで `-r` を忘れるとエラーになる。`-f` は強制上書きするオプション、`-i` は逆に上書き前に確認を求めるオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 2
+  category: ["cp"]
+  prompt: ファイル `src.txt` を `dst.txt` という名前でコピーする。元のファイルのタイムスタンプや権限も保持する。
+  choices: ["cp", "-p", "src.txt", "dst.txt", "-r", "-a"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-p` は preserve の略で、元ファイルのタイムスタンプ・権限・所有者などの属性を保持してコピーするオプション。バックアップ用途で重要。`-r` はディレクトリを再帰的にコピーするオプションで、今回はファイルのコピーなので不要。`-a` は archive モードで `-r` と `-p` を含む複合オプション。動作は要件を満たすが、ファイル1個のコピーには大げさ。"
+
+- difficulty: 2
+  category: ["curl"]
+  prompt: URL `https://example.com/file.zip` からファイルをダウンロードし、URL末尾と同じ名前で保存する。
+  choices: ["curl", "-O", "https://example.com/file.zip", "-o", "-L"]
+  answers: [[1, 2, 3]]
+  tutorial: "大文字の `-O` はリモートのファイル名をそのまま使って保存するオプション。小文字の `-o` は別名を指定するオプションで、その場合は保存先ファイル名を別途指定する必要がある。`-L` はリダイレクトを追跡するオプションで、今回はリダイレクトの要件がないので不要。"
+
+- difficulty: 2
+  category: ["curl"]
+  prompt: URL `https://example.com/file.zip` からファイルをダウンロードする。リダイレクトされた場合は追従し、URL末尾と同じ名前で保存する。
+  choices: ["curl", "-L", "-O", "https://example.com/file.zip", "-o"]
+  answers: [[1, 2, 3, 4], [1, 3, 2, 4]]
+  tutorial: "`-L` は location の略で、HTTPリダイレクト(301/302など)を自動的に追跡するオプション。GitHubのリリースなどリダイレクトされるURLでは必須。`-O` と `-L` の順序は任意。"
+
+- difficulty: 2
+  category: ["cut"]
+  prompt: ファイル `/etc/passwd` から、`:` を区切り文字として1番目のフィールド(ユーザー名)を取り出す。
+  choices: ["cut", "-d", "\":\"", "-f", "1", "/etc/passwd", "-c"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`-d` は delimiter(区切り文字)の指定、`-f` は field(取り出すフィールド番号)の指定。`/etc/passwd` は `:` 区切りで「ユーザー名:パスワード:UID:...」と並んでいるため、`-f 1` でユーザー名だけを取り出せる。`-c` は文字位置で切り出すオプションで、区切り文字を使う今回の用途とは別。"
+
+- difficulty: 2
+  category: ["df"]
+  prompt: ディスク全体の使用状況を人間が読みやすい単位で表示する。
+  choices: ["df", "-h", "-i", "-T"]
+  answers: [[1, 2]]
+  tutorial: "`-h` は human-readable の略で、`1024` を `1K` のように読みやすい単位で表示する。`-i` は inode(ファイル数の上限)を表示する別の用途のオプション。`-T` はファイルシステムの種別(ext4 など)を表示するオプションで、容量の読みやすさとは別。"
+
+- difficulty: 2
+  category: ["df"]
+  prompt: ディスク全体の使用状況を人間が読みやすい単位で表示する。
+  choices: ["df", "-h", "-i"]
+  answers: [[1, 2]]
+  tutorial: "`-h` は human-readable の略で、`1024` を `1K` のように読みやすい単位で表示する。`-i` は inode(ファイル数の上限)を表示する別の用途のオプション。"
+
+- difficulty: 2
+  category: ["du"]
+  prompt: ディレクトリ `/home` 配下の使用容量を人間が読みやすい単位で表示する。
+  choices: ["du", "-h", "/home", "-s"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-h` は human-readable の略で、サイズを `K`/`M`/`G` などの単位で表示する。`-s` はサマリー(合計のみ)を表示するオプションで、今回は配下すべてを見たいので不要。"
+
+- difficulty: 2
+  category: ["du"]
+  prompt: ディレクトリ `/var/log` 配下の合計使用容量だけを人間が読みやすい単位で表示する。
+  choices: ["du", "-s", "-h", "/var/log", "-a"]
+  answers: [[1, 2, 3, 4], [1, 3, 2, 4]]
+  tutorial: "`-s` は summary(合計のみ)、`-h` は human-readable(読みやすい単位)。`-s` と `-h` の順序は任意で、`du -sh` のように合成して書くこともできる。`-a` は配下のすべてのファイルを表示するオプションで、サマリーが欲しい今回の要件とは逆。"
+
+- difficulty: 2
+  category: ["echo"]
+  prompt: 文字列 `Hello` を、末尾に改行を入れずに表示する。
+  choices: ["echo", "-n", "\"Hello\"", "-e", "-E"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-n` は echo のデフォルトで付く末尾の改行を**抑制する**オプション。`-e` はバックスラッシュエスケープ(`\\n` など)を解釈するオプションで、改行抑制とは別の用途。`-E` はバックスラッシュエスケープを解釈**しない**オプション(デフォルト動作)で、改行抑制とは別。"
+
+- difficulty: 2
+  category: ["find"]
+  prompt: カレントディレクトリ配下から拡張子 `.log` のファイルを再帰的に検索する。
+  choices: ["find", ".", "-name", "\"*.log\"", "-type", "-size"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-name` はファイル名(パターン)で検索するオプション。ワイルドカードを使う場合は `\"*.log\"` のようにクォートで括ってシェル展開を防ぐ。`-type` は種類(ファイル/ディレクトリ)で絞るオプション、`-size` はサイズで絞るオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["find"]
+  prompt: ディレクトリ `/var/log` 配下から、ディレクトリだけを再帰的に検索する。
+  choices: ["find", "/var/log", "-type", "d", "f", "-name"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-type d` でディレクトリのみを検索する(`d` は directory)。`f` はファイルを意味する別の値で、今回の要件には合わない。`-name` はファイル名で絞るオプションで、種類の指定とは別の用途。"
+
+- difficulty: 2
+  category: ["find"]
+  prompt: カレントディレクトリ配下から、過去7日以内に更新されたファイルを検索する。
+  choices: ["find", ".", "-mtime", "-7", "-size", "-name"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-mtime` は modification time(更新日時)で絞り込むオプション。値の前に `-` を付けると「指定日数以内」、`+` を付けると「指定日数より前」を意味する。`-size` はファイルサイズで絞り込むオプション、`-name` はファイル名で絞るオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `warning` を含む行を、大文字小文字を区別せずに表示する。
+  choices: ["grep", "-i", "\"warning\"", "app.log", "-v"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-i` は ignore case の略で、大文字小文字を区別せずに検索するオプション。これにより `WARNING` や `Warning` も一致するようになる。`-v` は逆にマッチしない行を表示するオプションで、今回の要件とは別の用途。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ディレクトリ `/var/log` 配下のすべてのファイルから `error` を含む行を再帰的に検索する。
+  choices: ["grep", "-r", "\"error\"", "/var/log", "-i", "-n"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-r` は recursive の略で、ディレクトリ配下を再帰的に検索するオプション。`-i` は大文字小文字を区別しないオプション、`-n` は行番号付きで表示するオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `debug` を含まない行を表示する。
+  choices: ["grep", "-v", "\"debug\"", "app.log", "-i", "-c"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-v` は invert の意味で、パターンに**一致しない**行を表示する。ログから不要な行を除外したいときに使う。`-i` は大文字小文字を無視するオプション、`-c` はマッチ件数のみを表示するオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を、行番号付きで表示する。
+  choices: ["grep", "-n", "\"error\"", "app.log", "-c", "-v"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-n` は number の略で、マッチした行の行番号を一緒に表示するオプション。ログのどこでエラーが起きているか特定するのに便利。`-c` はマッチ件数のみを表示するオプション、`-v` は逆に一致しない行を表示するオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行が何件あるかを数えて表示する。
+  choices: ["grep", "-c", "\"error\"", "app.log", "-n", "-v"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-c` は count の略で、マッチした行の件数だけを表示するオプション。「エラーが何件出ているか」を一発で確認できる。`-n` は行番号付きで該当行そのものを表示するオプション、`-v` は一致しない行を表示するオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を抽出し、その**直後の3行**も合わせて表示する。
+  choices: ["grep", "-A", "3", "\"error\"", "app.log", "-B", "-n"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`-A` は after の略で、マッチした行の**後ろ**N行も一緒に表示するオプション。エラーの直後に何が起きたかを確認するのに便利。`-B` は逆に**前**の行を表示するオプション、`-n` は行番号付きで表示するオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を抽出し、その**直前の3行**も合わせて表示する。
+  choices: ["grep", "-B", "3", "\"error\"", "app.log", "-A", "-C"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`-B` は before の略で、マッチした行の**前**N行も一緒に表示するオプション。エラーが起きる直前の動作を追うのに便利。`-A` は after で逆に後ろの行を表示するオプション、`-C` は context で前後両方を表示するオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 2
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` または `warning` のいずれかを含む行を表示する。
+  choices: ["grep", "-E", "\"error|warning\"", "app.log", "-i", "-v"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-E` は extended regex(拡張正規表現)を有効にするオプション。`|` で OR 条件を表現でき、複数キーワードを一度に検索できる。`-i` は大文字小文字を無視するオプション、`-v` は逆に一致しない行を表示するオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 2
+  category: ["head"]
+  prompt: ファイル `access.log` の先頭5行を表示する。
+  choices: ["head", "-n", "5", "access.log", "-c"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-n` は表示する行数を指定するオプション。`head -n 5` で先頭5行を表示する(デフォルトは10行)。`-c` はバイト数で切り出すオプションで、行単位ではないので今回は不要。"
+
+- difficulty: 2
+  category: ["head"]
+  prompt: ファイル `data.csv` の先頭1行(ヘッダ行)だけを表示する。
+  choices: ["head", "-n", "1", "data.csv", "-c", "-q"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-n 1` で先頭1行だけを表示する。CSVファイルのヘッダ(列名)を確認するときの定番。`-c` はバイト数で切り出すオプションで、行単位ではないので今回は不要。`-q` は複数ファイル指定時にヘッダ(ファイル名)を表示しないオプションで、行数指定とは別。"
+
+- difficulty: 2
+  category: ["kill"]
+  prompt: PID `5678` のプロセスを強制終了する。
+  choices: ["kill", "-9", "5678", "-15"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-9` は SIGKILL シグナルを送るオプションで、プロセスを強制終了させる。`-15` は SIGTERM(穏やかな終了要求)で、こちらはプロセスに後片付けの猶予を与える。"
+
+- difficulty: 2
+  category: ["kill"]
+  prompt: PID `1234` のプロセスを強制終了する。
+  choices: ["kill", "-9", "1234", "-15", "-l"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-9` は SIGKILL シグナルを送るオプションで、プロセスを強制終了させる(後片付けの猶予を与えない)。`-15` は SIGTERM(穏やかな終了要求)で、通常はこちらを先に試す。`-l` は利用できるシグナル一覧を表示するオプションで、プロセス終了用途ではない。"
+
+- difficulty: 2
+  category: ["ls"]
+  prompt: カレントディレクトリのファイル一覧を、隠しファイルも含めて詳細表示する。
+  choices: ["ls", "-l", "-a", "-h"]
+  answers: [[1, 2, 3], [1, 3, 2]]
+  tutorial: "`-l` は long format(詳細表示)、`-a` は all(隠しファイルも含む)。`-l` と `-a` の順序は任意で、`ls -la` のように合成しても同じ動作になる。`-h` はサイズを人間が読みやすい単位で表示するオプションで、今回の要件には不要。"
+
+- difficulty: 2
+  category: ["ls"]
+  prompt: ディレクトリ `/etc` のファイル一覧を詳細表示する。
+  choices: ["ls", "-l", "/etc", "-a", "-S"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-l` は long format の略で、ファイルの権限・所有者・サイズ・更新日時などを含む詳細な情報を表示する。`-a` は隠しファイルも含めるオプション、`-S` はサイズ順に並べるオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 2
+  category: ["ls"]
+  prompt: ディレクトリ `/var/log` のファイル一覧を、サイズを人間が読みやすい単位で詳細表示する。
+  choices: ["ls", "-l", "-h", "/var/log", "-a"]
+  answers: [[1, 2, 3, 4], [1, 3, 2, 4]]
+  tutorial: "`-l` は long format(詳細表示)、`-h` は human-readable の略でサイズを `1.2K` のように読みやすい単位で表示する。`-l` と `-h` の順序は任意で、`ls -lh` のように合成して書くこともできる。`-a` は隠しファイルも含めるオプションで、今回の要件では不要。"
+
+- difficulty: 2
+  category: ["ls"]
+  prompt: カレントディレクトリのファイル一覧を、更新日時が新しい順に詳細表示する。
+  choices: ["ls", "-l", "-t", "-S", "-r"]
+  answers: [[1, 2, 3], [1, 3, 2]]
+  tutorial: "`-l` は long format(詳細表示)、`-t` は更新日時順に並べるオプション。`-l` と `-t` の順序は任意で、`ls -lt` のように合成して書くこともできる。`-S` はサイズ順、`-r` は並び順を逆にするオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["mkdir"]
+  prompt: 多階層のディレクトリ `project/src/main` を、途中のディレクトリも含めて一度に作成する。
+  choices: ["mkdir", "-p", "project/src/main", "-r", "-v"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-p` は parents の略で、途中の親ディレクトリも自動的に作成するオプション。これがないと「親が存在しない」とエラーになる。`-r` は `mkdir` には存在しないオプション。`-v` は作成したディレクトリを表示する verbose オプションで、作成自体には不要。"
+
+- difficulty: 2
+  category: ["mv"]
+  prompt: ファイル `old.txt` を `new.txt` という名前に変更する。既に `new.txt` が存在する場合は上書きする前に確認を求める。
+  choices: ["mv", "-i", "old.txt", "new.txt", "-f", "-v"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-i` は interactive の略で、上書きが発生する場合に確認を求める安全なオプション。`-f` は逆に確認なしで強制上書きするオプションで、安全策とは正反対の動作。`-v` は移動結果を表示する verbose オプションで、確認の要件とは別。"
+
+- difficulty: 2
+  category: ["ps"]
+  prompt: 全ユーザーのすべてのプロセスを詳細形式で表示する。
+  choices: ["ps", "aux", "kill"]
+  answers: [[1, 2]]
+  tutorial: "`ps aux` は全ユーザーのプロセスを詳細表示する定番の組み合わせ。`a` は全ユーザー、`u` は詳細表示、`x` は端末を持たないプロセスも含めるという意味。`kill` はプロセスを終了させるコマンド。"
+
+- difficulty: 2
+  category: ["ps"]
+  prompt: 全ユーザーのすべてのプロセスを詳細形式で表示する。
+  choices: ["ps", "aux", "top", "kill"]
+  answers: [[1, 2]]
+  tutorial: "`ps aux` は全ユーザーのプロセスを詳細表示する定番の組み合わせ。`a` は全ユーザー、`u` は詳細表示、`x` は端末を持たないプロセスも含めるという意味。`top` はプロセスをリアルタイム監視する別コマンドで、一覧の静的表示用途には使わない。"
+
+- difficulty: 2
+  category: ["rm"]
+  prompt: ディレクトリ `tmp/` を中身ごと強制的に削除する。
+  choices: ["rm", "-r", "-f", "tmp/", "-i"]
+  answers: [[1, 2, 3, 4], [1, 3, 2, 4]]
+  tutorial: "`-r` は recursive(再帰削除)、`-f` は force(確認なし強制)。`-r` と `-f` の順序は任意で、`rm -rf` のように合成して書くこともできる。`-i` は逆に削除前に確認を求めるオプションで、強制削除とは正反対の動作。**取り消し不可**なので慎重に。"
+
+- difficulty: 2
+  category: ["rm"]
+  prompt: ファイル `important.txt` を削除する前に確認を求める形で削除する。
+  choices: ["rm", "-i", "important.txt", "-f", "-v"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-i` は interactive の略で、削除前に「本当に削除しますか?」と確認を求める安全なオプション。`-f` は逆に確認なしで強制削除するオプションで、安全策とは正反対の動作。`-v` は削除したファイル名を表示する verbose オプションで、確認の要件とは別。"
+
+- difficulty: 2
+  category: ["sort"]
+  prompt: ファイル `names.txt` の内容を逆順に並べ替えて表示する。
+  choices: ["sort", "-r", "names.txt", "-R", "-n"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-r` は reverse の略で、並び順を逆にするオプション。`-R` は**ランダム順**にするオプションで、動作が異なる(大文字小文字に注意)。`-n` は数値として並べ替えるオプションで、今回の「逆順」とは別の用途。"
+
+- difficulty: 2
+  category: ["sort"]
+  prompt: ファイル `data.txt` の内容を数値として並べ替えて表示する。
+  choices: ["sort", "-n", "data.txt", "-r", "-k"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-n` は numeric の略で、数値として並べ替えるオプション。これがないと `10` が `2` より前にくる(辞書順では `1` で始まるため)。`-r` は逆順にするオプションで、今回の要件には不要。`-k` は並べ替えに使うフィールド(列)を指定するオプションで、単一列のソートには不要。"
+
+- difficulty: 2
+  category: ["tail"]
+  prompt: ファイル `app.log` の末尾20行を表示する。
+  choices: ["tail", "-n", "20", "app.log", "-f"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-n` は表示する行数を指定するオプション。`tail -n 20` で末尾20行を表示する(デフォルトは10行)。`-f` はファイルの追記をリアルタイムに追従するオプションで、行数指定とは別の用途。"
+
+- difficulty: 2
+  category: ["tail"]
+  prompt: ファイル `app.log` の末尾を監視し、追記された行をリアルタイムで表示し続ける。
+  choices: ["tail", "-f", "app.log", "-n", "-c"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-f` は follow の略で、ファイルへの追記をリアルタイムに追従表示する。サーバーのログ監視で最頻出の使い方。`-n` は行数指定用のオプション、`-c` はバイト数指定用のオプションで、いずれも今回は不要。"
+
+- difficulty: 2
+  category: ["tar"]
+  prompt: ディレクトリ `data/` を gzip 圧縮して `archive.tar.gz` というアーカイブを作成する。
+  choices: ["tar", "-czf", "archive.tar.gz", "data/", "-xzf", "-tzf"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-czf` は `-c`(作成)`-z`(gzip圧縮)`-f`(ファイル指定)を合わせた合成形。`-xzf` は逆に**展開**するためのオプションで、作成には使えない。`-tzf` はアーカイブの**中身一覧**を表示するオプションで、これも作成用途とは異なる。"
+
+- difficulty: 2
+  category: ["tar"]
+  prompt: アーカイブ `archive.tar.gz` をカレントディレクトリに展開する。
+  choices: ["tar", "-xzf", "archive.tar.gz", "-czf", "-tzf"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-xzf` は `-x`(展開)`-z`(gzip対応)`-f`(ファイル指定)の合成形。`-czf` は逆にアーカイブを**作成**する用途で、展開には使えない。`-tzf` はアーカイブの**中身一覧**を表示するオプションで、これも展開とは異なる。"
+
+- difficulty: 2
+  category: ["uniq"]
+  prompt: ファイル `sorted.txt` から連続する重複行を取り除き、それぞれの行が何回出現したかも一緒に表示する。
+  choices: ["uniq", "-c", "sorted.txt", "-d", "-u"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-c` は count の略で、各行の出現回数を行頭に付けて表示するオプション。`-d` は重複している行だけを表示するオプションで、出現回数の表示はしない。`-u` は逆にユニークな(重複していない)行だけを表示するオプション。"
+
+- difficulty: 2
+  category: ["wc"]
+  prompt: ファイル `data.txt` の行数のみを表示する。
+  choices: ["wc", "-l", "data.txt", "-w", "-c"]
+  answers: [[1, 2, 3]]
+  tutorial: "`-l` は line の略で、行数のみを表示するオプション。`-w` は word の略で、単語数のみを表示する別のオプション。`-c` は character(バイト数)のみを表示するオプションで、行数とは別の単位。"
+
+- difficulty: 3
+  category: ["cat"]
+  prompt: ファイル `file1.txt` と `file2.txt` の内容を連結し、結果を `combined.txt` に上書き保存する。
+  choices: ["cat", "file1.txt", "file2.txt", ">", "combined.txt", ">>", "|"]
+  answers: [[1, 2, 3, 4, 5], [1, 3, 2, 4, 5]]
+  tutorial: "`cat file1 file2` で複数ファイルを連結し、`>` でその結果をファイルに上書き保存する。ファイルの結合保存はこのパターンが定番。`>>` は追記、`|` はパイプで別コマンドに渡す用途で、いずれもファイル保存とは別。"
+
+- difficulty: 3
+  category: ["curl"]
+  prompt: URL `https://example.com/data.json` の内容を取得し、結果をファイル `data.json` に上書き保存する。
+  choices: ["curl", "https://example.com/data.json", ">", "data.json", "-O", ">>"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`curl URL > ファイル名` は、リクエスト結果の標準出力をリダイレクトでファイルに保存する書き方。`-O` は同じことをcurl単体で行うオプションで、両方を併用するのは冗長。`>>` は末尾追記で、上書き保存とは別の用途。"
+
+- difficulty: 3
+  category: ["cut"]
+  prompt: ファイル `/etc/passwd` から、`:` を区切り文字として1番目のフィールド(ユーザー名)を取り出し、並べ替えて表示する。
+  choices: ["cut", "-d", "\":\"", "-f", "1", "/etc/passwd", "|", "sort", "-n", "-c"]
+  answers: [[1, 2, 3, 4, 5, 6, 7, 8]]
+  tutorial: "`cut -d \":\" -f 1` でユーザー名(コロン区切りの1番目のフィールド)を取り出し、`sort` で並べ替える。`-n` は数値ソート用で、ユーザー名(文字列)のソートには不要。`-c` は cut では文字位置で切り出すオプションで、区切り文字を使う今回の用途とは別。"
+
+- difficulty: 3
+  category: ["cut"]
+  prompt: CSVファイル `data.csv` から `,` を区切り文字として1番目のフィールドを取り出し、その先頭10件を表示する。
+  choices: ["cut", "-d", "\",\"", "-f", "1", "data.csv", "|", "head", "-n", "10", "-c", ">"]
+  answers: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
+  tutorial: "`cut -d \",\" -f 1` でCSVの1列目を取り出し、`head -n 10` で先頭10件に絞る。CSVのヘッダや主キー列の確認でよく使うパターン。`-c` はバイト数で切り出すオプション、`>` はファイルにリダイレクト保存する記号で、いずれも今回の表示用途には不要。"
+
+- difficulty: 3
+  category: ["du"]
+  prompt: ディレクトリ `/var/log` 配下の各ディレクトリの容量を、サイズの大きい順に並べて表示する。
+  choices: ["du", "-h", "/var/log", "|", "sort", "-h", "-r", "-n", "-k"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`du -h` で人間が読みやすいサイズ表記(`1.2K`, `5.3M` など)を出し、`sort -h` で人間が読める単位のまま数値順にソートできる。`-r` を付けることで降順(大きい順)になる。`-n` は通常の数値ソート用で `1K`/`1M` のような単位付き表記は正しく扱えない。`-k` はソートキーを指定するオプションで、今回は単一列なので不要。"
+
+- difficulty: 3
+  category: ["du"]
+  prompt: ディレクトリ `/home` 配下の各ディレクトリの容量を、サイズの小さい順に並べて表示する。
+  choices: ["du", "-h", "/home", "|", "sort", "-h", "-r", "-n"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`du -h` で人間が読みやすいサイズ表記を出し、`sort -h` で `1.2K`/`5.3M` のような単位付き表記を正しく数値順にソートする。デフォルトで小さい順になる。`-r` は逆順(降順)にするオプション、`-n` は単位を扱えない数値ソートで、いずれも今回の用途には不向き。"
+
+- difficulty: 3
+  category: ["echo"]
+  prompt: 文字列 `done` をファイル `status.log` の末尾に追記する。
+  choices: ["echo", "\"done\"", ">>", "status.log", ">", "|"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`>>` はファイル末尾に追記するリダイレクト記号。既存の内容を保持したまま新しい行を加える。`>` は逆に上書きするため、既存内容が消えてしまう。`|` はパイプで、ファイルへの保存には使わない。"
+
+- difficulty: 3
+  category: ["echo"]
+  prompt: 文字列 `--- new entry ---` をファイル `log.txt` の末尾に追記する。
+  choices: ["echo", "\"--- new entry ---\"", ">>", "log.txt", ">", "2>"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`>>` はファイル末尾に追記するリダイレクト記号。`echo` と組み合わせて簡易ログ書き込みに使う。`>` は上書きで既存内容が消える、`2>` は標準エラー出力のリダイレクトで、いずれも今回の用途とは別。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: カレントディレクトリ配下から拡張子 `.log` のファイルを再帰的に検索し、その件数を表示する。
+  choices: ["find", ".", "-name", "\"*.log\"", "|", "wc", "-l", "-c", "-type"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`find` の検索結果(1行1ファイル)を `wc -l` に渡すことでファイル数を数えられる。`-c` はバイト数を表示するオプションで、件数のカウントには `-l` を使う。`-type` はファイル種別で絞るオプションで、今回は拡張子で絞っているので不要。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: カレントディレクトリ配下から拡張子 `.log` のファイルを再帰的に検索し、その結果を `logs.txt` に上書き保存する。
+  choices: ["find", ".", "-name", "\"*.log\"", ">", "logs.txt", ">>", "|"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`find` の検索結果を `>` でファイルに上書き保存する。`>>` は追記用のリダイレクト、`|` はパイプで別コマンドへの受け渡しに使う記号で、いずれもファイル上書き保存とは別。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: ディレクトリ `/etc` 配下から拡張子 `.conf` のファイルを再帰的に検索し、エラーメッセージのみをファイル `errors.txt` に保存する。
+  choices: ["find", "/etc", "-name", "\"*.conf\"", "2>", "errors.txt", ">", ">>"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`2>` は標準エラー出力をリダイレクトする記号。`find` で権限のないディレクトリにアクセスした際のエラーなどを別ファイルに記録できる。`>` は標準出力のリダイレクト、`>>` は標準出力の追記で、いずれもエラーのリダイレクトではない。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: ディレクトリ `/var` 配下から拡張子 `.log` のファイルを再帰的に検索し、検索結果は `logs.txt` に、エラーは `errors.txt` に保存する。
+  choices: ["find", "/var", "-name", "\"*.log\"", ">", "logs.txt", "2>", "errors.txt", "|", ">>"]
+  answers: [[1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 7, 8, 5, 6]]
+  tutorial: "`>` は標準出力、`2>` は標準エラー出力のリダイレクト記号。両方を別々のファイルに保存することで結果とエラーを分離できる。リダイレクトの順序は任意で、`> logs.txt 2> errors.txt` と `2> errors.txt > logs.txt` は同じ動作。`|` はパイプ、`>>` は追記で、いずれも上書き保存とは別。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: カレントディレクトリ配下から、過去7日以内に更新されたファイルを検索し、その件数を表示する。
+  choices: ["find", ".", "-mtime", "-7", "|", "wc", "-l", "-c", "-size"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`find -mtime -7` で過去7日以内に更新されたファイルを検索し、パイプで `wc -l` に渡して件数を数える。`-c` はバイト数表示、`-size` はサイズで絞るオプションで、いずれも件数カウントの今回の用途とは別。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: カレントディレクトリ配下から、サイズが10MB以上のファイルを検索し、結果をファイル `large_files.txt` に上書き保存する。
+  choices: ["find", ".", "-size", "+10M", ">", "large_files.txt", ">>", "-mtime"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`-size +10M` でサイズが10MB**より大きい**ファイルを検索する(`+` は「より大きい」を意味する)。`>` で結果をファイルに上書き保存する。`>>` は追記、`-mtime` は更新日時で絞るオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 3
+  category: ["find"]
+  prompt: ディレクトリ `/var/log` 配下から、過去7日以内に更新された拡張子 `.log` のファイルを検索する。
+  choices: ["find", "/var/log", "-name", "\"*.log\"", "-mtime", "-7", "-size", "-type"]
+  answers: [[1, 2, 3, 4, 5, 6], [1, 2, 5, 6, 3, 4]]
+  tutorial: "`find` は複数の条件を並べることで AND 検索ができる。`-name` でファイル名を絞り、`-mtime -7` で過去7日以内に絞る。条件の指定順序は任意。`-size` はサイズで絞るオプション、`-type` は種類で絞るオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を抽出し、その件数を表示する。
+  choices: ["grep", "\"error\"", "app.log", "|", "wc", "-l", "-w", "-n"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`grep` でマッチする行を抽出し、パイプ `|` で `wc -l` に渡して行数(=件数)を数える定番パターン。`-w` は wc では単語数を数えるオプション、`-n` は wc にはないオプションで、いずれも行数のカウントとは別。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を抽出し、結果をファイル `errors.txt` に上書き保存する。
+  choices: ["grep", "\"error\"", "app.log", ">", "errors.txt", ">>", "|"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`>` はコマンドの出力をファイルに上書き保存するリダイレクト記号。`>>` は逆に末尾に追記するリダイレクトで、既存内容を残したい場合に使う。`|` はパイプで別コマンドに渡す用途なので、ファイル保存には使えない。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含む行を、大文字小文字を区別せずに抽出し、結果を `errors.txt` に上書き保存する。
+  choices: ["grep", "-i", "\"error\"", "app.log", ">", "errors.txt", "-v", "-c"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`-i` は ignore case の略で、大文字小文字を区別せずに検索する。`>` で結果をファイルに上書き保存する。`-v` は逆に一致しない行を表示するオプション、`-c` は件数のみを表示するオプションで、いずれも今回の要件とは別。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ファイル `app.log` から `debug` を含まない行だけを表示し、その件数を表示する。
+  choices: ["grep", "-v", "\"debug\"", "app.log", "|", "wc", "-l", "-w", "-i"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`-v` で `debug` を含まない行を抽出し、`wc -l` で件数を数える。`-w` は wc では単語数を数えるオプション、`-i` は grep で大文字小文字を区別しないオプションで、いずれも件数カウントとは別。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ファイル `app.log` から `error` を含み、かつ `database` も含む行を表示する。
+  choices: ["grep", "\"error\"", "app.log", "|", "grep", "\"database\"", "-v", "-i"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`grep` を2回パイプで繋ぐことでAND条件のフィルタを実現できる。`-v` は逆に一致しない行を表示するオプション、`-i` は大文字小文字を区別しないオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ファイル `app.log` から `warning` を含む行を抽出し、その先頭10件を表示する。
+  choices: ["grep", "\"warning\"", "app.log", "|", "head", "-n", "10", "-c", "-v"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`grep` で抽出した結果を `head -n 10` で先頭10件に絞る、ログから直近の警告を素早く確認するパターン。`-c` はバイト数で切り出すオプション、`-v` は grep の不一致表示オプションで、いずれも今回の要件には不要。"
+
+- difficulty: 3
+  category: ["grep"]
+  prompt: ディレクトリ `/var/log` 配下のすべてのファイルから `error` を含む行を再帰的に検索し、その総件数を表示する。
+  choices: ["grep", "-r", "\"error\"", "/var/log", "|", "wc", "-l", "-i", "-w"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`grep -r` で再帰的に検索した結果を `wc -l` で件数カウント。`-i` は大文字小文字を区別しないオプション、`-w` は wc では単語数を数えるオプションで、いずれも件数カウントとは別。"
+
+- difficulty: 3
+  category: ["head"]
+  prompt: ファイル `access.log` の先頭から `error` を含む行だけを抽出して、その先頭3件を表示する。
+  choices: ["grep", "\"error\"", "access.log", "|", "head", "-n", "3", "-c", "-q"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`grep` で `error` を含む行を抽出し、パイプで `head -n 3` に渡して先頭3件に絞る。`-c` はバイト数で切り出すオプション、`-q` は静かに実行するオプションで、いずれも行数指定の今回の用途には不要。"
+
+- difficulty: 3
+  category: ["head"]
+  prompt: ファイル `data.txt` の11行目から15行目までを表示する。
+  choices: ["head", "-n", "15", "data.txt", "|", "tail", "-n", "5", "-c", "-f"]
+  answers: [[1, 2, 3, 4, 5, 6, 7, 8]]
+  tutorial: "`head -n 15` で先頭15行を取り出し、その結果から `tail -n 5` で末尾5行を取ることで11〜15行目を抽出できる。中間範囲の抽出にはこの2段パイプが定番。`-c` はバイト数指定、`-f` は tail のリアルタイム追従オプションで、いずれも今回の用途には不要。"
+
+- difficulty: 3
+  category: ["ls"]
+  prompt: ディレクトリ `/etc` のファイル一覧を取得し、結果をファイル `etc_files.txt` に上書き保存する。
+  choices: ["ls", "/etc", ">", "etc_files.txt", ">>", "|"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`>` は出力をファイルに上書き保存する記号。`>>` は末尾に追記する記号で、既存内容を保持する。`|` はパイプで、ファイルへの保存ではなく別コマンドへの受け渡しに使う。"
+
+- difficulty: 3
+  category: ["ls"]
+  prompt: カレントディレクトリにあるファイルを、サイズの大きい順に詳細表示で並べた上で、上位5件のみを表示する。
+  choices: ["ls", "-l", "-S", "|", "head", "-n", "5", "-t", "-r"]
+  answers: [[1, 2, 3, 4, 5, 6, 7], [1, 3, 2, 4, 5, 6, 7]]
+  tutorial: "`-S` でサイズの大きい順に並べ、`-l` で詳細表示。`-l` と `-S` の順序は任意で、`ls -lS` のように合成しても良い。パイプで `head -n 5` に渡して上位5件に絞る。`-t` は更新日時順、`-r` は並び順を逆にするオプションで、いずれも今回のサイズ順には不要。"
+
+- difficulty: 3
+  category: ["ls"]
+  prompt: カレントディレクトリのファイル一覧を詳細表示で取得し、既存のファイル `inventory.txt` の末尾に追記する。
+  choices: ["ls", "-l", ">>", "inventory.txt", ">", "|"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`-l` で詳細表示し、`>>` でファイル末尾に追記する。既存内容を保持したまま結果を加えるリダイレクト。`>` は上書きで既存内容が消える、`|` はパイプで別コマンドへの受け渡しに使う記号で、いずれも追記とは別。"
+
+- difficulty: 3
+  category: ["ls"]
+  prompt: カレントディレクトリのファイル一覧を詳細表示し、その中から `.txt` で終わる行だけを表示する。
+  choices: ["ls", "-l", "|", "grep", "\".txt\"", "-i", "-v"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`ls -l` の詳細表示結果から `.txt` という文字列を含む行を `grep` で絞り込む。`-i` は大文字小文字を区別しないオプション、`-v` は逆に一致しない行を表示するオプションで、いずれも今回は不要。"
+
+- difficulty: 3
+  category: ["ls"]
+  prompt: ディレクトリ `/etc` のファイル一覧から、`conf` を含むファイル名だけを表示する。
+  choices: ["ls", "/etc", "|", "grep", "\"conf\"", "-i", "-l"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`ls` のファイル一覧をパイプで `grep` に渡してフィルタする、ファイル名検索の基本パターン。`-i` は大文字小文字を区別しないオプション、`-l` は ls/grep どちらでも別の意味を持つオプションで、いずれも今回は不要。"
+
+- difficulty: 3
+  category: ["ps"]
+  prompt: 実行中のプロセス一覧から `nginx` を含む行だけを表示する。
+  choices: ["ps", "aux", "|", "grep", "\"nginx\"", "kill", "top"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`ps aux` で全プロセスを表示し、パイプで `grep` に渡して特定のプロセスを絞り込む定番パターン。`kill` はプロセス終了用、`top` はリアルタイム監視用で、いずれもパイプの絞り込みには使わない。"
+
+- difficulty: 3
+  category: ["ps"]
+  prompt: 実行中のプロセス一覧から `nginx` を含む行を抽出し、その件数を表示する。
+  choices: ["ps", "aux", "|", "|", "grep", "\"nginx\"", "wc", "-l", "top", "kill"]
+  answers: [[1, 2, 3, 5, 6, 4, 7, 8]]
+  tutorial: "`ps aux` で全プロセスを表示し、`grep` で nginx 関連だけ絞り込み、`wc -l` で件数を数える。`ps aux | grep \"nginx\" | wc -l` の2段パイプ構成で、実務で頻出。`top` はリアルタイム監視用、`kill` はプロセス終了用で、いずれも件数カウントには使わない。"
+
+- difficulty: 3
+  category: ["ps"]
+  prompt: 実行中のプロセス一覧を取得し、結果を `processes.txt` に上書き保存する。
+  choices: ["ps", "aux", ">", "processes.txt", "|", ">>"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`ps aux` の結果を `>` でファイルに上書き保存する。プロセス状態のスナップショットを記録したいときに使う。`|` はパイプで別コマンドに渡す用途、`>>` は追記用で、いずれも上書き保存とは別。"
+
+- difficulty: 3
+  category: ["sort"]
+  prompt: ファイル `access.log` の内容を並べ替えた後、連続する重複行を取り除いて表示する。
+  choices: ["sort", "access.log", "|", "uniq", "-c", "-d"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: "`uniq` は連続する重複行しか除去できないため、事前に `sort` で並べ替えるのが定番の組み合わせ。`-c` は出現回数を表示するオプション、`-d` は重複している行だけを表示するオプションで、いずれも今回の単純な重複除去には不要。"
+
+- difficulty: 3
+  category: ["sort"]
+  prompt: ファイル `data.txt` の内容を数値として並べ替え、結果を `sorted.txt` に上書き保存する。
+  choices: ["sort", "-n", "data.txt", ">", "sorted.txt", "-r", "|"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`-n` は数値として並べ替えるオプション、`>` は出力をファイルに上書き保存するリダイレクト。`-r` は逆順にするオプション、`|` はパイプ用で、いずれもファイル保存とは別。"
+
+- difficulty: 3
+  category: ["sort"]
+  prompt: ファイル `scores.txt` の内容を、空白区切りで2列目を数値として並べ替えて表示する。
+  choices: ["sort", "-k", "2", "-n", "scores.txt", "-r", "-d"]
+  answers: [[1, 2, 3, 4, 5], [1, 4, 2, 3, 5]]
+  tutorial: "`-k 2` は2列目をソートキーに指定するオプション、`-n` は数値として比較する。`sort -k 2 -n` と `sort -n -k 2` のように順序は任意。`-r` は逆順、`-d` は辞書順を意味するオプションで、今回の要件には不要。"
+
+- difficulty: 3
+  category: ["sort"]
+  prompt: ファイル `access.log` の内容を並べ替えて各行の出現回数を集計し、出現回数が多い順に並べ替えて表示する。
+  choices: ["sort", "access.log", "|", "uniq", "-c", "|", "sort", "-rn", "-k", "-t"]
+  answers: [[1, 2, 3, 4, 5, 6, 7, 8]]
+  tutorial: "`sort | uniq -c | sort -rn` は出現頻度ランキングを作る定番の3段パイプ。1段目で並び替え、2段目で出現回数を集計、3段目で出現回数の多い順に並び替える。`-r` で降順、`-n` で数値ソート。`-k` はソートキー指定、`-t` はフィールド区切り文字指定のオプションで、いずれも今回の単一カラムソートには不要。"
+
+- difficulty: 3
+  category: ["tail"]
+  prompt: ファイル `app.log` の末尾100行から `error` を含む行だけを表示する。
+  choices: ["tail", "-n", "100", "app.log", "|", "grep", "\"error\"", "-f", "-c"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: "`tail -n 100` で末尾100行を取り出し、パイプで `grep` に渡してフィルタする。ログの最近のエラーだけ確認したいときの定番。`-f` はファイルを追従するオプション、`-c` はバイト数指定用のオプションで、いずれも今回の固定100行切り出しには不要。"
+
+- difficulty: 3
+  category: ["tail"]
+  prompt: ファイル `app.log` の末尾を監視しながら、`error` を含む行だけをリアルタイムに表示する。
+  choices: ["tail", "-f", "app.log", "|", "grep", "\"error\"", "-n", "-v"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`tail -f` でファイルへの追記をリアルタイムに追従し、パイプで `grep` に渡して特定のキーワードだけを表示する。サーバーのログ監視で最頻出のパターン。`-n` は grep では行番号表示、`-v` は不一致表示のオプションで、いずれも今回の要件には不要。"
+
+- difficulty: 3
+  category: ["tar"]
+  prompt: アーカイブ `archive.tar.gz` の中身一覧を取得し、結果を `contents.txt` に上書き保存する。
+  choices: ["tar", "-tzf", "archive.tar.gz", ">", "contents.txt", "-czf", "-xzf"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`-tzf` は `-t`(中身一覧)`-z`(gzip対応)`-f`(ファイル指定)の合成形で、アーカイブを展開せず中身だけ確認できる。`-czf` はアーカイブ作成、`-xzf` は展開用の合成形で、いずれも中身一覧の用途とは別。"
+
+- difficulty: 3
+  category: ["tar"]
+  prompt: アーカイブ `archive.tar.gz` に含まれるファイル数を表示する。
+  choices: ["tar", "-tzf", "archive.tar.gz", "|", "wc", "-l", "-czf", "-c"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`-tzf` でアーカイブの中身一覧(1行1ファイル)を出力し、`wc -l` で行数=ファイル数を数える。`-czf` はアーカイブ作成用の合成形、`-c` は wc では文字数を表示するオプションで、いずれも今回の用途とは別。"
+
+- difficulty: 3
+  category: ["uniq"]
+  prompt: ファイル `access.log` の内容を並べ替えた後、各行の出現回数を表示する。
+  choices: ["sort", "access.log", "|", "uniq", "-c", "-d", "-u"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: "`sort` で並べ替えた後、`uniq -c` で各行の出現回数を集計する定番パターン。`uniq` は連続する重複しか集計できないため、事前の `sort` が必須。`-d` は重複行だけを表示、`-u` はユニーク行だけを表示するオプションで、いずれも出現回数の集計とは別。"
+
+- difficulty: 3
+  category: ["wc"]
+  prompt: ファイル `article.txt` から `the` を含む行を抽出し、その総単語数を表示する。
+  choices: ["grep", "\"the\"", "article.txt", "|", "wc", "-w", "-l", "-c"]
+  answers: [[1, 2, 3, 4, 5, 6]]
+  tutorial: "`-w` は word の略で、単語数を数えるオプション。`grep` で抽出した行に含まれる単語の総数を数えるパターン。`-l` は行数、`-c` はバイト数を数えるオプションで、今回の「単語数」の要件とは別。"
