@@ -47,6 +47,7 @@ class _ResidentAppController(NSObject):
         self._keyboard = _KeyboardInterpreter()
         self._state = _ResidentState()
         self._global_monitor: object | None = None
+        self._local_monitor: object | None = None
         self._window: NSWindow | None = None
         self._overlay: NSWindow | None = None
         self._webview: WKWebView | None = None
@@ -201,19 +202,37 @@ class _ResidentAppController(NSObject):
             NSEventMaskKeyDown,
             self._on_global_key_down,
         )
+        self._local_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
+            NSEventMaskKeyDown,
+            self._on_local_key_down,
+        )
 
     @python_method
     def _stop_event_monitors(self) -> None:
         if self._global_monitor is not None:
             NSEvent.removeMonitor_(self._global_monitor)
             self._global_monitor = None
+        if self._local_monitor is not None:
+            NSEvent.removeMonitor_(self._local_monitor)
+            self._local_monitor = None
 
     @python_method
     def _on_global_key_down(self, event: Any) -> None:
         self._handle_key_event(event)
 
     @python_method
+    def _on_local_key_down(self, event: Any) -> Any:
+        if self._keyboard.is_quit_hotkey(event):
+            self._events.put(_ControlEvent(name="quit", reason="hotkey"))
+            return None
+        return event
+
+    @python_method
     def _handle_key_event(self, event: Any) -> None:
+        if self._keyboard.is_quit_hotkey(event):
+            self._events.put(_ControlEvent(name="quit", reason="hotkey"))
+            return
+
         if self._keyboard.is_toggle_hotkey(event):
             if self._state.is_sleeping():
                 return
