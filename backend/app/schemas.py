@@ -34,6 +34,7 @@ class QuestionResponse(BaseModel):
     prompt: str
     choices: list[str]
     tutorial: str
+    virus_count: int
 
     model_config = {"from_attributes": True}
 
