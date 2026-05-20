@@ -242,6 +242,7 @@ class _ResidentAppController(NSObject):
             self,
             *EXPANDED_SIZE,
         )
+        self._virus_window.setFrame_display_(_top_right_frame(*EXPANDED_SIZE), True)
         self._virus_window.setTitle_(_VIRUS_WINDOW_TITLE)
         self._sync_overlay_visibility()
         self._virus_window.makeKeyAndOrderFront_(None)
