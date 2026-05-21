@@ -1,4 +1,23 @@
 const LinuxVirusSettings = (() => {
+  let personalizeEnabled = true;
+
+  function isPersonalizeEnabled() {
+    return personalizeEnabled;
+  }
+
+  function refreshPersonalizeToggle() {
+    const toggle = document.querySelector("#personalizeToggle");
+    if (!toggle) return;
+    toggle.checked = personalizeEnabled;
+  }
+
+  document.addEventListener("change", (event) => {
+    const target = event.target;
+    if (target && target.id === "personalizeToggle") {
+      personalizeEnabled = target.checked;
+    }
+  });
+
   function createCommandInput(value = "") {
     const input = document.createElement("input");
     input.className = "command-input";
@@ -50,6 +69,8 @@ const LinuxVirusSettings = (() => {
     addCommandInput,
     closeHelp,
     getCommandValues,
+    isPersonalizeEnabled,
+    refreshPersonalizeToggle,
     setCommandInputs,
     showHelp,
   };

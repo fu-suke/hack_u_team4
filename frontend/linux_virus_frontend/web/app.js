@@ -51,6 +51,7 @@ function render() {
     LinuxVirusSettings.setCommandInputs(
       state.commands?.length ? state.commands : LinuxVirusConfig.get("defaultCommands", []),
     );
+    LinuxVirusSettings.refreshPersonalizeToggle();
   }
   if (enteredExpanded) {
     LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
@@ -85,7 +86,13 @@ window.residentSetState = (nextState) => {
     activeEl && (protectedIds.has(activeEl.id) || activeEl.classList?.contains("command-input"));
 
   const incoming = { ...nextState };
-  if (incoming.config) LinuxVirusConfig.update(incoming.config);
+  if (incoming.config) {
+    const hadBaseUrl = Boolean(LinuxVirusConfig.get("apiBaseUrl"));
+    LinuxVirusConfig.update(incoming.config);
+    if (!hadBaseUrl && LinuxVirusConfig.get("apiBaseUrl")) {
+      LinuxVirusApi.pingHealth();
+    }
+  }
   if (activeIsProtected) {
     delete incoming.timerSeconds;
     delete incoming.sleepMinutes;
@@ -238,5 +245,4 @@ document.addEventListener("click", (event) => {
 LinuxVirusDrag.install();
 render();
 
-LinuxVirusApi.pingHealth();
 window.setInterval(() => LinuxVirusApi.pingHealth(), 60000);

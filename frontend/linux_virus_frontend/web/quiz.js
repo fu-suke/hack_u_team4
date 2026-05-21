@@ -124,6 +124,22 @@ const LinuxVirusQuiz = (() => {
     }
   }
 
+  async function fetchQuestionByMode(mode) {
+    if (mode === "virus") {
+      return LinuxVirusApi.fetchVirusQuestion();
+    }
+    const userId = LinuxVirusUser.currentUserId();
+    if (userId && LinuxVirusSettings.isPersonalizeEnabled()) {
+      try {
+        return await LinuxVirusApi.fetchPersonalizedQuestion(userId);
+      } catch (error) {
+        console.warn("Personalize fetch failed, falling back to random", error);
+        return LinuxVirusApi.fetchQuestion();
+      }
+    }
+    return LinuxVirusApi.fetchQuestion();
+  }
+
   async function loadQuestion(mode = "normal") {
     if (isLoading) return;
     isLoading = true;
@@ -136,9 +152,7 @@ const LinuxVirusQuiz = (() => {
     document.querySelector("#retryQuiz")?.setAttribute("hidden", "");
 
     try {
-      const data = mode === "virus"
-        ? await LinuxVirusApi.fetchVirusQuestion()
-        : await LinuxVirusApi.fetchQuestion();
+      const data = await fetchQuestionByMode(mode);
       Object.assign(quiz, normalizeQuestion(data, mode), {
         selected: [],
         answerLogged: false,

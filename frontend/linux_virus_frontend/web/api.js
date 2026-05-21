@@ -50,6 +50,14 @@ const LinuxVirusApi = (() => {
     return response.json();
   }
 
+  async function fetchPersonalizedQuestion(userId) {
+    const params = new URLSearchParams({ user_id: String(userId) });
+    const response = await request(`/questions/personalize?${params}`, {
+      timeoutMs: LONG_TIMEOUT_MS,
+    });
+    return response.json();
+  }
+
   async function pingHealth() {
     try {
       await request("/health", { timeoutMs: 10000 });
@@ -118,6 +126,7 @@ const LinuxVirusApi = (() => {
     ApiError,
     checkAnswer,
     createUser,
+    fetchPersonalizedQuestion,
     fetchQuestion,
     fetchVirusQuestion,
     increaseVirusQuestion,
