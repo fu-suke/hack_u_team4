@@ -13,14 +13,16 @@ const LinuxVirusApi = (() => {
 
   async function request(path, options = {}) {
     const { timeoutMs = LinuxVirusConfig.get("apiTimeoutMs"), ...init } = options;
-    const baseUrl = LinuxVirusConfig.get("apiBaseUrl");
-    if (!baseUrl) {
+    const rawBaseUrl = LinuxVirusConfig.get("apiBaseUrl");
+    if (!rawBaseUrl) {
       throw new ApiError("API URL is not configured", { status: 0 });
     }
+    const baseUrl = rawBaseUrl.replace(/\/+$/, "");
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(`${baseUrl}${path}`, {
+      const url = path.startsWith("/") ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
+      const response = await fetch(url, {
         ...init,
         signal: controller.signal,
       });
