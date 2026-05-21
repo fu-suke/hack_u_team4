@@ -40,4 +40,14 @@ def read_root() -> dict[str, str]:
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
-    return {"status": "ok"}
+    """アプリとDBの両方が応答可能かを確認するヘルスチェック。
+
+    Render の Free tier ではアイドル状態のDB接続もコールドスタート対象となるため、
+    軽量なクエリを1本流して接続プールを温める。
+    """
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "ok"}
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "degraded", "database": "unreachable", "detail": str(exc)}
