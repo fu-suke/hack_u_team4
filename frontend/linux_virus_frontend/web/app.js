@@ -237,3 +237,6 @@ document.addEventListener("click", (event) => {
 
 LinuxVirusDrag.install();
 render();
+
+LinuxVirusApi.pingHealth();
+window.setInterval(() => LinuxVirusApi.pingHealth(), 60000);

@@ -1,4 +1,6 @@
 const LinuxVirusApi = (() => {
+  const LONG_TIMEOUT_MS = 75000;
+
   class ApiError extends Error {
     constructor(message, { status = 0, cause = null } = {}) {
       super(message);
@@ -39,13 +41,21 @@ const LinuxVirusApi = (() => {
   }
 
   async function fetchQuestion() {
-    const response = await request("/questions/random");
+    const response = await request("/questions/random", { timeoutMs: LONG_TIMEOUT_MS });
     return response.json();
   }
 
   async function fetchVirusQuestion() {
-    const response = await request("/virus");
+    const response = await request("/virus", { timeoutMs: LONG_TIMEOUT_MS });
     return response.json();
+  }
+
+  async function pingHealth() {
+    try {
+      await request("/health", { timeoutMs: 10000 });
+    } catch (_) {
+      // ignore: warmup ping is best-effort
+    }
   }
 
   async function checkAnswer(questionId, selectedChoices) {
@@ -71,6 +81,7 @@ const LinuxVirusApi = (() => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
+      timeoutMs: LONG_TIMEOUT_MS,
     });
     return response.json();
   }
@@ -112,6 +123,7 @@ const LinuxVirusApi = (() => {
     increaseVirusQuestion,
     loginUser,
     decreaseVirusQuestion,
+    pingHealth,
     submitAnswerLog,
   };
 })();
