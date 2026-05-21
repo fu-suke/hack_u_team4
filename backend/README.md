@@ -11,6 +11,7 @@ Linux Virus の macOS 常駐バックエンド。
 | `POST` | `/users` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザーを登録する |
 | `POST` | `/users/login` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名でログインする |
 | `GET` | `/questions/random` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す。`choices` は DB 格納時の元順序で返し、シャッフルはフロント側で行う。`answers` は返さない。問題がない場合は `404` |
+| `GET` | `/questions/personalize?user_id=...` | query: `user_id` | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | ログイン中ユーザーの直近1週間の回答ログからレベルを計算し、正規分布で難易度を決める。難易度決定後、その難易度の問題から誤答率を重みとして1問返す。`answers` は返さない。ユーザーまたは問題が存在しない場合は `404` |
 | `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | `id` は問題 ID。`answer` はユーザが並べた選択肢の元 ID 配列で、繰り返し指定する。DB の複数正解パターンと比較して判定し、ログは記録しない |
 | `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | ユーザ ID、問題 ID、初回判定時の正誤を回答ログとして登録する。初回かどうかはフロント側で判定し、バックエンドはリクエストが来たら記録する |
 | `GET` | `/virus` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | `virus_count` が 1 以上の問題から、各問題の `virus_count / sum(virus_count)` の確率で1問返す。レスポンス形式は `/questions/random` と同じで、`answers` は返さない。対象の問題がない場合は `404` |
