@@ -1,9 +1,16 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-SQLITE_URL = "sqlite:///./app.db"
+_raw_url = os.environ.get("DATABASE_URL", "sqlite:///./app.db")
+# Render が渡す "postgres://" は SQLAlchemy 2.x では非対応
+DATABASE_URL = _raw_url.replace("postgres://", "postgresql://", 1)
 
-engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
+_is_sqlite = DATABASE_URL.startswith("sqlite")
+_connect_args = {"check_same_thread": False} if _is_sqlite else {}
+
+engine = create_engine(DATABASE_URL, connect_args=_connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
