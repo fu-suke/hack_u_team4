@@ -276,22 +276,20 @@ const LinuxVirusQuiz = (() => {
       const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
+        LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch(
+          (err) => {
+            console.error("Failed to submit answer log", err);
+          },
+        );
         if (quiz.mode === "virus" && correct) {
           LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
             console.error("Failed to decrease virus question", err);
           });
         }
-        if (quiz.mode !== "virus") {
-          LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch(
-            (err) => {
-              console.error("Failed to submit answer log", err);
-            },
-          );
-          if (!correct) {
-            LinuxVirusApi.increaseVirusQuestion(quiz.id).catch((err) => {
-              console.error("Failed to increase virus question", err);
-            });
-          }
+        if (quiz.mode !== "virus" && !correct) {
+          LinuxVirusApi.increaseVirusQuestion(quiz.id).catch((err) => {
+            console.error("Failed to increase virus question", err);
+          });
         }
       }
       return { correct, tutorial: quiz.tutorial };
