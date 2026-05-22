@@ -37,7 +37,7 @@ from linux_virus_frontend.config import (
     VIRUS_POLL_INTERVAL_MINUTES,
 )
 from linux_virus_frontend.events import _ControlEvent, _KeyEvent
-from linux_virus_frontend.keyboard import _KeyboardInterpreter
+from linux_virus_frontend.keyboard import QUIT_KEY_CODE, _KeyboardInterpreter
 from linux_virus_frontend.mac_window import _build_overlay, _build_web_window, _top_right_frame
 from linux_virus_frontend.state import _ResidentState
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler
@@ -400,6 +400,10 @@ class _ResidentAppController(NSObject):
                 _Quartz.CGEventTapEnable(self._keyboard_event_tap, True)
             return event
 
+        if self._is_quit_cg_event(event):
+            AppHelper.callAfter(self.shutdown)
+            return None
+
         if not self._is_blocking_input() or self._frontmost_app_is_self():
             return event
 
@@ -407,34 +411,52 @@ class _ResidentAppController(NSObject):
         return None
 
     @python_method
+    def _is_quit_cg_event(self, event: object) -> bool:
+        key_code = _Quartz.CGEventGetIntegerValueField(
+            event,
+            _Quartz.kCGKeyboardEventKeycode,
+        )
+        flags = _Quartz.CGEventGetFlags(event)
+        has_control = bool(flags & _Quartz.kCGEventFlagMaskControl)
+        has_option = bool(flags & _Quartz.kCGEventFlagMaskAlternate)
+        return key_code == QUIT_KEY_CODE and has_control and has_option
+
+    @python_method
     def _on_global_key_down(self, event: Any) -> None:
         self._handle_key_event(event)
 
     @python_method
     def _on_local_key_down(self, event: Any) -> Any:
+        if self._handle_key_event(event):
+            return None
         return event
 
     @python_method
-    def _handle_key_event(self, event: Any) -> None:
+    def _handle_key_event(self, event: Any) -> bool:
+        if self._keyboard.is_quit_hotkey(event):
+            self._events.put(_ControlEvent(name="quit", reason="hotkey"))
+            return True
+
         if self._keyboard.is_virus_hotkey(event):
             if self._state.is_sleeping_or_suspended_sleep():
-                return
+                return True
             self._events.put(_ControlEvent(name="virus", reason="hotkey"))
-            return
+            return True
 
         if self._keyboard.is_toggle_hotkey(event):
             if self._state.is_sleeping():
-                return
+                return True
             self._events.put(_ControlEvent(name="expand", reason="hotkey"))
-            return
+            return True
 
         label = self._keyboard.format_key(event)
         if not label:
-            return
+            return False
 
         self._events.put(_KeyEvent(label=label))
         if self._state.record_key(label):
             self._events.put(_ControlEvent(name="expand", reason="command"))
+        return False
 
     @python_method
     def _drain_events(self) -> None:
