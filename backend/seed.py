@@ -40,6 +40,7 @@ def load_questions(path: Path) -> list[Question]:
                 choices=row["choices"],
                 answers=row["answers"],
                 tutorial=row.get("tutorial") or "",
+                sample_output=row.get("sample_output") or "",
                 virus_count=_dummy_virus_counts.get(i, 0),
             )
         )

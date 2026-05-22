@@ -168,6 +168,15 @@ document.addEventListener("click", async (event) => {
       result.className = "quiz__result quiz__result--correct quiz__result--explanation";
       bottom.className = "quiz-bottom quiz-bottom--correct";
       quizEl.classList.add("quiz--celebrate");
+      const existingOutput = document.querySelector("#sampleOutput");
+      if (existingOutput) existingOutput.remove();
+      if (answerResult.sample_output) {
+        const outputEl = document.createElement("pre");
+        outputEl.id = "sampleOutput";
+        outputEl.className = "quiz__sample-output";
+        outputEl.textContent = answerResult.sample_output;
+        bottom.insertBefore(outputEl, bottom.firstChild);
+      }
       document.querySelector("#resetQuiz").hidden = true;
       document.querySelector("#checkQuiz").hidden = true;
       document.querySelector("#closeExplanation").hidden = false;

@@ -247,3 +247,21 @@
 .quiz--celebrate {
   animation: celebrate 0.4s ease;
 }
+
+/* Sample output terminal block */
+
+.quiz__sample-output {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a8d8a8;
+  background: #0d1f0d;
+  border: 1px solid #2a4a2a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 120px;
+  overflow-y: auto;
+}
