@@ -9,6 +9,7 @@ const LinuxVirusQuiz = (() => {
     difficulty: 1,
     prompt: "問題を読み込み中…",
     tutorial: "",
+    sample_output: "",
     choices: [],
     selected: [],
     answers: [],
@@ -48,6 +49,7 @@ const LinuxVirusQuiz = (() => {
       difficulty: normalizeDifficulty(data.difficulty),
       prompt: String(data.prompt),
       tutorial: String(data.tutorial || LinuxVirusConfig.get("defaultTutorial", "")),
+      sample_output: String(data.sample_output || ""),
       answers,
       mode,
       choices: shuffleChoices(
@@ -111,6 +113,8 @@ const LinuxVirusQuiz = (() => {
     const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
+    const sampleOutput = document.querySelector("#sampleOutput");
+    if (sampleOutput) sampleOutput.remove();
     if (result) {
       result.textContent = "トークンを順番に選んでね！";
       result.className = "quiz__result";
@@ -292,7 +296,7 @@ const LinuxVirusQuiz = (() => {
           });
         }
       }
-      return { correct, tutorial: quiz.tutorial };
+      return { correct, tutorial: quiz.tutorial, sample_output: quiz.sample_output };
     } finally {
       isChecking = false;
       setActionsDisabled(false);
