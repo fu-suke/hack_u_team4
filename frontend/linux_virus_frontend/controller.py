@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import os
 import queue
 import sys
 import time
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
+import CoreFoundation
+import Quartz
 from AppKit import (
     NSApp,  # ty: ignore[unresolved-import]
     NSApplication,  # ty: ignore[unresolved-import]
@@ -14,6 +17,7 @@ from AppKit import (
     NSEvent,  # ty: ignore[unresolved-import]
     NSEventMaskKeyDown,  # ty: ignore[unresolved-import]
     NSWindow,  # ty: ignore[unresolved-import]
+    NSWorkspace,  # ty: ignore[unresolved-import]
 )
 from Foundation import (
     NSObject,  # ty: ignore[unresolved-import]
@@ -41,6 +45,8 @@ from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 _WINDOW_TITLE = "Linux Virus"
 _SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
 _VIRUS_WINDOW_TITLE = "Linux Virus Infection"
+_CoreFoundation = cast(Any, CoreFoundation)
+_Quartz = cast(Any, Quartz)
 
 
 class _ResidentAppController(NSObject):
@@ -51,6 +57,8 @@ class _ResidentAppController(NSObject):
         self._state = _ResidentState()
         self._global_monitor: object | None = None
         self._local_monitor: object | None = None
+        self._keyboard_event_tap: object | None = None
+        self._keyboard_event_tap_source: object | None = None
         self._window: NSWindow | None = None
         self._overlay: NSWindow | None = None
         self._webview: WKWebView | None = None
@@ -180,6 +188,7 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _tick_timer(self) -> None:
+        self._refocus_blocking_window()
         if self._state.view == "minimized":
             self._send_state_to_web()
         if self._state.tick_timer_expired():
@@ -274,9 +283,33 @@ class _ResidentAppController(NSObject):
 
         if self._state.view == "expanded" or self._virus_window is not None:
             self._overlay.orderFront_(None)
+            self._refocus_blocking_window()
             return
 
         self._overlay.orderOut_(None)
+
+    @python_method
+    def _is_blocking_input(self) -> bool:
+        return self._state.view == "expanded" or self._virus_window is not None
+
+    @python_method
+    def _frontmost_app_is_self(self) -> bool:
+        frontmost = NSWorkspace.sharedWorkspace().frontmostApplication()
+        if frontmost is None:
+            return False
+        return frontmost.processIdentifier() == os.getpid()
+
+    @python_method
+    def _refocus_blocking_window(self) -> None:
+        if not self._is_blocking_input():
+            return
+
+        NSApp.activateIgnoringOtherApps_(True)
+        if self._virus_window is not None:
+            self._virus_window.makeKeyAndOrderFront_(None)
+            return
+        if self._window is not None:
+            self._window.makeKeyAndOrderFront_(None)
 
     @python_method
     def _update_window_title(self) -> None:
@@ -299,15 +332,79 @@ class _ResidentAppController(NSObject):
             NSEventMaskKeyDown,
             self._on_local_key_down,
         )
+        self._start_keyboard_event_tap()
 
     @python_method
     def _stop_event_monitors(self) -> None:
+        self._stop_keyboard_event_tap()
         if self._global_monitor is not None:
             NSEvent.removeMonitor_(self._global_monitor)
             self._global_monitor = None
         if self._local_monitor is not None:
             NSEvent.removeMonitor_(self._local_monitor)
             self._local_monitor = None
+
+    @python_method
+    def _start_keyboard_event_tap(self) -> None:
+        if self._keyboard_event_tap is not None:
+            return
+
+        self._keyboard_event_tap = _Quartz.CGEventTapCreate(
+            _Quartz.kCGSessionEventTap,
+            _Quartz.kCGHeadInsertEventTap,
+            _Quartz.kCGEventTapOptionDefault,
+            _Quartz.CGEventMaskBit(_Quartz.kCGEventKeyDown),
+            self._keyboard_event_tap_callback,
+            None,
+        )
+        if self._keyboard_event_tap is None:
+            print(
+                "[resident-poc] keyboard event tap could not be created. "
+                "Check Accessibility/Input Monitoring permissions.",
+                file=sys.stderr,
+            )
+            return
+
+        self._keyboard_event_tap_source = _CoreFoundation.CFMachPortCreateRunLoopSource(
+            None,
+            self._keyboard_event_tap,
+            0,
+        )
+        _CoreFoundation.CFRunLoopAddSource(
+            _CoreFoundation.CFRunLoopGetCurrent(),
+            self._keyboard_event_tap_source,
+            _CoreFoundation.kCFRunLoopCommonModes,
+        )
+        _Quartz.CGEventTapEnable(self._keyboard_event_tap, True)
+
+    @python_method
+    def _stop_keyboard_event_tap(self) -> None:
+        if self._keyboard_event_tap is not None:
+            _Quartz.CGEventTapEnable(self._keyboard_event_tap, False)
+        self._keyboard_event_tap = None
+        self._keyboard_event_tap_source = None
+
+    @python_method
+    def _keyboard_event_tap_callback(
+        self,
+        _proxy: object,
+        event_type: int,
+        event: object,
+        _refcon: object,
+    ) -> object | None:
+        if event_type in (
+            _Quartz.kCGEventTapDisabledByTimeout,
+            _Quartz.kCGEventTapDisabledByUserInput,
+        ):
+            if self._keyboard_event_tap is not None:
+                _Quartz.CGEventTapEnable(self._keyboard_event_tap, True)
+            return event
+
+        if not self._is_blocking_input() or self._frontmost_app_is_self():
+            return event
+
+        AppHelper.callAfter(self._refocus_blocking_window)
+        return None
 
     @python_method
     def _on_global_key_down(self, event: Any) -> None:

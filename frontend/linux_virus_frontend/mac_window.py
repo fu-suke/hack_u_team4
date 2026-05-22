@@ -6,9 +6,9 @@ from typing import Any
 from AppKit import (
     NSBackingStoreBuffered,  # ty: ignore[unresolved-import]
     NSColor,  # ty: ignore[unresolved-import]
-    NSFloatingWindowLevel,  # ty: ignore[unresolved-import]
     NSMakeRect,  # ty: ignore[unresolved-import]
     NSScreen,  # ty: ignore[unresolved-import]
+    NSScreenSaverWindowLevel,  # ty: ignore[unresolved-import]
     NSWindow,  # ty: ignore[unresolved-import]
     NSWindowCollectionBehaviorCanJoinAllSpaces,  # ty: ignore[unresolved-import]
     NSWindowCollectionBehaviorFullScreenAuxiliary,  # ty: ignore[unresolved-import]
@@ -25,6 +25,9 @@ from WebKit import (
 
 from linux_virus_frontend.config import EDGE_MARGIN, TOP_MARGIN
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler
+
+_OVERLAY_WINDOW_LEVEL = NSScreenSaverWindowLevel
+_QUIZ_WINDOW_LEVEL = NSScreenSaverWindowLevel + 1
 
 
 def _top_right_frame(width: float, height: float) -> Any:
@@ -48,7 +51,7 @@ def _build_web_window(
         False,
     )
     window.setTitle_("Linux Virus")
-    window.setLevel_(NSFloatingWindowLevel)
+    window.setLevel_(_QUIZ_WINDOW_LEVEL)
     window.setOpaque_(False)
     window.setBackgroundColor_(
         NSColor.colorWithCalibratedRed_green_blue_alpha_(0.09, 0.10, 0.12, 0.96)
@@ -85,7 +88,7 @@ def _build_overlay() -> NSWindow:
         NSBackingStoreBuffered,
         False,
     )
-    overlay.setLevel_(NSFloatingWindowLevel - 1)
+    overlay.setLevel_(_OVERLAY_WINDOW_LEVEL)
     overlay.setOpaque_(False)
     overlay.setBackgroundColor_(
         NSColor.colorWithCalibratedRed_green_blue_alpha_(0.0, 0.0, 0.0, 0.55)
