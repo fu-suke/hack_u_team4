@@ -1,0 +1,9 @@
+# デモ用ユーザー（id=2〜4。id=1はゲストユーザー用に予約済み）
+- id: 2
+  name: alice
+
+- id: 3
+  name: bob
+
+- id: 4
+  name: charlie
