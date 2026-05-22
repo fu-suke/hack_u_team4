@@ -52,6 +52,19 @@ _VIRUS_WINDOW_TITLE = "Linux Virus Infection"
 _CoreFoundation = cast(Any, CoreFoundation)
 _Quartz = cast(Any, Quartz)
 
+_RECOVER_VACCINES_SCRIPT = """
+try {
+  if (typeof LinuxVirusStorage !== 'undefined' && LinuxVirusStorage.resetVaccines) {
+    LinuxVirusStorage.resetVaccines();
+  }
+  if (typeof LinuxVirusQuiz !== 'undefined' && LinuxVirusQuiz.renderVaccines) {
+    LinuxVirusQuiz.renderVaccines();
+  }
+} catch (e) {
+  console.warn('recover_vaccines failed', e);
+}
+"""
+
 
 class _ResidentAppController(NSObject):
     def init(self) -> _ResidentAppController:
@@ -276,22 +289,12 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def recover_vaccines(self) -> None:
-        script = (
-            "try {"
-            "  if (typeof LinuxVirusStorage !== 'undefined' "
-            "      && LinuxVirusStorage.resetVaccines) {"
-            "    LinuxVirusStorage.resetVaccines();"
-            "  }"
-            "  if (typeof LinuxVirusQuiz !== 'undefined' "
-            "      && LinuxVirusQuiz.renderVaccines) {"
-            "    LinuxVirusQuiz.renderVaccines();"
-            "  }"
-            "} catch (e) { console.warn('recover_vaccines failed', e); }"
-        )
-        if self._webview is not None:
-            self._webview.evaluateJavaScript_completionHandler_(script, None)
-        if self._virus_webview is not None:
-            self._virus_webview.evaluateJavaScript_completionHandler_(script, None)
+        for webview in (self._webview, self._virus_webview):
+            if webview is not None:
+                webview.evaluateJavaScript_completionHandler_(
+                    _RECOVER_VACCINES_SCRIPT,
+                    None,
+                )
         print("[resident-poc] vaccines recovered", flush=True)
 
     @python_method
