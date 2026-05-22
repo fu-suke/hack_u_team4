@@ -16,6 +16,7 @@ from AppKit import (
     NSApplicationActivationPolicyAccessory,  # ty: ignore[unresolved-import]
     NSEvent,  # ty: ignore[unresolved-import]
     NSEventMaskKeyDown,  # ty: ignore[unresolved-import]
+    NSPointInRect,  # ty: ignore[unresolved-import]
     NSWindow,  # ty: ignore[unresolved-import]
     NSWorkspace,  # ty: ignore[unresolved-import]
 )
@@ -77,7 +78,7 @@ class _ResidentAppController(NSObject):
         self._keyboard_event_tap: object | None = None
         self._keyboard_event_tap_source: object | None = None
         self._window: NSWindow | None = None
-        self._overlay: NSWindow | None = None
+        self._overlays: list[NSWindow] = []
         self._webview: WKWebView | None = None
         self._message_handler: _ScriptMessageHandler | None = None
         self._virus_window: NSWindow | None = None
@@ -94,7 +95,7 @@ class _ResidentAppController(NSObject):
             width,
             height,
         )
-        self._overlay = _build_overlay()
+        self._overlays = _build_overlay()
         self._window.makeKeyAndOrderFront_(None)
         self._send_state_to_web()
 
@@ -324,15 +325,17 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _sync_overlay_visibility(self) -> None:
-        if self._overlay is None:
+        if not self._overlays:
             return
 
         if self._state.view == "expanded" or self._virus_window is not None:
-            self._overlay.orderFront_(None)
+            for overlay in self._overlays:
+                overlay.orderFront_(None)
             self._refocus_blocking_window()
             return
 
-        self._overlay.orderOut_(None)
+        for overlay in self._overlays:
+            overlay.orderOut_(None)
 
     @python_method
     def _is_blocking_input(self) -> bool:
@@ -398,11 +401,17 @@ class _ResidentAppController(NSObject):
         if self._keyboard_event_tap is not None:
             return
 
+        event_mask = (
+            _Quartz.CGEventMaskBit(_Quartz.kCGEventKeyDown)
+            | _Quartz.CGEventMaskBit(_Quartz.kCGEventLeftMouseDown)
+            | _Quartz.CGEventMaskBit(_Quartz.kCGEventRightMouseDown)
+            | _Quartz.CGEventMaskBit(_Quartz.kCGEventOtherMouseDown)
+        )
         self._keyboard_event_tap = _Quartz.CGEventTapCreate(
             _Quartz.kCGSessionEventTap,
             _Quartz.kCGHeadInsertEventTap,
             _Quartz.kCGEventTapOptionDefault,
-            _Quartz.CGEventMaskBit(_Quartz.kCGEventKeyDown),
+            event_mask,
             self._keyboard_event_tap_callback,
             None,
         )
@@ -449,6 +458,13 @@ class _ResidentAppController(NSObject):
                 _Quartz.CGEventTapEnable(self._keyboard_event_tap, True)
             return event
 
+        if event_type in (
+            _Quartz.kCGEventLeftMouseDown,
+            _Quartz.kCGEventRightMouseDown,
+            _Quartz.kCGEventOtherMouseDown,
+        ):
+            return self._handle_mouse_down_cg_event(event)
+
         if self._is_quit_cg_event(event):
             AppHelper.callAfter(self.shutdown)
             return None
@@ -468,6 +484,23 @@ class _ResidentAppController(NSObject):
 
         AppHelper.callAfter(self._refocus_blocking_window)
         return None
+
+    @python_method
+    def _handle_mouse_down_cg_event(self, event: object) -> object | None:
+        if not self._is_blocking_input():
+            return event
+        if self._mouse_location_in_app_windows():
+            return event
+        AppHelper.callAfter(self._refocus_blocking_window)
+        return None
+
+    @python_method
+    def _mouse_location_in_app_windows(self) -> bool:
+        location = NSEvent.mouseLocation()
+        for window in (self._window, self._virus_window):
+            if window is not None and NSPointInRect(location, window.frame()):
+                return True
+        return False
 
     @python_method
     def _has_hotkey_modifier(self, event: object) -> bool:
