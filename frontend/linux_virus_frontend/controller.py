@@ -6,17 +6,14 @@ import queue
 import sys
 import time
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import Any
 
-import CoreFoundation
-import Quartz
 from AppKit import (
     NSApp,  # ty: ignore[unresolved-import]
     NSApplication,  # ty: ignore[unresolved-import]
     NSApplicationActivationPolicyAccessory,  # ty: ignore[unresolved-import]
     NSEvent,  # ty: ignore[unresolved-import]
     NSEventMaskKeyDown,  # ty: ignore[unresolved-import]
-    NSPointInRect,  # ty: ignore[unresolved-import]
     NSWindow,  # ty: ignore[unresolved-import]
     NSWorkspace,  # ty: ignore[unresolved-import]
 )
@@ -38,11 +35,8 @@ from linux_virus_frontend.config import (
     VIRUS_POLL_INTERVAL_MINUTES,
 )
 from linux_virus_frontend.events import _ControlEvent, _KeyEvent
-from linux_virus_frontend.keyboard import (
-    QUIT_KEY_CODE,
-    RECOVER_VACCINE_KEY_CODE,
-    _KeyboardInterpreter,
-)
+from linux_virus_frontend.input_blocker import _InputBlocker
+from linux_virus_frontend.keyboard import _KeyboardInterpreter
 from linux_virus_frontend.mac_window import _build_overlay, _build_web_window, _top_right_frame
 from linux_virus_frontend.state import _ResidentState
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler
@@ -50,8 +44,6 @@ from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 _WINDOW_TITLE = "Linux Virus"
 _SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
 _VIRUS_WINDOW_TITLE = "Linux Virus Infection"
-_CoreFoundation = cast(Any, CoreFoundation)
-_Quartz = cast(Any, Quartz)
 
 _RECOVER_VACCINES_SCRIPT = """
 try {
@@ -75,8 +67,7 @@ class _ResidentAppController(NSObject):
         self._state = _ResidentState()
         self._global_monitor: object | None = None
         self._local_monitor: object | None = None
-        self._keyboard_event_tap: object | None = None
-        self._keyboard_event_tap_source: object | None = None
+        self._input_blocker = _InputBlocker(self)
         self._window: NSWindow | None = None
         self._overlays: list[NSWindow] = []
         self._webview: WKWebView | None = None
@@ -384,152 +375,17 @@ class _ResidentAppController(NSObject):
             NSEventMaskKeyDown,
             self._on_local_key_down,
         )
-        self._start_keyboard_event_tap()
+        self._input_blocker.start()
 
     @python_method
     def _stop_event_monitors(self) -> None:
-        self._stop_keyboard_event_tap()
+        self._input_blocker.stop()
         if self._global_monitor is not None:
             NSEvent.removeMonitor_(self._global_monitor)
             self._global_monitor = None
         if self._local_monitor is not None:
             NSEvent.removeMonitor_(self._local_monitor)
             self._local_monitor = None
-
-    @python_method
-    def _start_keyboard_event_tap(self) -> None:
-        if self._keyboard_event_tap is not None:
-            return
-
-        event_mask = (
-            _Quartz.CGEventMaskBit(_Quartz.kCGEventKeyDown)
-            | _Quartz.CGEventMaskBit(_Quartz.kCGEventLeftMouseDown)
-            | _Quartz.CGEventMaskBit(_Quartz.kCGEventRightMouseDown)
-            | _Quartz.CGEventMaskBit(_Quartz.kCGEventOtherMouseDown)
-        )
-        self._keyboard_event_tap = _Quartz.CGEventTapCreate(
-            _Quartz.kCGSessionEventTap,
-            _Quartz.kCGHeadInsertEventTap,
-            _Quartz.kCGEventTapOptionDefault,
-            event_mask,
-            self._keyboard_event_tap_callback,
-            None,
-        )
-        if self._keyboard_event_tap is None:
-            print(
-                "[resident-poc] keyboard event tap could not be created. "
-                "Check Accessibility/Input Monitoring permissions.",
-                file=sys.stderr,
-            )
-            return
-
-        self._keyboard_event_tap_source = _CoreFoundation.CFMachPortCreateRunLoopSource(
-            None,
-            self._keyboard_event_tap,
-            0,
-        )
-        _CoreFoundation.CFRunLoopAddSource(
-            _CoreFoundation.CFRunLoopGetCurrent(),
-            self._keyboard_event_tap_source,
-            _CoreFoundation.kCFRunLoopCommonModes,
-        )
-        _Quartz.CGEventTapEnable(self._keyboard_event_tap, True)
-
-    @python_method
-    def _stop_keyboard_event_tap(self) -> None:
-        if self._keyboard_event_tap is not None:
-            _Quartz.CGEventTapEnable(self._keyboard_event_tap, False)
-        self._keyboard_event_tap = None
-        self._keyboard_event_tap_source = None
-
-    @python_method
-    def _keyboard_event_tap_callback(
-        self,
-        _proxy: object,
-        event_type: int,
-        event: object,
-        _refcon: object,
-    ) -> object | None:
-        if event_type in (
-            _Quartz.kCGEventTapDisabledByTimeout,
-            _Quartz.kCGEventTapDisabledByUserInput,
-        ):
-            if self._keyboard_event_tap is not None:
-                _Quartz.CGEventTapEnable(self._keyboard_event_tap, True)
-            return event
-
-        if event_type in (
-            _Quartz.kCGEventLeftMouseDown,
-            _Quartz.kCGEventRightMouseDown,
-            _Quartz.kCGEventOtherMouseDown,
-        ):
-            return self._handle_mouse_down_cg_event(event)
-
-        if self._is_quit_cg_event(event):
-            AppHelper.callAfter(self.shutdown)
-            return None
-
-        if self._is_recover_vaccine_cg_event(event):
-            AppHelper.callAfter(self.recover_vaccines)
-            return None
-
-        if not self._is_blocking_input():
-            return event
-
-        if self._has_hotkey_modifier(event):
-            return None
-
-        if self._frontmost_app_is_self():
-            return event
-
-        AppHelper.callAfter(self._refocus_blocking_window)
-        return None
-
-    @python_method
-    def _handle_mouse_down_cg_event(self, event: object) -> object | None:
-        if not self._is_blocking_input():
-            return event
-        if self._mouse_location_in_app_windows():
-            return event
-        AppHelper.callAfter(self._refocus_blocking_window)
-        return None
-
-    @python_method
-    def _mouse_location_in_app_windows(self) -> bool:
-        location = NSEvent.mouseLocation()
-        for window in (self._window, self._virus_window):
-            if window is not None and NSPointInRect(location, window.frame()):
-                return True
-        return False
-
-    @python_method
-    def _has_hotkey_modifier(self, event: object) -> bool:
-        flags = _Quartz.CGEventGetFlags(event)
-        mask = (
-            _Quartz.kCGEventFlagMaskCommand
-            | _Quartz.kCGEventFlagMaskControl
-            | _Quartz.kCGEventFlagMaskAlternate
-        )
-        return bool(flags & mask)
-
-    @python_method
-    def _is_quit_cg_event(self, event: object) -> bool:
-        return self._is_ctrl_option_cg_event(event, QUIT_KEY_CODE)
-
-    @python_method
-    def _is_recover_vaccine_cg_event(self, event: object) -> bool:
-        return self._is_ctrl_option_cg_event(event, RECOVER_VACCINE_KEY_CODE)
-
-    @python_method
-    def _is_ctrl_option_cg_event(self, event: object, expected_key_code: int) -> bool:
-        key_code = _Quartz.CGEventGetIntegerValueField(
-            event,
-            _Quartz.kCGKeyboardEventKeycode,
-        )
-        flags = _Quartz.CGEventGetFlags(event)
-        has_control = bool(flags & _Quartz.kCGEventFlagMaskControl)
-        has_option = bool(flags & _Quartz.kCGEventFlagMaskAlternate)
-        return key_code == expected_key_code and has_control and has_option
 
     @python_method
     def _on_global_key_down(self, event: Any) -> None:
