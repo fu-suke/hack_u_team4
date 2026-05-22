@@ -1,5 +1,9 @@
 const LinuxVirusSettings = (() => {
   let personalizeEnabled = true;
+  const savedSettings = LinuxVirusStorage.readSettings();
+  if (savedSettings && typeof savedSettings.personalizeEnabled === "boolean") {
+    personalizeEnabled = savedSettings.personalizeEnabled;
+  }
 
   function isPersonalizeEnabled() {
     return personalizeEnabled;
@@ -15,6 +19,7 @@ const LinuxVirusSettings = (() => {
     const target = event.target;
     if (target && target.id === "personalizeToggle") {
       personalizeEnabled = target.checked;
+      saveCurrentSettings();
     }
   });
 
@@ -44,6 +49,23 @@ const LinuxVirusSettings = (() => {
       .filter(Boolean);
   }
 
+  function readSavedSettings() {
+    return LinuxVirusStorage.readSettings();
+  }
+
+  function saveCurrentSettings() {
+    const timerSeconds = document.querySelector("#timerSeconds")?.value;
+    const sleepMinutes = document.querySelector("#sleepMinutes")?.value;
+    const settings = {
+      timerSeconds: timerSeconds ? Number(timerSeconds) : undefined,
+      sleepMinutes: sleepMinutes ? Number(sleepMinutes) : 0,
+      commands: getCommandValues(),
+      personalizeEnabled,
+    };
+    LinuxVirusStorage.saveSettings(settings);
+    return settings;
+  }
+
   function addCommandInput() {
     const container = document.querySelector("#commands");
     if (container.querySelectorAll(".command-input").length >= 10) {
@@ -71,6 +93,8 @@ const LinuxVirusSettings = (() => {
     getCommandValues,
     isPersonalizeEnabled,
     refreshPersonalizeToggle,
+    readSavedSettings,
+    saveCurrentSettings,
     setCommandInputs,
     showHelp,
   };

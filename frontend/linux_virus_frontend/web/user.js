@@ -3,6 +3,14 @@ const LinuxVirusUser = (() => {
   let isSubmitting = false;
   let ratingRequestId = 0;
 
+  const savedUser = LinuxVirusStorage.readUser();
+  if (savedUser && Number.isInteger(Number(savedUser.id)) && savedUser.name) {
+    currentUser = {
+      id: Number(savedUser.id),
+      name: String(savedUser.name),
+    };
+  }
+
   function currentUserId() {
     return currentUser ? currentUser.id : LinuxVirusConfig.get("defaultUserId", 0);
   }
@@ -56,12 +64,14 @@ const LinuxVirusUser = (() => {
       id: Number(user.id),
       name: String(user.name),
     };
+    LinuxVirusStorage.saveUser(currentUser);
     renderUserScreen();
   }
 
   function logout() {
     currentUser = null;
     ratingRequestId += 1;
+    LinuxVirusStorage.clearUser();
     renderUserScreen();
   }
 

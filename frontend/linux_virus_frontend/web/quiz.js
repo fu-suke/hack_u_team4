@@ -128,6 +128,42 @@ const LinuxVirusQuiz = (() => {
     }
   }
 
+  function renderVaccines() {
+    const container = document.querySelector("#vaccineButtons");
+    if (!container) return;
+
+    const vaccineState = LinuxVirusStorage.readVaccineState();
+    const buttons = [];
+    for (let index = 0; index < 3; index++) {
+      const button = document.createElement("button");
+      button.className = "quiz__vaccine";
+      button.type = "button";
+      button.dataset.action = "useVaccine";
+      button.textContent = "💉";
+      button.disabled = index >= vaccineState.remaining;
+      button.setAttribute(
+        "aria-label",
+        button.disabled ? "Used vaccine" : "Use vaccine",
+      );
+      buttons.push(button);
+    }
+    container.replaceChildren(...buttons);
+  }
+
+  function showVaccineMessage() {
+    const result = document.querySelector("#quizResult");
+    const bottom = document.querySelector("#quizBottom");
+    if (result) {
+      result.textContent = "ワクチンを使用しました。問題をスキップします。";
+      result.className = "quiz__result quiz__result--vaccine";
+    }
+    if (bottom) bottom.className = "quiz-bottom quiz-bottom--vaccine";
+    setActionsDisabled(true);
+    for (const button of document.querySelectorAll(".quiz__vaccine")) {
+      button.disabled = true;
+    }
+  }
+
   async function fetchQuestionByMode(mode) {
     if (mode === "virus") {
       return LinuxVirusApi.fetchVirusQuestion();
@@ -210,6 +246,7 @@ const LinuxVirusQuiz = (() => {
     const placeholder = document.querySelector("#answerPlaceholder");
 
     if (promptEl) promptEl.textContent = quiz.prompt;
+    renderVaccines();
     updateMascot();
 
     const answerFrag = document.createDocumentFragment();
@@ -338,8 +375,10 @@ const LinuxVirusQuiz = (() => {
     moveTokenToAnswer,
     removeTokenFromAnswer,
     renderQuiz,
+    renderVaccines,
     reorderAnswerToken,
     resetQuizState,
     selectedLength: () => quiz.selected.length,
+    showVaccineMessage,
   };
 })();

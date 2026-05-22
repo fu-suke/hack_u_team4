@@ -13,6 +13,8 @@ const state = {
 };
 
 let lastRenderedState = state.state;
+let restoredSettings = false;
+let vaccineInProgress = false;
 
 function post(action, payload = {}) {
   window.webkit.messageHandlers.resident.postMessage({ action, ...payload });
@@ -48,6 +50,14 @@ function render() {
     sleepInput.value = String(state.sleepMinutes || 0);
   }
   if (enteredSettings) {
+    const savedSettings = LinuxVirusSettings.readSavedSettings();
+    if (savedSettings) {
+      state.timerSeconds = savedSettings.timerSeconds || state.timerSeconds;
+      state.sleepMinutes = savedSettings.sleepMinutes ?? state.sleepMinutes;
+      state.commands = savedSettings.commands?.length ? savedSettings.commands : state.commands;
+      if (secondsInput) secondsInput.value = String(state.timerSeconds);
+      if (sleepInput) sleepInput.value = String(state.sleepMinutes || 0);
+    }
     LinuxVirusSettings.setCommandInputs(
       state.commands?.length ? state.commands : LinuxVirusConfig.get("defaultCommands", []),
     );
@@ -92,6 +102,9 @@ window.residentSetState = (nextState) => {
     if (!hadBaseUrl && LinuxVirusConfig.get("apiBaseUrl")) {
       LinuxVirusApi.pingHealth();
     }
+    if (incoming.state === "minimized") {
+      restoreSavedSettingsOnce();
+    }
   }
   if (activeIsProtected) {
     delete incoming.timerSeconds;
@@ -109,6 +122,20 @@ document.addEventListener("click", async (event) => {
   if (button.classList.contains("token")) return;
 
   const action = button.dataset.action;
+  if (action === "useVaccine") {
+    if (vaccineInProgress) return;
+    const vaccineState = LinuxVirusStorage.useVaccine();
+    LinuxVirusQuiz.renderVaccines();
+    if (!vaccineState.used) return;
+    vaccineInProgress = true;
+    LinuxVirusQuiz.showVaccineMessage();
+    window.setTimeout(() => {
+      post("useVaccine");
+      vaccineInProgress = false;
+    }, 800);
+    return;
+  }
+
   if (action === "resetQuiz") {
     if (LinuxVirusQuiz.isBusy()) return;
     LinuxVirusSound.play("cancel");
@@ -225,10 +252,11 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "done") {
+    const settings = LinuxVirusSettings.saveCurrentSettings();
     post("setTimer", {
-      seconds: document.querySelector("#timerSeconds").value,
-      sleepMinutes: document.querySelector("#sleepMinutes").value,
-      commands: LinuxVirusSettings.getCommandValues(),
+      seconds: settings.timerSeconds,
+      sleepMinutes: settings.sleepMinutes,
+      commands: settings.commands,
     });
     return;
   }
@@ -260,3 +288,17 @@ LinuxVirusDrag.install();
 render();
 
 window.setInterval(() => LinuxVirusApi.pingHealth(), 60000);
+window.setInterval(() => LinuxVirusQuiz.renderVaccines(), 60000);
+
+function restoreSavedSettingsOnce() {
+  if (restoredSettings) return;
+  const savedSettings = LinuxVirusSettings.readSavedSettings();
+  if (!savedSettings) return;
+
+  restoredSettings = true;
+  post("setTimer", {
+    seconds: savedSettings.timerSeconds,
+    sleepMinutes: savedSettings.sleepMinutes,
+    commands: savedSettings.commands,
+  });
+}

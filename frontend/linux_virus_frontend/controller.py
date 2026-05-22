@@ -37,7 +37,11 @@ from linux_virus_frontend.config import (
     VIRUS_POLL_INTERVAL_MINUTES,
 )
 from linux_virus_frontend.events import _ControlEvent, _KeyEvent
-from linux_virus_frontend.keyboard import QUIT_KEY_CODE, _KeyboardInterpreter
+from linux_virus_frontend.keyboard import (
+    QUIT_KEY_CODE,
+    RECOVER_VACCINE_KEY_CODE,
+    _KeyboardInterpreter,
+)
 from linux_virus_frontend.mac_window import _build_overlay, _build_web_window, _top_right_frame
 from linux_virus_frontend.state import _ResidentState
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler
@@ -114,6 +118,8 @@ class _ResidentAppController(NSObject):
             self._set_timer_from_message(message)
         if action == "closeVirus":
             self.close_virus_window()
+        if action == "useVaccine":
+            self.use_vaccine()
 
     @python_method
     def _normalize_script_message(self, body: Any) -> dict[str, Any] | None:
@@ -269,6 +275,43 @@ class _ResidentAppController(NSObject):
             self._restart_virus_timer()
 
     @python_method
+    def recover_vaccines(self) -> None:
+        script = (
+            "try {"
+            "  if (typeof LinuxVirusStorage !== 'undefined' "
+            "      && LinuxVirusStorage.resetVaccines) {"
+            "    LinuxVirusStorage.resetVaccines();"
+            "  }"
+            "  if (typeof LinuxVirusQuiz !== 'undefined' "
+            "      && LinuxVirusQuiz.renderVaccines) {"
+            "    LinuxVirusQuiz.renderVaccines();"
+            "  }"
+            "} catch (e) { console.warn('recover_vaccines failed', e); }"
+        )
+        if self._webview is not None:
+            self._webview.evaluateJavaScript_completionHandler_(script, None)
+        if self._virus_webview is not None:
+            self._virus_webview.evaluateJavaScript_completionHandler_(script, None)
+        print("[resident-poc] vaccines recovered", flush=True)
+
+    @python_method
+    def use_vaccine(self) -> None:
+        if self._virus_window is not None:
+            window = self._virus_window
+            window.setDelegate_(None)
+            self._clear_virus_window()
+            window.close()
+
+        if self._state.view == "expanded":
+            self.minimize_window()
+            return
+
+        self._state.view = "minimized"
+        self._sync_overlay_visibility()
+        self._resize_window(*MINIMIZED_SIZE)
+        self._send_state_to_web(status="Vaccine used")
+
+    @python_method
     def _clear_virus_window(self) -> None:
         self._virus_window = None
         self._virus_webview = None
@@ -302,6 +345,9 @@ class _ResidentAppController(NSObject):
     @python_method
     def _refocus_blocking_window(self) -> None:
         if not self._is_blocking_input():
+            return
+
+        if self._frontmost_app_is_self():
             return
 
         NSApp.activateIgnoringOtherApps_(True)
@@ -404,14 +450,42 @@ class _ResidentAppController(NSObject):
             AppHelper.callAfter(self.shutdown)
             return None
 
-        if not self._is_blocking_input() or self._frontmost_app_is_self():
+        if self._is_recover_vaccine_cg_event(event):
+            AppHelper.callAfter(self.recover_vaccines)
+            return None
+
+        if not self._is_blocking_input():
+            return event
+
+        if self._has_hotkey_modifier(event):
+            return None
+
+        if self._frontmost_app_is_self():
             return event
 
         AppHelper.callAfter(self._refocus_blocking_window)
         return None
 
     @python_method
+    def _has_hotkey_modifier(self, event: object) -> bool:
+        flags = _Quartz.CGEventGetFlags(event)
+        mask = (
+            _Quartz.kCGEventFlagMaskCommand
+            | _Quartz.kCGEventFlagMaskControl
+            | _Quartz.kCGEventFlagMaskAlternate
+        )
+        return bool(flags & mask)
+
+    @python_method
     def _is_quit_cg_event(self, event: object) -> bool:
+        return self._is_ctrl_option_cg_event(event, QUIT_KEY_CODE)
+
+    @python_method
+    def _is_recover_vaccine_cg_event(self, event: object) -> bool:
+        return self._is_ctrl_option_cg_event(event, RECOVER_VACCINE_KEY_CODE)
+
+    @python_method
+    def _is_ctrl_option_cg_event(self, event: object, expected_key_code: int) -> bool:
         key_code = _Quartz.CGEventGetIntegerValueField(
             event,
             _Quartz.kCGKeyboardEventKeycode,
@@ -419,7 +493,7 @@ class _ResidentAppController(NSObject):
         flags = _Quartz.CGEventGetFlags(event)
         has_control = bool(flags & _Quartz.kCGEventFlagMaskControl)
         has_option = bool(flags & _Quartz.kCGEventFlagMaskAlternate)
-        return key_code == QUIT_KEY_CODE and has_control and has_option
+        return key_code == expected_key_code and has_control and has_option
 
     @python_method
     def _on_global_key_down(self, event: Any) -> None:
@@ -435,6 +509,10 @@ class _ResidentAppController(NSObject):
     def _handle_key_event(self, event: Any) -> bool:
         if self._keyboard.is_quit_hotkey(event):
             self._events.put(_ControlEvent(name="quit", reason="hotkey"))
+            return True
+
+        if self._keyboard.is_recover_vaccine_hotkey(event):
+            AppHelper.callAfter(self.recover_vaccines)
             return True
 
         if self._keyboard.is_virus_hotkey(event):

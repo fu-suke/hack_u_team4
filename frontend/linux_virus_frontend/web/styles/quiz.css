@@ -36,6 +36,38 @@
   color: #f4f7fb;
 }
 
+.quiz__vaccines {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.quiz__vaccine {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid #64d2ff;
+  border-bottom-width: 4px;
+  border-radius: 10px;
+  background: #173845;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.quiz__vaccine:hover:not(:disabled) {
+  background: #1f5061;
+}
+
+.quiz__vaccine:disabled {
+  border-color: var(--duo-border);
+  background: var(--duo-surface);
+  opacity: 0.38;
+}
+
 .quiz__question {
   color: var(--duo-text-muted);
   font-size: 15px;
@@ -136,6 +168,10 @@
   border-top-color: var(--duo-red);
 }
 
+.quiz-bottom--vaccine {
+  border-top-color: #64d2ff;
+}
+
 .quiz__result {
   font-size: 14px;
   font-weight: 700;
@@ -154,6 +190,10 @@
 
 .quiz__result--wrong {
   color: var(--duo-red);
+}
+
+.quiz__result--vaccine {
+  color: #64d2ff;
 }
 
 .quiz__actions {

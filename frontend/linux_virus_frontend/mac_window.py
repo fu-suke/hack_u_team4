@@ -6,9 +6,9 @@ from typing import Any
 from AppKit import (
     NSBackingStoreBuffered,  # ty: ignore[unresolved-import]
     NSColor,  # ty: ignore[unresolved-import]
+    NSFloatingWindowLevel,  # ty: ignore[unresolved-import]
     NSMakeRect,  # ty: ignore[unresolved-import]
     NSScreen,  # ty: ignore[unresolved-import]
-    NSScreenSaverWindowLevel,  # ty: ignore[unresolved-import]
     NSWindow,  # ty: ignore[unresolved-import]
     NSWindowCollectionBehaviorCanJoinAllSpaces,  # ty: ignore[unresolved-import]
     NSWindowCollectionBehaviorFullScreenAuxiliary,  # ty: ignore[unresolved-import]
@@ -26,8 +26,8 @@ from WebKit import (
 from linux_virus_frontend.config import EDGE_MARGIN, TOP_MARGIN
 from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 
-_OVERLAY_WINDOW_LEVEL = NSScreenSaverWindowLevel
-_QUIZ_WINDOW_LEVEL = NSScreenSaverWindowLevel + 1
+_OVERLAY_WINDOW_LEVEL = NSFloatingWindowLevel - 1
+_QUIZ_WINDOW_LEVEL = NSFloatingWindowLevel
 
 
 def _top_right_frame(width: float, height: float) -> Any:

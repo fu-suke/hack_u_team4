@@ -24,14 +24,11 @@ const LinuxVirusDrag = (() => {
 
   function getDragPayload(event) {
     if (activeDrag) return activeDrag;
-    const id = event.dataTransfer.getData("choice-id");
-    const label = event.dataTransfer.getData("choice-label");
-    if (!id || !label) return null;
-    return {
-      choice: { id: Number(id), label },
-      sourceAction: event.dataTransfer.getData("source-action"),
-      sourceIndex: Number(event.dataTransfer.getData("source-index")),
-    };
+    try {
+      return JSON.parse(event.dataTransfer.getData("application/x-linux-virus-choice"));
+    } catch (_) {
+      return null;
+    }
   }
 
   function clearDragState(suppressClick = true) {
@@ -71,11 +68,12 @@ const LinuxVirusDrag = (() => {
         sourceAction: token.dataset.action,
         sourceIndex: Number(token.dataset.index),
       };
-      event.dataTransfer.setData("text/plain", token.dataset.label);
-      event.dataTransfer.setData("choice-id", token.dataset.id);
-      event.dataTransfer.setData("choice-label", token.dataset.label);
-      event.dataTransfer.setData("source-action", token.dataset.action);
-      event.dataTransfer.setData("source-index", token.dataset.index);
+      event.dataTransfer.clearData();
+      event.dataTransfer.setData("text/plain", "");
+      event.dataTransfer.setData(
+        "application/x-linux-virus-choice",
+        JSON.stringify(activeDrag),
+      );
       event.dataTransfer.effectAllowed = "move";
       token.classList.add("token--dragging");
     });
@@ -88,9 +86,10 @@ const LinuxVirusDrag = (() => {
     document.addEventListener("dragover", (event) => {
       const dropZone = event.target.closest("#answer, #tokens");
       if (LinuxVirusQuiz.isInteractionLocked()) return;
-      if (!dropZone || !activeDrag) return;
+      if (!activeDrag) return;
 
       event.preventDefault();
+      if (!dropZone) return;
       event.dataTransfer.dropEffect = "move";
       dropZone.classList.add("dragover");
     });
@@ -102,6 +101,7 @@ const LinuxVirusDrag = (() => {
     });
 
     document.addEventListener("drop", (event) => {
+      if (activeDrag) event.preventDefault();
       if (LinuxVirusQuiz.isInteractionLocked()) {
         clearDragState();
         return;
@@ -112,8 +112,6 @@ const LinuxVirusDrag = (() => {
         clearDragState();
         return;
       }
-
-      event.preventDefault();
 
       const payload = getDragPayload(event);
       const dropIndex = answer ? answerDropIndex(event) : LinuxVirusQuiz.selectedLength();
