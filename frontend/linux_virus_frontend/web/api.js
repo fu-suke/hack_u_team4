@@ -60,6 +60,18 @@ const LinuxVirusApi = (() => {
     return response.json();
   }
 
+  async function fetchRating(userId) {
+    const params = new URLSearchParams({ user_id: String(userId) });
+    const response = await request(`/rating?${params}`);
+    return response.json();
+  }
+
+  async function fetchRatingHistory(userId) {
+    const params = new URLSearchParams({ user_id: String(userId) });
+    const response = await request(`/rating/history?${params}`);
+    return response.json();
+  }
+
   async function pingHealth() {
     try {
       await request("/health", { timeoutMs: 10000 });
@@ -130,6 +142,8 @@ const LinuxVirusApi = (() => {
     createUser,
     fetchPersonalizedQuestion,
     fetchQuestion,
+    fetchRating,
+    fetchRatingHistory,
     fetchVirusQuestion,
     increaseVirusQuestion,
     loginUser,

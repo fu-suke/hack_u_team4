@@ -109,24 +109,43 @@
       <section class="user-panel" data-panel="user">
         <div class="topline">
           <button class="icon-button" type="button" data-action="minimize" aria-label="Back">←</button>
-          <span>User</span>
         </div>
-        <div id="currentUserLabel" class="user-current">Not logged in</div>
-        <label>
-          <span>User name</span>
-          <input
-            id="userName"
-            type="text"
-            maxlength="64"
-            autocomplete="username"
-            autocapitalize="off"
-            spellcheck="false"
-          />
-        </label>
-        <div id="userMessage" class="user-message"></div>
-        <div class="actions user-actions">
-          <button class="btn btn--check" type="button" data-action="loginUser">ログイン</button>
-          <button class="btn btn--reset" type="button" data-action="createUser">新規ユーザー追加</button>
+        <div id="loggedInUserView" class="user-profile" hidden>
+          <div class="user-profile__summary">
+            <div class="user-profile__row">
+              <span class="user-profile__label">ユーザー名</span>
+              <span id="profileUserName" class="user-profile__name">User</span>
+            </div>
+            <div class="user-profile__row">
+              <span class="user-profile__label">レーティング</span>
+              <span id="profileRating" class="user-profile__rating">0</span>
+            </div>
+          </div>
+          <div class="rating-chart">
+            <svg id="ratingChart" viewBox="0 0 460 190" role="img" aria-label="Rating history"></svg>
+          </div>
+          <button class="btn btn--reset user-profile__logout" type="button" data-action="logoutUser">
+            ログアウト
+          </button>
+        </div>
+        <div id="loginUserView" class="user-login">
+          <div id="currentUserLabel" class="user-current">Not logged in</div>
+          <label>
+            <span>User name</span>
+            <input
+              id="userName"
+              type="text"
+              maxlength="64"
+              autocomplete="username"
+              autocapitalize="off"
+              spellcheck="false"
+            />
+          </label>
+          <div id="userMessage" class="user-message"></div>
+          <div class="actions user-actions">
+            <button class="btn btn--check" type="button" data-action="loginUser">ログイン</button>
+            <button class="btn btn--reset" type="button" data-action="createUser">新規ユーザー追加</button>
+          </div>
         </div>
       </section>
 

@@ -12,7 +12,8 @@ Linux Virus の macOS 常駐バックエンド。
 | `POST` | `/users/login` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名でログインする |
 | `GET` | `/questions/random` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す。`choices` は DB 格納時の元順序で返し、シャッフルはフロント側で行う。`answers` は返さない。問題がない場合は `404` |
 | `GET` | `/questions/personalize?user_id=...` | query: `user_id` | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | ログイン中ユーザーの直近1週間の回答ログからレベルを計算し、正規分布で難易度を決める。難易度決定後、その難易度の問題から誤答率を重みとして1問返す。`answers` は返さない。ユーザーまたは問題が存在しない場合は `404` |
-| `GET` | `/rating?user_id=...` | query: `user_id` | `{"rating": string}` | `/questions/personalize` と同じ直近1週間の回答ログから計算した level を `rating = 1000 × (level - 0.5)` で換算して返す。rating は `0`〜`3000` の範囲に制限する。ユーザーが存在しない場合は `404` |
+| `GET` | `/rating?user_id=...` | query: `user_id` | `{"rating": string}` | 指定時点までの全回答ログから計算した level を `rating = 1000 × (level - 0.5)` で換算して返す。rating は `0`〜`3000` の範囲に制限する。ユーザーが存在しない場合は `404` |
+| `GET` | `/rating/history?user_id=...` | query: `user_id` | `{"ratings": [{"date": string, "rating": string}]}` | 直近30日分の rating 履歴を返す。各日の rating はその日以前の全回答ログから計算し、今日と直近30日の最初の日は必ず返す。それ以外の日は、その日に回答ログがある日だけ返す。ユーザーが存在しない場合は `404` |
 | `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | `id` は問題 ID。`answer` はユーザが並べた選択肢の元 ID 配列で、繰り返し指定する。DB の複数正解パターンと比較して判定し、ログは記録しない |
 | `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | ユーザ ID、問題 ID、初回判定時の正誤を回答ログとして登録する。初回かどうかはフロント側で判定し、バックエンドはリクエストが来たら記録する |
 | `GET` | `/virus` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | `virus_count` が 1 以上の問題から、各問題の `virus_count / sum(virus_count)` の確率で1問返す。レスポンス形式は `/questions/random` と同じで、`answers` は返さない。対象の問題がない場合は `404` |
@@ -69,6 +70,12 @@ rating を取得する例。
 
 ```bash
 curl "http://127.0.0.1:8000/rating?user_id=0"
+```
+
+rating 履歴を取得する例。
+
+```bash
+curl "http://127.0.0.1:8000/rating/history?user_id=0"
 ```
 
 

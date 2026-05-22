@@ -210,6 +210,11 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  if (action === "logoutUser") {
+    LinuxVirusUser.logout();
+    return;
+  }
+
   if (action === "done") {
     post("setTimer", {
       seconds: document.querySelector("#timerSeconds").value,

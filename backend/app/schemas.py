@@ -51,6 +51,15 @@ class RatingResponse(BaseModel):
     rating: str
 
 
+class RatingHistoryPoint(BaseModel):
+    date: str
+    rating: str
+
+
+class RatingHistoryResponse(BaseModel):
+    ratings: list[RatingHistoryPoint]
+
+
 class VirusQuestionUpdate(BaseModel):
     question_id: int
 

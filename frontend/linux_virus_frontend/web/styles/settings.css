@@ -12,6 +12,7 @@
 
 .user-panel {
   gap: 14px;
+  overflow: auto;
 }
 
 .topline,
@@ -34,7 +35,7 @@
 }
 
 .settings label,
-.user-panel label,
+.user-login label,
 .command-header {
   display: grid;
   grid-template-columns: 120px 1fr;
@@ -93,6 +94,86 @@
 
 .user-actions {
   margin-top: auto;
+}
+
+.user-login {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+}
+
+.user-profile {
+  display: grid;
+  gap: 14px;
+  min-height: 0;
+}
+
+.user-profile[hidden],
+.user-login[hidden] {
+  display: none;
+}
+
+.user-profile__summary {
+  display: grid;
+  gap: 8px;
+}
+
+.user-profile__row {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+
+.user-profile__label {
+  color: var(--duo-text-muted);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.user-profile__name,
+.user-profile__rating {
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-profile__rating {
+  color: #f4f7fb;
+}
+
+.rating-chart {
+  width: 100%;
+  aspect-ratio: 460 / 190;
+  min-height: 170px;
+  border: 2px solid var(--duo-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #10191e;
+}
+
+.rating-chart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.rating-chart text {
+  fill: #d8e5ec;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rating-chart__empty {
+  fill: var(--duo-text-muted);
+  font-size: 13px;
+}
+
+.user-profile__logout {
+  justify-self: stretch;
 }
 
 /* --- Help dialog --- */
