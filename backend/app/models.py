@@ -26,6 +26,7 @@ class Question(Base):
     choices: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     answers: Mapped[list[list[int]]] = mapped_column(JSON, nullable=False)
     tutorial: Mapped[str] = mapped_column(String, nullable=False)
+    sample_output: Mapped[str] = mapped_column(String, nullable=False, default="")
     virus_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     answer_logs: Mapped[list["AnswerLog"]] = relationship(back_populates="question")

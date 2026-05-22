@@ -34,6 +34,7 @@ class QuestionResponse(BaseModel):
     prompt: str
     choices: list[str]
     tutorial: str
+    sample_output: str
 
     model_config = {"from_attributes": True}
 
