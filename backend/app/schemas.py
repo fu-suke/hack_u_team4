@@ -47,6 +47,10 @@ class QuestionCheckResponse(BaseModel):
     is_correct: bool
 
 
+class RatingResponse(BaseModel):
+    rating: str
+
+
 class VirusQuestionUpdate(BaseModel):
     question_id: int
 
