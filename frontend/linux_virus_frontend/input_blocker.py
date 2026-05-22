@@ -34,6 +34,8 @@ _HOTKEY_MODIFIER_MASK = (
     | _Quartz.kCGEventFlagMaskAlternate
 )
 
+_SCREENSHOT_KEY_CODES = (21, 23)  # 数字キーの 4, 5
+
 
 def _has_hotkey_modifier(event: object) -> bool:
     flags = _Quartz.CGEventGetFlags(event)
@@ -57,6 +59,17 @@ def _is_quit_event(event: object) -> bool:
 
 def _is_recover_vaccine_event(event: object) -> bool:
     return _is_ctrl_option_event(event, RECOVER_VACCINE_KEY_CODE)
+
+
+def _is_screenshot_event(event: object) -> bool:
+    key_code = _Quartz.CGEventGetIntegerValueField(
+        event,
+        _Quartz.kCGKeyboardEventKeycode,
+    )
+    flags = _Quartz.CGEventGetFlags(event)
+    has_command = bool(flags & _Quartz.kCGEventFlagMaskCommand)
+    has_shift = bool(flags & _Quartz.kCGEventFlagMaskShift)
+    return key_code in _SCREENSHOT_KEY_CODES and has_command and has_shift
 
 
 class _InputBlocker:
@@ -133,6 +146,9 @@ class _InputBlocker:
             return None
 
         if not self._controller._is_blocking_input():
+            return event
+
+        if _is_screenshot_event(event):
             return event
 
         if _has_hotkey_modifier(event):
