@@ -287,5 +287,6 @@ const LinuxVirusUser = (() => {
     logout,
     renderUserScreen,
     updateBadge,
+    ratingColor,
   };
 })();

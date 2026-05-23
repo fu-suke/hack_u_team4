@@ -179,7 +179,8 @@
 
 .quiz-bottom--correct {
   border-top-color: var(--duo-green);
-  margin-top: auto;
+  flex: 1;
+  overflow: hidden;
 }
 
 .quiz-bottom--wrong {
@@ -204,6 +205,9 @@
 
 .quiz__result--explanation {
   font-size: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .quiz__result--wrong {
@@ -273,6 +277,8 @@
   background: var(--duo-blue);
   border-bottom-color: var(--duo-blue-dark);
   color: #fff;
+  margin-top: auto;
+  flex: none;
 }
 
 .btn--ghost {
@@ -332,6 +338,27 @@
   word-break: break-all;
   max-height: 120px;
   overflow-y: auto;
+}
+
+/* Shell command display after correct answer */
+
+.quiz__shell-command {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  background: #0d1b21;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
+  color: #f4f7fb;
+  white-space: pre-wrap;
+  word-break: break-all;
+  flex-shrink: 0;
+}
+
+.quiz__shell-prompt {
+  color: #aaee44;
+  font-weight: 700;
+  user-select: none;
 }
 
 /* Rating change display after correct answer */

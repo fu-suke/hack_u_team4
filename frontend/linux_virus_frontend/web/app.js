@@ -223,16 +223,25 @@ document.addEventListener("click", async (event) => {
         outputEl.textContent = answerResult.sample_output;
         bottom.insertBefore(outputEl, bottom.firstChild);
       }
+      const existingShell = document.querySelector("#quizShellCommand");
+      if (existingShell) existingShell.remove();
+      const shellEl = document.createElement("pre");
+      shellEl.id = "quizShellCommand";
+      shellEl.className = "quiz__shell-command";
+      shellEl.innerHTML = `<span class="quiz__shell-prompt">$</span> ${answerResult.command}`;
+      bottom.insertBefore(shellEl, bottom.firstChild);
       document.querySelector("#resetQuiz").hidden = true;
       document.querySelector("#checkQuiz").hidden = true;
       document.querySelector("#closeExplanation").hidden = false;
       if (answerResult.ratingChange !== null) {
         const { newRating, delta } = answerResult.ratingChange;
         const sign = delta >= 0 ? "+" : "";
+        const ratingColor = LinuxVirusUser.ratingColor(newRating).color;
+        const deltaColor = delta >= 0 ? "#aaee44" : "#ff4b4b";
         const ratingEl = document.createElement("div");
         ratingEl.id = "quizRatingChange";
         ratingEl.className = "quiz__rating-change";
-        ratingEl.textContent = `レーティング: ${newRating} (${sign}${delta})`;
+        ratingEl.innerHTML = `レーティング: <span style="color:${ratingColor}">${newRating}</span> <span style="color:${deltaColor}">(${sign}${delta})</span>`;
         bottom.appendChild(ratingEl);
       }
       bottom.appendChild(document.querySelector("#closeExplanation"));

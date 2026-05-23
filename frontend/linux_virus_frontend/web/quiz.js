@@ -17,6 +17,7 @@ const LinuxVirusQuiz = (() => {
     answerLogged: false,
     interactionLocked: false,
     preAnswerRating: null,
+    lastRatingChange: null,
   };
 
   function choiceFromDataset(dataset) {
@@ -116,8 +117,10 @@ const LinuxVirusQuiz = (() => {
     const quizEl = document.querySelector(".quiz");
     const sampleOutput = document.querySelector("#sampleOutput");
     const ratingChange = document.querySelector("#quizRatingChange");
+    const shellCommand = document.querySelector("#quizShellCommand");
     if (sampleOutput) sampleOutput.remove();
     if (ratingChange) ratingChange.remove();
+    if (shellCommand) shellCommand.remove();
     if (result) {
       result.textContent = "トークンを順番に選んでね！";
       result.className = "quiz__result";
@@ -208,6 +211,7 @@ const LinuxVirusQuiz = (() => {
         answerLogged: false,
         interactionLocked: false,
         preAnswerRating: null,
+        lastRatingChange: null,
       });
       const userId = LinuxVirusUser.currentUserId();
       if (userId) {
@@ -346,6 +350,7 @@ const LinuxVirusQuiz = (() => {
               const ratingData = await LinuxVirusApi.fetchRating(userId);
               const newRating = Math.round(Number(ratingData.rating || 0));
               ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
+              quiz.lastRatingChange = ratingChange;
             }
           } catch (err) {
             console.error("Failed to submit answer log or fetch rating", err);
@@ -362,7 +367,8 @@ const LinuxVirusQuiz = (() => {
           });
         }
       }
-      return { correct, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange };
+      const command = quiz.selected.map((c) => c.label).join(" ");
+      return { correct, command, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange: ratingChange ?? quiz.lastRatingChange };
     } finally {
       isChecking = false;
       setActionsDisabled(false);
