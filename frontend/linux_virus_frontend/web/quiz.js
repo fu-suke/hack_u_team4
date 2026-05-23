@@ -198,7 +198,7 @@ const LinuxVirusQuiz = (() => {
         answerLogged: false,
         interactionLocked: false,
       });
-      if (promptEl) promptEl.textContent = quiz.prompt;
+      if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
       resetQuizState();
       renderQuiz(true);
     } catch (error) {
@@ -245,7 +245,7 @@ const LinuxVirusQuiz = (() => {
     const tokensEl = document.querySelector("#tokens");
     const placeholder = document.querySelector("#answerPlaceholder");
 
-    if (promptEl) promptEl.textContent = quiz.prompt;
+    if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
     renderVaccines();
     updateMascot();
 

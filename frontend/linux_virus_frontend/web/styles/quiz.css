@@ -74,6 +74,14 @@
   line-height: 1.5;
 }
 
+.quiz__question code {
+  font-family: ui-monospace, monospace;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
 .quiz__answer,
 .quiz__tokens {
   display: flex;
@@ -194,6 +202,15 @@
 
 .quiz__result--vaccine {
   color: #64d2ff;
+}
+
+.quiz__result code {
+  font-family: ui-monospace, monospace;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.85em;
+  font-weight: normal;
 }
 
 .quiz__actions {
