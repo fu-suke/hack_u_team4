@@ -207,6 +207,8 @@ document.addEventListener("click", async (event) => {
         labelEl.textContent = "正解！🎉";
         labelEl.classList.add("quiz__label--correct");
       }
+      document.querySelector("#answer").hidden = true;
+      document.querySelector("#tokens").hidden = true;
       result.innerHTML = `${LinuxVirusMarkdown.render(answerResult.tutorial)}`;
       result.className =
         "quiz__result quiz__result--correct quiz__result--explanation";
@@ -233,6 +235,7 @@ document.addEventListener("click", async (event) => {
         ratingEl.textContent = `レーティング: ${newRating} (${sign}${delta})`;
         bottom.appendChild(ratingEl);
       }
+      bottom.appendChild(document.querySelector("#closeExplanation"));
     } else {
       LinuxVirusSound.play("incorrect");
       result.textContent = "😅 もう一回やってみよう！";

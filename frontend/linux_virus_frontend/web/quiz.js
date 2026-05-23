@@ -195,6 +195,8 @@ const LinuxVirusQuiz = (() => {
       labelEl.textContent = "コマンドを並び替えよう";
       labelEl.classList.remove("quiz__label--correct");
     }
+    document.querySelector("#answer").hidden = false;
+    document.querySelector("#tokens").hidden = false;
     if (quizEl) quizEl.setAttribute("aria-busy", "true");
     setActionsDisabled(true);
     document.querySelector("#retryQuiz")?.setAttribute("hidden", "");

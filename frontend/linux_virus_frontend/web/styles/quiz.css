@@ -86,6 +86,11 @@
   font-size: 0.9em;
 }
 
+.quiz__answer[hidden],
+.quiz__tokens[hidden] {
+  display: none;
+}
+
 .quiz__answer,
 .quiz__tokens {
   display: flex;
@@ -174,6 +179,7 @@
 
 .quiz-bottom--correct {
   border-top-color: var(--duo-green);
+  margin-top: auto;
 }
 
 .quiz-bottom--wrong {
@@ -307,6 +313,7 @@
 
 .quiz--celebrate {
   animation: celebrate 0.4s ease;
+  flex: 0 0 auto;
 }
 
 /* Sample output terminal block */
