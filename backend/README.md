@@ -16,6 +16,7 @@ Linux Virus の macOS 常駐バックエンド。
 | `GET` | `/rating/history?user_id=...` | query: `user_id` | `{"ratings": [{"date": string, "rating": string}]}` | 直近30日分の rating 履歴を返す。各日の rating はその日以前の全回答ログから計算し、今日と直近30日の最初の日は必ず返す。それ以外の日は、その日に回答ログがある日だけ返す。ユーザーが存在しない場合は `404` |
 | `GET` | `/questions/check?id=...&answer=..&answer=..` | query: `id`, `answer` | `{"is_correct": boolean}` | `id` は問題 ID。`answer` はユーザが並べた選択肢の元 ID 配列で、繰り返し指定する。DB の複数正解パターンと比較して判定し、ログは記録しない |
 | `POST` | `/answer_logs` | `{"user_id": number, "question_id": number, "is_correct": boolean}` | `{"id": number, "user_id": number, "question_id": number, "is_correct": boolean, "answered_at": string}` | ユーザ ID、問題 ID、初回判定時の正誤を回答ログとして登録する。初回かどうかはフロント側で判定し、バックエンドはリクエストが来たら記録する |
+| `GET` | `/answer_logs/streak?user_id=...` | query: `user_id` | `{"streak": number}` | 指定ユーザーの直近の連続正解数を返す。最新の回答から遡り、不正解が出た時点で打ち切る。ユーザーが存在しない場合は `404` |
 | `GET` | `/virus` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | `virus_count` が 1 以上の問題から、各問題の `virus_count / sum(virus_count)` の確率で1問返す。レスポンス形式は `/questions/random` と同じで、`answers` は返さない。対象の問題がない場合は `404` |
 | `POST` | `/virus/increase` | `{"question_id": number}` | `{"question_id": number, "virus_count": number}` | 通常出題で初回誤答した問題の `virus_count` を `+1` する |
 | `POST` | `/virus/decrease` | `{"question_id": number}` | `{"question_id": number, "virus_count": number}` | virus 出題で初回正解した問題の `virus_count` を `-1` する。更新後の値が 0 未満にならないようにし、最小値は `0` とする |
@@ -64,6 +65,12 @@ curl "http://127.0.0.1:8000/questions/check?id=1&answer=1"
 curl -X POST http://127.0.0.1:8000/answer_logs \
   -H "Content-Type: application/json" \
   -d '{"user_id": 2, "question_id": 1, "is_correct": true}'
+```
+
+連続正解数を取得する例。
+
+```bash
+curl "http://127.0.0.1:8000/answer_logs/streak?user_id=2"
 ```
 
 rating を取得する例。

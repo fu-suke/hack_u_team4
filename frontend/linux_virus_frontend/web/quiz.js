@@ -18,6 +18,7 @@ const LinuxVirusQuiz = (() => {
     answerLogged: false,
     interactionLocked: false,
     preAnswerRating: null,
+    lastStreak: 0,
     lastRatingChange: null,
   };
 
@@ -263,6 +264,8 @@ const LinuxVirusQuiz = (() => {
       labelEl.textContent = "ターミナルにコマンドを入力しよう";
       labelEl.classList.remove("quiz__label--correct");
     }
+    const streakEl = document.querySelector("#quizStreak");
+    if (streakEl) streakEl.hidden = true;
     const tokensContainer = document.querySelector("#tokens");
     if (tokensContainer) tokensContainer.hidden = false;
     if (quizEl) quizEl.setAttribute("aria-busy", "true");
@@ -278,6 +281,7 @@ const LinuxVirusQuiz = (() => {
         interactionLocked: false,
         preAnswerRating: null,
         lastRatingChange: null,
+        lastStreak: 0,
       });
       const userId = LinuxVirusUser.currentUserId();
       if (userId) {
@@ -287,10 +291,25 @@ const LinuxVirusQuiz = (() => {
         } catch (_) {
           quiz.preAnswerRating = null;
         }
+        try {
+          const streakData = await LinuxVirusApi.fetchStreak(userId);
+          quiz.lastStreak = streakData.streak;
+        } catch (_) {
+          quiz.lastStreak = 0;
+        }
       }
       if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
       resetQuizState();
       renderQuiz(true);
+      const streakBadge = document.querySelector("#quizStreak");
+      if (streakBadge) {
+        if (quiz.lastStreak >= 2) {
+          streakBadge.textContent = `${quiz.lastStreak}問連続正解中！`;
+          streakBadge.hidden = false;
+        } else {
+          streakBadge.hidden = true;
+        }
+      }
     } catch (error) {
       console.error("Failed to load question", error);
       quiz.id = null;
@@ -398,6 +417,12 @@ const LinuxVirusQuiz = (() => {
               ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
               quiz.lastRatingChange = ratingChange;
             }
+            if (correct) {
+              const streakData = await LinuxVirusApi.fetchStreak(userId);
+              quiz.lastStreak = streakData.streak;
+            } else {
+              quiz.lastStreak = 0;
+            }
           } catch (err) {
             console.error("Failed to submit answer log or fetch rating", err);
           }
@@ -414,7 +439,7 @@ const LinuxVirusQuiz = (() => {
         }
       }
       const command = quiz.typed.trim() || quiz.selected.map((c) => c.label).join(" ");
-      return { correct, command, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange: ratingChange ?? quiz.lastRatingChange };
+      return { correct, command, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange: ratingChange ?? quiz.lastRatingChange, streak: quiz.lastStreak ?? 0 };
     } finally {
       isChecking = false;
       setActionsDisabled(false);
