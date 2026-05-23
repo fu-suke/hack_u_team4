@@ -69,7 +69,6 @@ const LinuxVirusSettings = (() => {
   function addCommandInput() {
     const container = document.querySelector("#commands");
     if (container.querySelectorAll(".command-input").length >= 10) {
-      document.querySelector('[data-bind="status"]').textContent = "Commands are limited to 10.";
       return;
     }
 

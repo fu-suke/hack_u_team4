@@ -115,6 +115,7 @@
       <section class="user-panel" data-panel="user">
         <div class="topline">
           <button class="icon-button" type="button" data-action="minimize" aria-label="Back">←</button>
+          <span>アカウント</span>
         </div>
         <div id="loggedInUserView" class="user-profile" hidden>
           <div class="user-profile__summary">
@@ -128,38 +129,42 @@
             </div>
           </div>
           <div class="rating-chart">
-            <svg id="ratingChart" viewBox="0 0 460 190" role="img" aria-label="Rating history"></svg>
+            <svg id="ratingChart" viewBox="0 0 460 190" role="img" aria-label="レーティング履歴"></svg>
           </div>
           <button class="btn btn--reset user-profile__logout" type="button" data-action="logoutUser">
             ログアウト
           </button>
         </div>
         <div id="loginUserView" class="user-login">
-          <div id="currentUserLabel" class="user-current">Not logged in</div>
-          <label>
-            <span>User name</span>
-            <input
-              id="userName"
-              type="text"
-              maxlength="64"
-              autocomplete="username"
-              autocapitalize="off"
-              spellcheck="false"
-            />
-          </label>
-          <label>
-            <span>Password</span>
-            <input
-              id="userPassword"
-              type="password"
-              maxlength="4"
-              inputmode="numeric"
-              autocomplete="current-password"
-              pattern="\d{4}"
-              placeholder="0000"
-            />
-          </label>
-          <div id="userMessage" class="user-message"></div>
+          <div class="user-login__body">
+            <div class="user-login__fields">
+              <label>
+                <span>ユーザー名</span>
+                <input
+                  id="userName"
+                  type="text"
+                  maxlength="64"
+                  autocomplete="username"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  placeholder="ユーザー名を入力"
+                />
+              </label>
+              <label>
+                <span>パスワード</span>
+                <input
+                  id="userPassword"
+                  type="password"
+                  maxlength="4"
+                  inputmode="numeric"
+                  autocomplete="current-password"
+                  pattern="\d{4}"
+                  placeholder="4桁パスワードを入力"
+                />
+              </label>
+            </div>
+            <div id="userMessage" class="user-message"></div>
+          </div>
           <div class="actions user-actions">
             <button class="btn btn--check" type="button" data-action="loginUser">ログイン</button>
             <button class="btn btn--reset" type="button" data-action="createUser">新規ユーザー追加</button>
@@ -169,32 +174,35 @@
 
       <section class="settings" data-panel="settings">
         <div class="topline">
-          <span>Settings</span>
+          <button class="icon-button" type="button" data-action="minimize" aria-label="Back">←</button>
+          <span>設定</span>
         </div>
-        <label>
-          <span>Timer seconds</span>
-          <input
-            id="timerSeconds"
-            inputmode="numeric"
-            type="number"
-            min="1"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-          />
-        </label>
-        <label>
-          <span>Sleep minutes</span>
-          <input
-            id="sleepMinutes"
-            inputmode="numeric"
-            type="number"
-            min="0"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-          />
-        </label>
+        <div class="settings-time-row">
+          <label>
+            <span>タイマー（秒）</span>
+            <input
+              id="timerSeconds"
+              inputmode="numeric"
+              type="number"
+              min="1"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+            />
+          </label>
+          <label>
+            <span>休止時間（分）</span>
+            <input
+              id="sleepMinutes"
+              inputmode="numeric"
+              type="number"
+              min="0"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+            />
+          </label>
+        </div>
         <label class="toggle-switch">
           <span class="toggle-switch__label">パーソナライズ出題（ログイン時のみ）</span>
           <span class="toggle-switch__control">
@@ -205,33 +213,32 @@
           </span>
         </label>
         <div class="command-header">
-          <span>Commands</span>
+          <span>コマンド</span>
           <div class="command-header__actions">
             <button class="icon-button" type="button" data-action="addCommand">+</button>
             <button class="icon-button" type="button" data-action="showHelp">?</button>
           </div>
         </div>
         <div id="commands" class="commands"></div>
-        <div class="hint">Up to 10 commands. Use text such as /focus or shortcuts such as &lt;cmd&gt;+k.</div>
-        <div class="settings__status" data-bind="status">Settings</div>
+        <div class="hint">最大10件まで登録できます。/focus のような文字列や &lt;cmd&gt;+k のようなショートカットを使えます。</div>
         <div class="actions">
-          <button type="button" data-action="done">Done</button>
+          <button class="btn btn--check" type="button" data-action="done">完了</button>
         </div>
       </section>
 
       <dialog id="helpDialog" class="help-dialog">
         <div class="help-dialog__header">
-          <strong>Command notation</strong>
+          <strong>コマンド表記</strong>
           <button class="icon-button" type="button" data-action="closeHelp">×</button>
         </div>
         <div class="help-dialog__body">
-          <p>Text commands match typed text exactly.</p>
+          <p>文字列コマンドは入力された文字列と完全一致で判定します。</p>
           <ul>
             <li><code>&lt;cmd&gt;+v</code></li>
             <li><code>/focus</code></li>
             <li><code>start quiz</code></li>
           </ul>
-          <p>Modifier shortcuts use angle brackets before the key.</p>
+          <p>修飾キーを使うショートカットは、キーの前に山括弧で指定します。</p>
           <ul>
             <li><code>&lt;cmd&gt;+k</code></li>
             <li><code>&lt;ctrl&gt;+j</code></li>
@@ -240,7 +247,7 @@
             <li><code>&lt;ctrl+option&gt;+&lt;space&gt;</code></li>
             <li><code>&lt;cmd+shift&gt;+p</code></li>
           </ul>
-          <p>Supported modifier names are <code>cmd</code>, <code>ctrl</code>, <code>option</code>, and <code>shift</code>.</p>
+          <p>使用できる修飾キー名は <code>cmd</code>、<code>ctrl</code>、<code>option</code>、<code>shift</code> です。</p>
         </div>
       </dialog>
     </main>

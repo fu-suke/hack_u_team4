@@ -20,12 +20,10 @@ const LinuxVirusUser = (() => {
   async function renderUserScreen() {
     const input = document.querySelector("#userName");
     const passwordInput = document.querySelector("#userPassword");
-    const label = document.querySelector("#currentUserLabel");
     const loginView = document.querySelector("#loginUserView");
     const loggedInView = document.querySelector("#loggedInUserView");
     if (input) input.value = "";
     if (passwordInput) passwordInput.value = "";
-    if (label) label.textContent = currentUser ? `Logged in: ${currentUser.name}` : "Not logged in";
     clearMessage();
     updateBadge();
 
@@ -221,7 +219,7 @@ const LinuxVirusUser = (() => {
       ${circles}
       ${
         points.length === 0
-          ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="rating-chart__empty">No rating data</text>`
+          ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="rating-chart__empty">レーティングデータがありません</text>`
           : ""
       }
     `;
