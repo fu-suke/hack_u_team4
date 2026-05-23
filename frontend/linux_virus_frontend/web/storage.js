@@ -1,6 +1,5 @@
 const LinuxVirusStorage = (() => {
   const SETTINGS_KEY = "linuxVirus.settings";
-  const USER_KEY = "linuxVirus.user";
   const VACCINE_KEY = "linuxVirus.vaccine";
   const DAILY_VACCINE_COUNT = 3;
   const RESET_HOUR = 4;
@@ -83,25 +82,10 @@ const LinuxVirusStorage = (() => {
     writeJson(SETTINGS_KEY, settings);
   }
 
-  function readUser() {
-    return readJson(USER_KEY, null);
-  }
-
-  function saveUser(user) {
-    writeJson(USER_KEY, user);
-  }
-
-  function clearUser() {
-    remove(USER_KEY);
-  }
-
   return {
     readSettings,
-    readUser,
     readVaccineState,
     saveSettings,
-    saveUser,
-    clearUser,
     useVaccine,
     resetVaccines,
   };
