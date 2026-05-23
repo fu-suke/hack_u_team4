@@ -20,12 +20,10 @@ const LinuxVirusUser = (() => {
   async function renderUserScreen() {
     const input = document.querySelector("#userName");
     const passwordInput = document.querySelector("#userPassword");
-    const label = document.querySelector("#currentUserLabel");
     const loginView = document.querySelector("#loginUserView");
     const loggedInView = document.querySelector("#loggedInUserView");
     if (input) input.value = "";
     if (passwordInput) passwordInput.value = "";
-    if (label) label.textContent = currentUser ? `Logged in: ${currentUser.name}` : "Not logged in";
     clearMessage();
     updateBadge();
 
@@ -103,12 +101,17 @@ const LinuxVirusUser = (() => {
     ratingRequestId = requestId;
 
     const nameEl = document.querySelector("#profileUserName");
+    const initialEl = document.querySelector("#profileInitial");
     const ratingEl = document.querySelector("#profileRating");
     if (nameEl) {
       nameEl.textContent = currentUser.name;
       nameEl.style.color = ratingColor(0).color;
     }
-    if (ratingEl) ratingEl.textContent = "読み込み中";
+    if (initialEl) {
+      initialEl.textContent = currentUser.name.trim().slice(0, 1) || "U";
+      initialEl.style.borderColor = ratingColor(0).color;
+    }
+    if (ratingEl) ratingEl.textContent = "Rating: 読み込み中";
     renderRatingChart([]);
 
     try {
@@ -124,12 +127,16 @@ const LinuxVirusUser = (() => {
         nameEl.textContent = currentUser.name;
         nameEl.style.color = color.color;
       }
-      if (ratingEl) ratingEl.textContent = String(rating);
+      if (initialEl) {
+        initialEl.style.borderColor = color.color;
+        initialEl.style.color = color.color;
+      }
+      if (ratingEl) ratingEl.textContent = `Rating: ${rating}`;
       renderRatingChart(historyData.ratings || []);
     } catch (error) {
       console.error("Failed to load rating", error);
       if (requestId !== ratingRequestId) return;
-      if (ratingEl) ratingEl.textContent = "-";
+      if (ratingEl) ratingEl.textContent = "Rating: -";
       renderRatingChart([]);
     }
   }
@@ -221,7 +228,7 @@ const LinuxVirusUser = (() => {
       ${circles}
       ${
         points.length === 0
-          ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="rating-chart__empty">No rating data</text>`
+          ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="rating-chart__empty">レーティングデータがありません</text>`
           : ""
       }
     `;
