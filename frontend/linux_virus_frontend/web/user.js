@@ -53,17 +53,29 @@ const LinuxVirusUser = (() => {
     message.className = ok ? "user-message user-message--success" : "user-message user-message--error";
   }
 
+  function applyUser(user) {
+    if (user && user.id) {
+      currentUser = { id: Number(user.id), name: String(user.name) };
+    } else {
+      currentUser = null;
+      ratingRequestId += 1;
+    }
+    updateBadge();
+  }
+
   function saveUser(user) {
     currentUser = {
       id: Number(user.id),
       name: String(user.name),
     };
+    post("setUser", { id: currentUser.id, name: currentUser.name });
     renderUserScreen();
   }
 
   function logout() {
     currentUser = null;
     ratingRequestId += 1;
+    post("setUser", {});
     renderUserScreen();
   }
 
@@ -272,6 +284,7 @@ const LinuxVirusUser = (() => {
 
   return {
     create,
+    applyUser,
     currentUserId,
     login,
     logout,

@@ -106,6 +106,13 @@ window.residentSetState = (nextState) => {
       activeEl.classList?.contains("command-input"));
 
   const incoming = { ...nextState };
+  if (incoming.currentUser !== undefined) {
+    const newId = incoming.currentUser ? Number(incoming.currentUser.id) : null;
+    if (newId !== LinuxVirusUser.currentUserId()) {
+      LinuxVirusUser.applyUser(incoming.currentUser);
+    }
+    delete incoming.currentUser;
+  }
   if (incoming.config) {
     const hadBaseUrl = Boolean(LinuxVirusConfig.get("apiBaseUrl"));
     LinuxVirusConfig.update(incoming.config);
@@ -160,6 +167,8 @@ async function runCheck() {
       labelEl.classList.add("quiz__label--correct");
     }
     document.querySelector("#tokens").hidden = true;
+    const hintEl = document.querySelector(".quiz__hint");
+    if (hintEl) hintEl.hidden = true;
     result.innerHTML = LinuxVirusMarkdown.render(answerResult.tutorial);
     result.className = "quiz__result quiz__result--correct quiz__result--explanation";
     bottom.className = "quiz-bottom quiz-bottom--correct";
@@ -173,13 +182,6 @@ async function runCheck() {
       outputEl.textContent = answerResult.sample_output;
       bottom.insertBefore(outputEl, bottom.firstChild);
     }
-    const existingShell = document.querySelector("#quizShellCommand");
-    if (existingShell) existingShell.remove();
-    const shellEl = document.createElement("pre");
-    shellEl.id = "quizShellCommand";
-    shellEl.className = "quiz__shell-command";
-    shellEl.innerHTML = `<span class="quiz__shell-prompt">$</span> ${answerResult.command}`;
-    bottom.insertBefore(shellEl, bottom.firstChild);
     document.querySelector("#closeExplanation").hidden = false;
     if (answerResult.ratingChange !== null) {
       const { newRating, delta } = answerResult.ratingChange;

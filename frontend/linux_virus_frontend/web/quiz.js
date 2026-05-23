@@ -192,6 +192,8 @@ const LinuxVirusQuiz = (() => {
     }
     if (bottom) bottom.className = "quiz-bottom";
     document.querySelector("#closeExplanation").hidden = true;
+    const hintEl = document.querySelector(".quiz__hint");
+    if (hintEl) hintEl.hidden = false;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--shake");
     }
