@@ -16,6 +16,7 @@ const LinuxVirusQuiz = (() => {
     mode: "normal",
     answerLogged: false,
     interactionLocked: false,
+    preAnswerRating: null,
   };
 
   function choiceFromDataset(dataset) {
@@ -114,7 +115,9 @@ const LinuxVirusQuiz = (() => {
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
     const sampleOutput = document.querySelector("#sampleOutput");
+    const ratingChange = document.querySelector("#quizRatingChange");
     if (sampleOutput) sampleOutput.remove();
+    if (ratingChange) ratingChange.remove();
     if (result) {
       result.textContent = "トークンを順番に選んでね！";
       result.className = "quiz__result";
@@ -197,7 +200,17 @@ const LinuxVirusQuiz = (() => {
         selected: [],
         answerLogged: false,
         interactionLocked: false,
+        preAnswerRating: null,
       });
+      const userId = LinuxVirusUser.currentUserId();
+      if (userId) {
+        try {
+          const ratingData = await LinuxVirusApi.fetchRating(userId);
+          quiz.preAnswerRating = Math.round(Number(ratingData.rating || 0));
+        } catch (_) {
+          quiz.preAnswerRating = null;
+        }
+      }
       if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
       resetQuizState();
       renderQuiz(true);
@@ -315,13 +328,21 @@ const LinuxVirusQuiz = (() => {
     setActionsDisabled(true);
     try {
       const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
+      let ratingChange = null;
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
         const userId = LinuxVirusUser.currentUserId();
         if (userId) {
-          LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId).catch((err) => {
-            console.error("Failed to submit answer log", err);
-          });
+          try {
+            await LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId);
+            if (quiz.preAnswerRating !== null) {
+              const ratingData = await LinuxVirusApi.fetchRating(userId);
+              const newRating = Math.round(Number(ratingData.rating || 0));
+              ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
+            }
+          } catch (err) {
+            console.error("Failed to submit answer log or fetch rating", err);
+          }
         }
         if (quiz.mode === "virus" && correct) {
           LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
@@ -334,7 +355,7 @@ const LinuxVirusQuiz = (() => {
           });
         }
       }
-      return { correct, tutorial: quiz.tutorial, sample_output: quiz.sample_output };
+      return { correct, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange };
     } finally {
       isChecking = false;
       setActionsDisabled(false);

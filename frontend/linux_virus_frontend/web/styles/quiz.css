@@ -322,3 +322,12 @@
   max-height: 120px;
   overflow-y: auto;
 }
+
+/* Rating change display after correct answer */
+
+.quiz__rating-change {
+  font-size: 13px;
+  color: #a0aab8;
+  text-align: center;
+  padding: 4px 0 2px;
+}

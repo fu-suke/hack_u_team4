@@ -28,8 +28,10 @@ function setText(selector, value) {
 
 function render() {
   const app = document.querySelector("#app");
-  const enteredExpanded = state.state === "expanded" && lastRenderedState !== "expanded";
-  const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
+  const enteredExpanded =
+    state.state === "expanded" && lastRenderedState !== "expanded";
+  const enteredSettings =
+    state.state === "settings" && lastRenderedState !== "settings";
   const enteredUser = state.state === "user" && lastRenderedState !== "user";
   const virusClass = state.quizMode === "virus" ? " app--virus" : "";
   app.className = `app app--${state.state}${virusClass}`;
@@ -54,18 +56,24 @@ function render() {
     if (savedSettings) {
       state.timerSeconds = savedSettings.timerSeconds || state.timerSeconds;
       state.sleepMinutes = savedSettings.sleepMinutes ?? state.sleepMinutes;
-      state.commands = savedSettings.commands?.length ? savedSettings.commands : state.commands;
+      state.commands = savedSettings.commands?.length
+        ? savedSettings.commands
+        : state.commands;
       if (secondsInput) secondsInput.value = String(state.timerSeconds);
       if (sleepInput) sleepInput.value = String(state.sleepMinutes || 0);
     }
     LinuxVirusSettings.setCommandInputs(
-      state.commands?.length ? state.commands : LinuxVirusConfig.get("defaultCommands", []),
+      state.commands?.length
+        ? state.commands
+        : LinuxVirusConfig.get("defaultCommands", []),
     );
     LinuxVirusSettings.refreshPersonalizeToggle();
   }
   if (enteredExpanded) {
     LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
-    LinuxVirusSound.play(state.quizMode === "virus" ? "virusQuestion" : "normalQuestion");
+    LinuxVirusSound.play(
+      state.quizMode === "virus" ? "virusQuestion" : "normalQuestion",
+    );
   }
   if (enteredUser) {
     LinuxVirusUser.renderUserScreen();
@@ -93,7 +101,9 @@ window.residentSetState = (nextState) => {
   const activeEl = document.activeElement;
   const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName"]);
   const activeIsProtected =
-    activeEl && (protectedIds.has(activeEl.id) || activeEl.classList?.contains("command-input"));
+    activeEl &&
+    (protectedIds.has(activeEl.id) ||
+      activeEl.classList?.contains("command-input"));
 
   const incoming = { ...nextState };
   if (incoming.config) {
@@ -174,9 +184,10 @@ document.addEventListener("click", async (event) => {
       answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
     } catch (error) {
       console.error("Failed to check answer", error);
-      result.textContent = error && error.isNetwork
-        ? "バックエンドに接続できません。"
-        : "判定できませんでした。";
+      result.textContent =
+        error && error.isNetwork
+          ? "バックエンドに接続できません。"
+          : "判定できませんでした。";
       result.className = "quiz__result quiz__result--wrong";
       bottom.className = "quiz-bottom quiz-bottom--wrong";
       return;
@@ -191,8 +202,9 @@ document.addEventListener("click", async (event) => {
     if (answerResult.correct) {
       LinuxVirusSound.play("correct");
       LinuxVirusQuiz.lockInteractions();
-      result.innerHTML = `🎉 正解！ ${LinuxVirusMarkdown.render(answerResult.tutorial)}`;
-      result.className = "quiz__result quiz__result--correct quiz__result--explanation";
+      result.innerHTML = `${LinuxVirusMarkdown.render(answerResult.tutorial)}`;
+      result.className =
+        "quiz__result quiz__result--correct quiz__result--explanation";
       bottom.className = "quiz-bottom quiz-bottom--correct";
       quizEl.classList.add("quiz--celebrate");
       const existingOutput = document.querySelector("#sampleOutput");
@@ -207,6 +219,15 @@ document.addEventListener("click", async (event) => {
       document.querySelector("#resetQuiz").hidden = true;
       document.querySelector("#checkQuiz").hidden = true;
       document.querySelector("#closeExplanation").hidden = false;
+      if (answerResult.ratingChange !== null) {
+        const { newRating, delta } = answerResult.ratingChange;
+        const sign = delta >= 0 ? "+" : "";
+        const ratingEl = document.createElement("div");
+        ratingEl.id = "quizRatingChange";
+        ratingEl.className = "quiz__rating-change";
+        ratingEl.textContent = `レーティング: ${newRating} (${sign}${delta})`;
+        bottom.appendChild(ratingEl);
+      }
     } else {
       LinuxVirusSound.play("incorrect");
       result.textContent = "😅 もう一回やってみよう！";
@@ -273,7 +294,9 @@ document.addEventListener("click", (event) => {
   const action = button.dataset.action;
   if (action === "selectToken") {
     LinuxVirusSound.play("click");
-    LinuxVirusQuiz.moveTokenToAnswer(LinuxVirusQuiz.choiceFromDataset(button.dataset));
+    LinuxVirusQuiz.moveTokenToAnswer(
+      LinuxVirusQuiz.choiceFromDataset(button.dataset),
+    );
   }
   if (action === "unselectToken") {
     LinuxVirusSound.play("click");
