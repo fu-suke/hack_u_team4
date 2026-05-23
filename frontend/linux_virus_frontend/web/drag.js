@@ -13,8 +13,8 @@ const LinuxVirusDrag = (() => {
     return didDrag || Date.now() < suppressTokenClickUntil;
   }
 
-  function answerDropIndex(event) {
-    const targetToken = event.target.closest("#answer .token");
+  function tokensDropIndex(event) {
+    const targetToken = event.target.closest("#tokens .token");
     if (!targetToken) return LinuxVirusQuiz.selectedLength();
     const rect = targetToken.getBoundingClientRect();
     const index = Number(targetToken.dataset.index);
@@ -84,7 +84,7 @@ const LinuxVirusDrag = (() => {
     });
 
     document.addEventListener("dragover", (event) => {
-      const dropZone = event.target.closest("#answer, #tokens");
+      const dropZone = event.target.closest("#tokens");
       if (LinuxVirusQuiz.isInteractionLocked()) return;
       if (!activeDrag) return;
 
@@ -95,7 +95,7 @@ const LinuxVirusDrag = (() => {
     });
 
     document.addEventListener("dragleave", (event) => {
-      const dropZone = event.target.closest("#answer, #tokens");
+      const dropZone = event.target.closest("#tokens");
       if (!dropZone || (event.relatedTarget && dropZone.contains(event.relatedTarget))) return;
       dropZone.classList.remove("dragover");
     });
@@ -106,33 +106,21 @@ const LinuxVirusDrag = (() => {
         clearDragState();
         return;
       }
-      const answer = event.target.closest("#answer");
       const tokens = event.target.closest("#tokens");
-      if (!answer && !tokens) {
+      if (!tokens) {
         clearDragState();
         return;
       }
 
       const payload = getDragPayload(event);
-      const dropIndex = answer ? answerDropIndex(event) : LinuxVirusQuiz.selectedLength();
+      const dropIndex = tokensDropIndex(event);
       clearDragState();
       if (!payload) return;
       if (!LinuxVirusQuiz.hasChoiceId(payload.choice.id)) {
         LinuxVirusQuiz.renderQuiz(true);
         return;
       }
-
-      if (answer && payload.sourceAction === "selectToken") {
-        LinuxVirusQuiz.moveTokenToAnswer(payload.choice, dropIndex);
-        return;
-      }
-      if (answer && payload.sourceAction === "unselectToken") {
-        LinuxVirusQuiz.reorderAnswerToken(payload.sourceIndex, dropIndex);
-        return;
-      }
-      if (tokens && payload.sourceAction === "unselectToken") {
-        LinuxVirusQuiz.removeTokenFromAnswer(payload.choice, payload.sourceIndex);
-      }
+      LinuxVirusQuiz.reorderChoice(payload.sourceIndex, dropIndex);
     });
   }
 

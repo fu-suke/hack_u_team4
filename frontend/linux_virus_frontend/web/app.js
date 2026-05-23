@@ -91,7 +91,7 @@ function applyConfigToDom() {
 
 window.residentSetState = (nextState) => {
   const activeEl = document.activeElement;
-  const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName"]);
+  const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName", "terminalInput"]);
   const activeIsProtected =
     activeEl && (protectedIds.has(activeEl.id) || activeEl.classList?.contains("command-input"));
 
@@ -115,6 +115,60 @@ window.residentSetState = (nextState) => {
   render();
 };
 
+async function runCheck() {
+  if (LinuxVirusQuiz.isBusy()) return;
+  const result = document.querySelector("#quizResult");
+  const bottom = document.querySelector("#quizBottom");
+  const quizEl = document.querySelector(".quiz");
+  result.textContent = "判定中…";
+  result.className = "quiz__result";
+  let answerResult = null;
+  try {
+    answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
+  } catch (error) {
+    console.error("Failed to check answer", error);
+    result.textContent = error && error.isNetwork
+      ? "バックエンドに接続できません。"
+      : "判定できませんでした。";
+    result.className = "quiz__result quiz__result--wrong";
+    bottom.className = "quiz-bottom quiz-bottom--wrong";
+    return;
+  }
+  if (!answerResult) {
+    result.textContent = "ターミナルに入力して Enter で送信";
+    result.className = "quiz__result";
+    bottom.className = "quiz-bottom";
+    return;
+  }
+
+  if (answerResult.correct) {
+    LinuxVirusSound.play("correct");
+    LinuxVirusQuiz.lockInteractions();
+    result.textContent = `🎉 正解! ${answerResult.tutorial}`;
+    result.className = "quiz__result quiz__result--correct quiz__result--explanation";
+    bottom.className = "quiz-bottom quiz-bottom--correct";
+    quizEl.classList.add("quiz--celebrate");
+    const existingOutput = document.querySelector("#sampleOutput");
+    if (existingOutput) existingOutput.remove();
+    if (answerResult.sample_output) {
+      const outputEl = document.createElement("pre");
+      outputEl.id = "sampleOutput";
+      outputEl.className = "quiz__sample-output";
+      outputEl.textContent = answerResult.sample_output;
+      bottom.insertBefore(outputEl, bottom.firstChild);
+    }
+    document.querySelector("#closeExplanation").hidden = false;
+  } else {
+    LinuxVirusSound.play("incorrect");
+    result.textContent = "😅 もう一回やってみよう!";
+    result.className = "quiz__result quiz__result--wrong";
+    bottom.className = "quiz-bottom quiz-bottom--wrong";
+    document.querySelector("#closeExplanation").hidden = true;
+    quizEl.classList.add("quiz--shake");
+    window.setTimeout(() => quizEl.classList.remove("quiz--shake"), 450);
+  }
+}
+
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
   if (!button) return;
@@ -136,17 +190,6 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  if (action === "resetQuiz") {
-    if (LinuxVirusQuiz.isBusy()) return;
-    LinuxVirusSound.play("cancel");
-    document.querySelector("#resetQuiz").hidden = false;
-    document.querySelector("#checkQuiz").hidden = false;
-    document.querySelector("#closeExplanation").hidden = true;
-    LinuxVirusQuiz.resetQuizState();
-    LinuxVirusQuiz.renderQuiz();
-    return;
-  }
-
   if (action === "retryQuiz") {
     LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
     return;
@@ -158,65 +201,6 @@ document.addEventListener("click", async (event) => {
     } else {
       LinuxVirusQuiz.loadQuestion("normal");
       post("minimize");
-    }
-    return;
-  }
-
-  if (action === "checkQuiz") {
-    if (LinuxVirusQuiz.isBusy()) return;
-    const result = document.querySelector("#quizResult");
-    const bottom = document.querySelector("#quizBottom");
-    const quizEl = document.querySelector(".quiz");
-    result.textContent = "判定中…";
-    result.className = "quiz__result";
-    let answerResult = null;
-    try {
-      answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
-    } catch (error) {
-      console.error("Failed to check answer", error);
-      result.textContent = error && error.isNetwork
-        ? "バックエンドに接続できません。"
-        : "判定できませんでした。";
-      result.className = "quiz__result quiz__result--wrong";
-      bottom.className = "quiz-bottom quiz-bottom--wrong";
-      return;
-    }
-    if (!answerResult) {
-      result.textContent = "トークンを順番に選んでね！";
-      result.className = "quiz__result";
-      bottom.className = "quiz-bottom";
-      return;
-    }
-
-    if (answerResult.correct) {
-      LinuxVirusSound.play("correct");
-      LinuxVirusQuiz.lockInteractions();
-      result.textContent = `🎉 正解！ ${answerResult.tutorial}`;
-      result.className = "quiz__result quiz__result--correct quiz__result--explanation";
-      bottom.className = "quiz-bottom quiz-bottom--correct";
-      quizEl.classList.add("quiz--celebrate");
-      const existingOutput = document.querySelector("#sampleOutput");
-      if (existingOutput) existingOutput.remove();
-      if (answerResult.sample_output) {
-        const outputEl = document.createElement("pre");
-        outputEl.id = "sampleOutput";
-        outputEl.className = "quiz__sample-output";
-        outputEl.textContent = answerResult.sample_output;
-        bottom.insertBefore(outputEl, bottom.firstChild);
-      }
-      document.querySelector("#resetQuiz").hidden = true;
-      document.querySelector("#checkQuiz").hidden = true;
-      document.querySelector("#closeExplanation").hidden = false;
-    } else {
-      LinuxVirusSound.play("incorrect");
-      result.textContent = "😅 もう一回やってみよう！";
-      result.className = "quiz__result quiz__result--wrong";
-      bottom.className = "quiz-bottom quiz-bottom--wrong";
-      document.querySelector("#resetQuiz").hidden = false;
-      document.querySelector("#checkQuiz").hidden = false;
-      document.querySelector("#closeExplanation").hidden = true;
-      quizEl.classList.add("quiz--shake");
-      window.setTimeout(() => quizEl.classList.remove("quiz--shake"), 450);
     }
     return;
   }
@@ -264,23 +248,38 @@ document.addEventListener("click", async (event) => {
   post(action);
 });
 
-document.addEventListener("click", (event) => {
-  if (LinuxVirusDrag.isClickSuppressed()) return;
-  const button = event.target.closest(".token");
-  if (!button) return;
-  if (LinuxVirusQuiz.isInteractionLocked()) return;
-
-  const action = button.dataset.action;
-  if (action === "selectToken") {
-    LinuxVirusSound.play("click");
-    LinuxVirusQuiz.moveTokenToAnswer(LinuxVirusQuiz.choiceFromDataset(button.dataset));
+document.addEventListener("input", (event) => {
+  const target = event.target;
+  if (target && target.id === "terminalInput") {
+    LinuxVirusQuiz.setTyped(target.value);
   }
-  if (action === "unselectToken") {
-    LinuxVirusSound.play("click");
-    LinuxVirusQuiz.removeTokenFromAnswer(
-      LinuxVirusQuiz.choiceFromDataset(button.dataset),
-      Number(button.dataset.index),
-    );
+});
+
+document.addEventListener("keydown", (event) => {
+  const target = event.target;
+  if (!target || target.id !== "terminalInput") return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    runCheck();
+    return;
+  }
+  if (event.key === "Tab") {
+    event.preventDefault();
+    const input = target;
+    const value = input.value;
+    const caret = input.selectionStart ?? value.length;
+    const before = value.slice(0, caret);
+    const after = value.slice(caret);
+    const wordMatch = before.match(/(\S*)$/);
+    const word = wordMatch ? wordMatch[1] : "";
+    if (!word) return;
+    const completion = LinuxVirusQuiz.completeToken(word);
+    if (!completion) return;
+    const newBefore = before.slice(0, before.length - word.length) + completion + " ";
+    const newValue = newBefore + after;
+    input.value = newValue;
+    input.setSelectionRange(newBefore.length, newBefore.length);
+    LinuxVirusQuiz.setTyped(newValue);
   }
 });
 

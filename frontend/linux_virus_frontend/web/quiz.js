@@ -12,11 +12,69 @@ const LinuxVirusQuiz = (() => {
     sample_output: "",
     choices: [],
     selected: [],
+    typed: "",
     answers: [],
     mode: "normal",
     answerLogged: false,
     interactionLocked: false,
   };
+
+  function tokenizeTyped() {
+    return quiz.typed.trim().split(/\s+/).filter(Boolean);
+  }
+
+  function parsedAnswer() {
+    const tokens = tokenizeTyped();
+    const pool = quiz.choices.map((choice) => ({ ...choice }));
+    const result = [];
+    for (const tok of tokens) {
+      const idx = pool.findIndex((choice) => choice.label === tok);
+      if (idx >= 0) {
+        result.push(pool[idx]);
+        pool.splice(idx, 1);
+      } else {
+        result.push({ id: 0, label: tok });
+      }
+    }
+    return result;
+  }
+
+  function usedChoiceIds() {
+    const used = new Set();
+    for (const choice of parsedAnswer()) {
+      if (choice.id > 0) used.add(choice.id);
+    }
+    return used;
+  }
+
+  function hasInvalidTypedTokens() {
+    for (const choice of parsedAnswer()) {
+      if (choice.id === 0) return true;
+    }
+    return false;
+  }
+
+  function completeToken(prefix) {
+    if (!prefix) return null;
+    const used = usedChoiceIds();
+    const matches = quiz.choices.filter(
+      (choice) => choice.label.startsWith(prefix) && !used.has(choice.id),
+    );
+    const uniqueLabels = [...new Set(matches.map((choice) => choice.label))];
+    if (uniqueLabels.length !== 1) return null;
+    if (uniqueLabels[0] === prefix) return null;
+    return uniqueLabels[0];
+  }
+
+  function reorderChoice(fromIndex, toIndex) {
+    if (quiz.interactionLocked) return;
+    if (fromIndex < 0 || fromIndex >= quiz.choices.length) return;
+    const [moved] = quiz.choices.splice(fromIndex, 1);
+    const dest = fromIndex < toIndex ? toIndex - 1 : toIndex;
+    quiz.choices.splice(Math.max(0, dest), 0, moved);
+    quizVersion++;
+    renderQuiz();
+  }
 
   function choiceFromDataset(dataset) {
     return {
@@ -85,13 +143,14 @@ const LinuxVirusQuiz = (() => {
     mascot.setAttribute("alt", alt);
   }
 
-  function createTokenButton(choice, action, className, index = "") {
+  function createTokenButton(choice, action, className, index = "", { dimmed = false } = {}) {
     const button = document.createElement("button");
-    button.className = className;
+    button.className = dimmed ? `${className} token--used` : className;
     button.type = "button";
     button.textContent = choice.label;
-    button.draggable = !quiz.interactionLocked;
-    button.disabled = quiz.interactionLocked;
+    const interactive = !quiz.interactionLocked && !dimmed;
+    button.draggable = interactive;
+    button.disabled = !interactive;
     button.dataset.action = action;
     button.dataset.id = String(choice.id);
     button.dataset.label = choice.label;
@@ -108,6 +167,12 @@ const LinuxVirusQuiz = (() => {
 
   function resetQuizState() {
     quiz.selected = [];
+    quiz.typed = "";
+    const terminalInput = document.querySelector("#terminalInput");
+    if (terminalInput) {
+      terminalInput.value = "";
+      terminalInput.disabled = false;
+    }
     quiz.interactionLocked = false;
     quizVersion++;
     const result = document.querySelector("#quizResult");
@@ -116,12 +181,10 @@ const LinuxVirusQuiz = (() => {
     const sampleOutput = document.querySelector("#sampleOutput");
     if (sampleOutput) sampleOutput.remove();
     if (result) {
-      result.textContent = "トークンを順番に選んでね！";
+      result.textContent = "ターミナルにコマンドを入力してね！";
       result.className = "quiz__result";
     }
     if (bottom) bottom.className = "quiz-bottom";
-    document.querySelector("#resetQuiz").hidden = false;
-    document.querySelector("#checkQuiz").hidden = false;
     document.querySelector("#closeExplanation").hidden = true;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--shake");
@@ -195,6 +258,7 @@ const LinuxVirusQuiz = (() => {
       const data = await fetchQuestionByMode(mode);
       Object.assign(quiz, normalizeQuestion(data, mode), {
         selected: [],
+        typed: "",
         answerLogged: false,
         interactionLocked: false,
       });
@@ -219,8 +283,6 @@ const LinuxVirusQuiz = (() => {
         result.className = "quiz__result quiz__result--wrong";
       }
       document.querySelector("#retryQuiz")?.removeAttribute("hidden");
-      document.querySelector("#resetQuiz").hidden = true;
-      document.querySelector("#checkQuiz").hidden = true;
     } finally {
       if (quizEl) quizEl.removeAttribute("aria-busy");
       setActionsDisabled(false);
@@ -229,7 +291,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function setActionsDisabled(disabled) {
-    for (const id of ["resetQuiz", "checkQuiz", "closeExplanation", "retryQuiz"]) {
+    for (const id of ["closeExplanation", "retryQuiz"]) {
       const el = document.querySelector(`#${id}`);
       if (el) el.disabled = disabled;
     }
@@ -241,39 +303,21 @@ const LinuxVirusQuiz = (() => {
     renderedQuizVersion = quizVersion;
 
     const promptEl = document.querySelector("#quizPrompt");
-    const answerEl = document.querySelector("#answer");
     const tokensEl = document.querySelector("#tokens");
-    const placeholder = document.querySelector("#answerPlaceholder");
 
     if (promptEl) promptEl.textContent = quiz.prompt;
     renderVaccines();
     updateMascot();
 
-    const answerFrag = document.createDocumentFragment();
     const tokensFrag = document.createDocumentFragment();
-
-    for (const [index, token] of quiz.selected.entries()) {
-      answerFrag.appendChild(
-        createTokenButton(token, "unselectToken", "token token--selected", index),
+    const used = usedChoiceIds();
+    for (const [index, choice] of quiz.choices.entries()) {
+      tokensFrag.appendChild(
+        createTokenButton(choice, "selectToken", "token", index, { dimmed: used.has(choice.id) }),
       );
     }
-
-    const remaining = [...quiz.choices];
-    for (const choice of quiz.selected) {
-      const idx = remaining.findIndex((item) => item.id === choice.id);
-      if (idx >= 0) remaining.splice(idx, 1);
-    }
-
-    for (const choice of remaining) {
-      tokensFrag.appendChild(createTokenButton(choice, "selectToken", "token"));
-    }
-
-    answerEl.replaceChildren(answerFrag);
     tokensEl.replaceChildren(tokensFrag);
-
-    if (placeholder) {
-      placeholder.style.display = quiz.selected.length ? "none" : "";
-    }
+    tokensEl.classList.toggle("quiz__tokens--invalid", hasInvalidTypedTokens());
   }
 
   function moveTokenToAnswer(choice, targetIndex = quiz.selected.length) {
@@ -314,7 +358,7 @@ const LinuxVirusQuiz = (() => {
     isChecking = true;
     setActionsDisabled(true);
     try {
-      const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
+      const correct = await LinuxVirusApi.checkAnswer(quiz.id, parsedAnswer());
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
         const userId = LinuxVirusUser.currentUserId();
@@ -347,6 +391,15 @@ const LinuxVirusQuiz = (() => {
 
   function lockInteractions() {
     quiz.interactionLocked = true;
+    const terminalInput = document.querySelector("#terminalInput");
+    if (terminalInput) terminalInput.disabled = true;
+    quizVersion++;
+    renderQuiz(true);
+  }
+
+  function setTyped(value) {
+    if (quiz.interactionLocked) return;
+    quiz.typed = String(value || "");
     quizVersion++;
     renderQuiz(true);
   }
@@ -378,8 +431,12 @@ const LinuxVirusQuiz = (() => {
     renderQuiz,
     renderVaccines,
     reorderAnswerToken,
+    completeToken,
+    hasInvalidTypedTokens,
+    reorderChoice,
     resetQuizState,
-    selectedLength: () => quiz.selected.length,
+    selectedLength: () => quiz.choices.length,
+    setTyped,
     showVaccineMessage,
   };
 })();
