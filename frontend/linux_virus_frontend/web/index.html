@@ -119,14 +119,9 @@
         </div>
         <div id="loggedInUserView" class="user-profile" hidden>
           <div class="user-profile__summary">
-            <div class="user-profile__row">
-              <span class="user-profile__label">ユーザー名</span>
-              <span id="profileUserName" class="user-profile__name">User</span>
-            </div>
-            <div class="user-profile__row">
-              <span class="user-profile__label">レーティング</span>
-              <span id="profileRating" class="user-profile__rating">0</span>
-            </div>
+            <div id="profileInitial" class="user-profile__avatar">U</div>
+            <span id="profileUserName" class="user-profile__name">User</span>
+            <span id="profileRating" class="user-profile__rating">Rating: 0</span>
           </div>
           <div class="rating-chart">
             <svg id="ratingChart" viewBox="0 0 460 190" role="img" aria-label="レーティング履歴"></svg>
