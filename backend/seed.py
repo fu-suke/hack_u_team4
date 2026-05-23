@@ -15,7 +15,7 @@ SAMPLE_LOGS_YAML = BASE / "sample_logs.yaml"
 
 
 def load_users() -> list[User]:
-    return [User(id=1, name="ゲスト")]
+    return []
 
 
 def load_sample_users(path: Path) -> list[User]:
@@ -114,10 +114,6 @@ def seed() -> None:
             print("強制的に再投入するには --force オプションを使用してください。")
             return
 
-        users = load_users()
-        db.add_all(users)
-        db.flush()
-
         questions = load_questions(QUESTIONS_YAML)
         db.add_all(questions)
         db.flush()
@@ -130,7 +126,7 @@ def seed() -> None:
         db.add_all(logs)
 
         db.commit()
-        print(f"users={len(users) + len(sample_users)}, questions={len(questions)}, answer_logs={len(logs)} 件を投入しました。")
+        print(f"users={len(sample_users)}, questions={len(questions)}, answer_logs={len(logs)} 件を投入しました。")
     finally:
         db.close()
 
@@ -141,10 +137,6 @@ def seed_force() -> None:
 
     db = SessionLocal()
     try:
-        users = load_users()
-        db.add_all(users)
-        db.flush()
-
         questions = load_questions(QUESTIONS_YAML)
         db.add_all(questions)
         db.flush()
@@ -157,7 +149,7 @@ def seed_force() -> None:
         db.add_all(logs)
 
         db.commit()
-        print(f"users={len(users) + len(sample_users)}, questions={len(questions)}, answer_logs={len(logs)} 件を投入しました（テーブルを再作成済み）。")
+        print(f"users={len(sample_users)}, questions={len(questions)}, answer_logs={len(logs)} 件を投入しました（テーブルを再作成済み）。")
     finally:
         db.close()
 

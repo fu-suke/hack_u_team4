@@ -48,7 +48,6 @@ class FrontendSettings(BaseSettings):
 
     api_base_url: str = "http://127.0.0.1:8000"
     api_timeout_ms: int = 8000
-    default_user_id: int = 0
     default_tutorial: str = "この問題の解説はまだ登録されていません。"
     penguin_small_image: str = "../image/penguin_small.png"
     penguin_medium_image: str = "../image/penguin_medium.png"
@@ -65,7 +64,6 @@ class FrontendSettings(BaseSettings):
             "maxSleepMinutes": self.max_sleep_minutes,
             "defaultCommands": self.default_commands,
             "virusPollIntervalMinutes": self.virus_poll_interval_minutes,
-            "defaultUserId": self.default_user_id,
             "defaultTutorial": self.default_tutorial,
             "penguinImages": {
                 "1": self.penguin_small_image,

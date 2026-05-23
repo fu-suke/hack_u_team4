@@ -317,11 +317,12 @@ const LinuxVirusQuiz = (() => {
       const correct = await LinuxVirusApi.checkAnswer(quiz.id, quiz.selected);
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
-        LinuxVirusApi.submitAnswerLog(quiz.id, correct, LinuxVirusUser.currentUserId()).catch(
-          (err) => {
+        const userId = LinuxVirusUser.currentUserId();
+        if (userId) {
+          LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId).catch((err) => {
             console.error("Failed to submit answer log", err);
-          },
-        );
+          });
+        }
         if (quiz.mode === "virus" && correct) {
           LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
             console.error("Failed to decrease virus question", err);

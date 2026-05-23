@@ -12,7 +12,7 @@ const LinuxVirusUser = (() => {
   }
 
   function currentUserId() {
-    return currentUser ? currentUser.id : LinuxVirusConfig.get("defaultUserId", 0);
+    return currentUser ? currentUser.id : null;
   }
 
   function updateBadge() {
