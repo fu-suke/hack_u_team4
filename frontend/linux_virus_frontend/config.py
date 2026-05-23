@@ -25,7 +25,7 @@ class FrontendSettings(BaseSettings):
     edge_margin: float = 32.0
     top_margin: float = 56.0
     minimized_size: tuple[float, float] = (220.0, 112.0)
-    expanded_size: tuple[float, float] = (520.0, 530.0)
+    expanded_size: tuple[float, float] = (520.0, 680.0)
     settings_size: tuple[float, float] = (520.0, 440.0)
 
     poll_interval_seconds: float = 0.1

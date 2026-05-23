@@ -27,6 +27,7 @@ class _ResidentState:
     suspended_sleep_input_minutes: int | None = None
     commands: list[str] = field(default_factory=lambda: DEFAULT_COMMANDS.copy())
     typed_buffer: str = ""
+    current_user: dict[str, Any] | None = None
 
     def __post_init__(self) -> None:
         self.restart_timer()
@@ -154,6 +155,7 @@ class _ResidentState:
             "timerMode": "sleep" if self.is_sleeping_or_suspended_sleep() else "timer",
             "status": status or self.status_text(),
             "config": PUBLIC_CONFIG,
+            "currentUser": self.current_user,
         }
 
     def timer_text(self) -> str:

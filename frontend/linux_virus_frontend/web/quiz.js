@@ -17,6 +17,8 @@ const LinuxVirusQuiz = (() => {
     mode: "normal",
     answerLogged: false,
     interactionLocked: false,
+    preAnswerRating: null,
+    lastRatingChange: null,
   };
 
   function tokenizeTyped() {
@@ -179,13 +181,19 @@ const LinuxVirusQuiz = (() => {
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
     const sampleOutput = document.querySelector("#sampleOutput");
+    const ratingChange = document.querySelector("#quizRatingChange");
+    const shellCommand = document.querySelector("#quizShellCommand");
     if (sampleOutput) sampleOutput.remove();
+    if (ratingChange) ratingChange.remove();
+    if (shellCommand) shellCommand.remove();
     if (result) {
       result.textContent = "ターミナルにコマンドを入力してね！";
       result.className = "quiz__result";
     }
     if (bottom) bottom.className = "quiz-bottom";
     document.querySelector("#closeExplanation").hidden = true;
+    const hintEl = document.querySelector(".quiz__hint");
+    if (hintEl) hintEl.hidden = false;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--shake");
     }
@@ -250,6 +258,13 @@ const LinuxVirusQuiz = (() => {
     const quizEl = document.querySelector(".quiz");
     const result = document.querySelector("#quizResult");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
+    const labelEl = document.querySelector(".quiz__label");
+    if (labelEl) {
+      labelEl.textContent = "ターミナルにコマンドを入力しよう";
+      labelEl.classList.remove("quiz__label--correct");
+    }
+    const tokensContainer = document.querySelector("#tokens");
+    if (tokensContainer) tokensContainer.hidden = false;
     if (quizEl) quizEl.setAttribute("aria-busy", "true");
     setActionsDisabled(true);
     document.querySelector("#retryQuiz")?.setAttribute("hidden", "");
@@ -261,8 +276,19 @@ const LinuxVirusQuiz = (() => {
         typed: "",
         answerLogged: false,
         interactionLocked: false,
+        preAnswerRating: null,
+        lastRatingChange: null,
       });
-      if (promptEl) promptEl.textContent = quiz.prompt;
+      const userId = LinuxVirusUser.currentUserId();
+      if (userId) {
+        try {
+          const ratingData = await LinuxVirusApi.fetchRating(userId);
+          quiz.preAnswerRating = Math.round(Number(ratingData.rating || 0));
+        } catch (_) {
+          quiz.preAnswerRating = null;
+        }
+      }
+      if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
       resetQuizState();
       renderQuiz(true);
     } catch (error) {
@@ -305,7 +331,7 @@ const LinuxVirusQuiz = (() => {
     const promptEl = document.querySelector("#quizPrompt");
     const tokensEl = document.querySelector("#tokens");
 
-    if (promptEl) promptEl.textContent = quiz.prompt;
+    if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
     renderVaccines();
     updateMascot();
 
@@ -359,13 +385,22 @@ const LinuxVirusQuiz = (() => {
     setActionsDisabled(true);
     try {
       const correct = await LinuxVirusApi.checkAnswer(quiz.id, parsedAnswer());
+      let ratingChange = null;
       if (!quiz.answerLogged) {
         quiz.answerLogged = true;
         const userId = LinuxVirusUser.currentUserId();
         if (userId) {
-          LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId).catch((err) => {
-            console.error("Failed to submit answer log", err);
-          });
+          try {
+            await LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId);
+            if (quiz.preAnswerRating !== null) {
+              const ratingData = await LinuxVirusApi.fetchRating(userId);
+              const newRating = Math.round(Number(ratingData.rating || 0));
+              ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
+              quiz.lastRatingChange = ratingChange;
+            }
+          } catch (err) {
+            console.error("Failed to submit answer log or fetch rating", err);
+          }
         }
         if (quiz.mode === "virus" && correct) {
           LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
@@ -378,7 +413,8 @@ const LinuxVirusQuiz = (() => {
           });
         }
       }
-      return { correct, tutorial: quiz.tutorial, sample_output: quiz.sample_output };
+      const command = quiz.typed.trim() || quiz.selected.map((c) => c.label).join(" ");
+      return { correct, command, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange: ratingChange ?? quiz.lastRatingChange };
     } finally {
       isChecking = false;
       setActionsDisabled(false);

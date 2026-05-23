@@ -28,8 +28,10 @@ function setText(selector, value) {
 
 function render() {
   const app = document.querySelector("#app");
-  const enteredExpanded = state.state === "expanded" && lastRenderedState !== "expanded";
-  const enteredSettings = state.state === "settings" && lastRenderedState !== "settings";
+  const enteredExpanded =
+    state.state === "expanded" && lastRenderedState !== "expanded";
+  const enteredSettings =
+    state.state === "settings" && lastRenderedState !== "settings";
   const enteredUser = state.state === "user" && lastRenderedState !== "user";
   const virusClass = state.quizMode === "virus" ? " app--virus" : "";
   app.className = `app app--${state.state}${virusClass}`;
@@ -54,18 +56,24 @@ function render() {
     if (savedSettings) {
       state.timerSeconds = savedSettings.timerSeconds || state.timerSeconds;
       state.sleepMinutes = savedSettings.sleepMinutes ?? state.sleepMinutes;
-      state.commands = savedSettings.commands?.length ? savedSettings.commands : state.commands;
+      state.commands = savedSettings.commands?.length
+        ? savedSettings.commands
+        : state.commands;
       if (secondsInput) secondsInput.value = String(state.timerSeconds);
       if (sleepInput) sleepInput.value = String(state.sleepMinutes || 0);
     }
     LinuxVirusSettings.setCommandInputs(
-      state.commands?.length ? state.commands : LinuxVirusConfig.get("defaultCommands", []),
+      state.commands?.length
+        ? state.commands
+        : LinuxVirusConfig.get("defaultCommands", []),
     );
     LinuxVirusSettings.refreshPersonalizeToggle();
   }
   if (enteredExpanded) {
     LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
-    LinuxVirusSound.play(state.quizMode === "virus" ? "virusQuestion" : "normalQuestion");
+    LinuxVirusSound.play(
+      state.quizMode === "virus" ? "virusQuestion" : "normalQuestion",
+    );
   }
   if (enteredUser) {
     LinuxVirusUser.renderUserScreen();
@@ -93,9 +101,18 @@ window.residentSetState = (nextState) => {
   const activeEl = document.activeElement;
   const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName", "terminalInput"]);
   const activeIsProtected =
-    activeEl && (protectedIds.has(activeEl.id) || activeEl.classList?.contains("command-input"));
+    activeEl &&
+    (protectedIds.has(activeEl.id) ||
+      activeEl.classList?.contains("command-input"));
 
   const incoming = { ...nextState };
+  if (incoming.currentUser !== undefined) {
+    const newId = incoming.currentUser ? Number(incoming.currentUser.id) : null;
+    if (newId !== LinuxVirusUser.currentUserId()) {
+      LinuxVirusUser.applyUser(incoming.currentUser);
+    }
+    delete incoming.currentUser;
+  }
   if (incoming.config) {
     const hadBaseUrl = Boolean(LinuxVirusConfig.get("apiBaseUrl"));
     LinuxVirusConfig.update(incoming.config);
@@ -144,7 +161,15 @@ async function runCheck() {
   if (answerResult.correct) {
     LinuxVirusSound.play("correct");
     LinuxVirusQuiz.lockInteractions();
-    result.textContent = `🎉 正解! ${answerResult.tutorial}`;
+    const labelEl = document.querySelector(".quiz__label");
+    if (labelEl) {
+      labelEl.textContent = "正解！🎉";
+      labelEl.classList.add("quiz__label--correct");
+    }
+    document.querySelector("#tokens").hidden = true;
+    const hintEl = document.querySelector(".quiz__hint");
+    if (hintEl) hintEl.hidden = true;
+    result.innerHTML = LinuxVirusMarkdown.render(answerResult.tutorial);
     result.className = "quiz__result quiz__result--correct quiz__result--explanation";
     bottom.className = "quiz-bottom quiz-bottom--correct";
     quizEl.classList.add("quiz--celebrate");
@@ -158,6 +183,20 @@ async function runCheck() {
       bottom.insertBefore(outputEl, bottom.firstChild);
     }
     document.querySelector("#closeExplanation").hidden = false;
+    if (answerResult.ratingChange !== null) {
+      const { newRating, delta } = answerResult.ratingChange;
+      const sign = delta >= 0 ? "+" : "";
+      const ratingColor = LinuxVirusUser.ratingColor(newRating).color;
+      const deltaColor = delta >= 0 ? "#aaee44" : "#ff4b4b";
+      const existingRating = document.querySelector("#quizRatingChange");
+      if (existingRating) existingRating.remove();
+      const ratingEl = document.createElement("div");
+      ratingEl.id = "quizRatingChange";
+      ratingEl.className = "quiz__rating-change";
+      ratingEl.innerHTML = `レーティング: <span style="color:${ratingColor}">${newRating}</span> <span style="color:${deltaColor}">(${sign}${delta})</span>`;
+      bottom.appendChild(ratingEl);
+    }
+    bottom.appendChild(document.querySelector("#closeExplanation"));
   } else {
     LinuxVirusSound.play("incorrect");
     result.textContent = "😅 もう一回やってみよう!";
@@ -247,6 +286,21 @@ document.addEventListener("click", async (event) => {
   }
 
   post(action);
+});
+
+document.addEventListener("click", (event) => {
+  if (LinuxVirusDrag.isClickSuppressed()) return;
+  const button = event.target.closest(".token");
+  if (!button) return;
+  if (LinuxVirusQuiz.isInteractionLocked()) return;
+
+  const action = button.dataset.action;
+  if (action === "selectToken") {
+    LinuxVirusSound.play("click");
+    LinuxVirusQuiz.moveTokenToAnswer(
+      LinuxVirusQuiz.choiceFromDataset(button.dataset),
+    );
+  }
 });
 
 document.addEventListener("input", (event) => {

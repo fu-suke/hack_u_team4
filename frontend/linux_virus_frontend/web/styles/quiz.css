@@ -36,6 +36,10 @@
   color: #f4f7fb;
 }
 
+.quiz__label--correct {
+  color: #aaee44;
+}
+
 .quiz__vaccines {
   display: flex;
   gap: 6px;
@@ -72,6 +76,19 @@
   color: var(--duo-text-muted);
   font-size: 15px;
   line-height: 1.5;
+}
+
+.quiz__question code {
+  font-family: ui-monospace, monospace;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
+.quiz__answer[hidden],
+.quiz__tokens[hidden] {
+  display: none;
 }
 
 .quiz__answer,
@@ -162,6 +179,8 @@
 
 .quiz-bottom--correct {
   border-top-color: var(--duo-green);
+  flex: 1;
+  overflow: hidden;
 }
 
 .quiz-bottom--wrong {
@@ -181,11 +200,14 @@
 }
 
 .quiz__result--correct {
-  color: var(--duo-green);
+  color: #f4f7fb;
 }
 
 .quiz__result--explanation {
   font-size: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .quiz__result--wrong {
@@ -194,6 +216,15 @@
 
 .quiz__result--vaccine {
   color: #64d2ff;
+}
+
+.quiz__result code {
+  font-family: ui-monospace, monospace;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.85em;
+  font-weight: normal;
 }
 
 .quiz__actions {
@@ -246,6 +277,8 @@
   background: var(--duo-blue);
   border-bottom-color: var(--duo-blue-dark);
   color: #fff;
+  margin-top: auto;
+  flex: none;
 }
 
 .btn--ghost {
@@ -286,6 +319,7 @@
 
 .quiz--celebrate {
   animation: celebrate 0.4s ease;
+  flex: 0 0 auto;
 }
 
 /* Sample output terminal block */
@@ -304,6 +338,36 @@
   word-break: break-all;
   max-height: 120px;
   overflow-y: auto;
+}
+
+/* Shell command display after correct answer */
+
+.quiz__shell-command {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 14px;
+  background: #0d1b21;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0;
+  color: #f4f7fb;
+  white-space: pre-wrap;
+  word-break: break-all;
+  flex-shrink: 0;
+}
+
+.quiz__shell-prompt {
+  color: #aaee44;
+  font-weight: 700;
+  user-select: none;
+}
+
+/* Rating change display after correct answer */
+
+.quiz__rating-change {
+  font-size: 13px;
+  color: #a0aab8;
+  text-align: center;
+  padding: 4px 0 2px;
 }
 
 .quiz__terminal {

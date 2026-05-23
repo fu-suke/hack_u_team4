@@ -125,6 +125,13 @@ class _ResidentAppController(NSObject):
             self.close_virus_window()
         if action == "useVaccine":
             self.use_vaccine()
+        if action == "setUser":
+            user_id = message.get("id")
+            user_name = message.get("name")
+            if user_id is not None and user_name is not None:
+                self._state.current_user = {"id": int(user_id), "name": str(user_name)}
+            else:
+                self._state.current_user = None
 
     @python_method
     def _normalize_script_message(self, body: Any) -> dict[str, Any] | None:
