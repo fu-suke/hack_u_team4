@@ -11,7 +11,7 @@ from linux_virus_frontend.permissions import _request_accessibility_trust
 
 
 def _sigint_handler(_sig: int, _frame: object) -> None:
-    print("\n[resident-poc] stopped", file=sys.stderr)
+    print("\n[linux-virus-frontend] stopped", file=sys.stderr)
     AppHelper.callAfter(NSApp.terminate_, None)
 
 

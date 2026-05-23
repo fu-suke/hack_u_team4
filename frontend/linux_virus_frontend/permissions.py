@@ -13,7 +13,7 @@ def _request_accessibility_trust() -> bool:
     trusted = AXIsProcessTrustedWithOptions(options)
     if not trusted:
         print(
-            "[resident-poc] Accessibility permission is required. "
+            "[linux-virus-frontend] Accessibility permission is required. "
             "Enable the app that launched this process, such as Terminal, iTerm, or VS Code, "
             "in System Settings > Privacy & Security > Accessibility. "
             "If keyboard blocking does not work, also enable it in Input Monitoring, "
