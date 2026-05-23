@@ -67,24 +67,28 @@
               class="quiz__mascot"
               alt="Linux penguin"
             />
-            <div class="quiz__label">コマンドを並び替えよう</div>
+            <div class="quiz__label">ターミナルにコマンドを入力しよう</div>
             <div id="vaccineButtons" class="quiz__vaccines" aria-label="Vaccines"></div>
           </div>
           <div id="quizPrompt" class="quiz__question">問題を読み込み中…</div>
-          <div id="answer" class="quiz__answer" aria-label="Answer area">
-            <span id="answerPlaceholder" class="quiz__placeholder">下のトークンを順番にクリックしてね</span>
-          </div>
+          <label class="quiz__terminal" aria-label="Command input">
+            <span class="quiz__terminal-prompt">$</span>
+            <input
+              id="terminalInput"
+              class="quiz__terminal-input"
+              type="text"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="ここにコマンドを入力"
+            />
+          </label>
+          <div class="quiz__hint">候補は直接ドラッグで並び替えできます。Tab で補完。</div>
           <div id="tokens" class="quiz__tokens" aria-label="Command tokens"></div>
         </div>
         <div class="quiz-bottom" id="quizBottom">
-          <span id="quizResult" class="quiz__result" role="status" aria-live="polite">トークンを順番に選んでね！</span>
+          <span id="quizResult" class="quiz__result" role="status" aria-live="polite">ターミナルに入力して Enter で送信</span>
           <div class="quiz__actions">
-            <button id="resetQuiz" class="btn btn--reset" type="button" data-action="resetQuiz">
-              リセット
-            </button>
-            <button id="checkQuiz" class="btn btn--check" type="button" data-action="checkQuiz">
-              答え合わせ
-            </button>
             <button
               id="closeExplanation"
               class="btn btn--close-explanation"

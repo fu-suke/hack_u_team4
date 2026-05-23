@@ -134,7 +134,7 @@ class _ResidentAppController(NSObject):
         try:
             return dict(body)
         except (TypeError, ValueError):
-            print(f"[resident-poc] ignored script message body={body!r}", file=sys.stderr)
+            print(f"[linux-virus-frontend] ignored script message body={body!r}", file=sys.stderr)
             return None
 
     @python_method
@@ -143,7 +143,7 @@ class _ResidentAppController(NSObject):
         self._state.view = "expanded"
         self._sync_overlay_visibility()
         self._resize_window(*EXPANDED_SIZE)
-        print(f"[resident-poc] expanded reason={reason}", flush=True)
+        print(f"[linux-virus-frontend] expanded reason={reason}", flush=True)
         self._send_state_to_web(status=f"Expanded by {reason}")
 
     @python_method
@@ -151,7 +151,7 @@ class _ResidentAppController(NSObject):
         self._state.suspend_timer_for_settings()
         self._state.view = "settings"
         self._resize_window(*SETTINGS_SIZE)
-        print("[resident-poc] settings", flush=True)
+        print("[linux-virus-frontend] settings", flush=True)
         self._send_state_to_web(status="Settings")
 
     @python_method
@@ -159,7 +159,7 @@ class _ResidentAppController(NSObject):
         self._state.suspend_timer_for_settings()
         self._state.view = "user"
         self._resize_window(*SETTINGS_SIZE)
-        print("[resident-poc] user", flush=True)
+        print("[linux-virus-frontend] user", flush=True)
         self._send_state_to_web(status="User")
 
     @python_method
@@ -174,7 +174,7 @@ class _ResidentAppController(NSObject):
             self._state.restart_timer()
         self._sync_overlay_visibility()
         self._resize_window(*MINIMIZED_SIZE)
-        print("[resident-poc] minimized", flush=True)
+        print("[linux-virus-frontend] minimized", flush=True)
         self._send_state_to_web()
 
     @python_method
@@ -191,7 +191,7 @@ class _ResidentAppController(NSObject):
         status = f"Timer set: {self._state.timer_seconds}s, commands: {commands_text}"
         self._send_state_to_web(status=status)
         print(
-            f"[resident-poc] timer_set seconds={self._state.timer_seconds} "
+            f"[linux-virus-frontend] timer_set seconds={self._state.timer_seconds} "
             f"commands={commands_text}",
             flush=True,
         )
@@ -267,7 +267,7 @@ class _ResidentAppController(NSObject):
         self._sync_overlay_visibility()
         self._virus_window.makeKeyAndOrderFront_(None)
         self._send_virus_state_to_web()
-        print("[resident-poc] virus_window opened", flush=True)
+        print("[linux-virus-frontend] virus_window opened", flush=True)
 
     @python_method
     def close_virus_window(self) -> None:
@@ -287,7 +287,7 @@ class _ResidentAppController(NSObject):
                     _RECOVER_VACCINES_SCRIPT,
                     None,
                 )
-        print("[resident-poc] vaccines recovered", flush=True)
+        print("[linux-virus-frontend] vaccines recovered", flush=True)
 
     @python_method
     def use_vaccine(self) -> None:
@@ -446,7 +446,7 @@ class _ResidentAppController(NSObject):
                 continue
 
             self._send_state_to_web()
-            print(f"[resident-poc] key={event.label}", flush=True)
+            print(f"[linux-virus-frontend] key={event.label}", flush=True)
 
     @python_method
     def shutdown(self) -> None:

@@ -8,8 +8,8 @@ Linux Virus の macOS 常駐バックエンド。
 | --- | --- | --- | --- | --- |
 | `GET` | `/` | なし | `{"message": "Linux Virus Backend is running"}` | APIの起動確認 |
 | `GET` | `/health` | なし | `{"status": "ok"}` | ヘルスチェック |
-| `POST` | `/users` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザーを登録する |
-| `POST` | `/users/login` | `{"name": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名でログインする |
+| `POST` | `/users` | `{"name": string, "password": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザーを登録する。`password` は4桁の数字（正規表現 `^\d{4}$`、それ以外は `422`）。同名ユーザーがすでに存在する場合は `409` |
+| `POST` | `/users/login` | `{"name": string, "password": string}` | `{"id": number, "name": string, "created_at": string}` | ユーザー名とパスワードでログインする。`password` は4桁の数字（それ以外は `422`）。ユーザー未存在は `404`、パスワード不一致は `401` |
 | `GET` | `/questions/random` | なし | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | DB から問題をランダムに1問返す。`choices` は DB 格納時の元順序で返し、シャッフルはフロント側で行う。`answers` は返さない。問題がない場合は `404` |
 | `GET` | `/questions/personalize?user_id=...` | query: `user_id` | `{"id": number, "difficulty": number, "prompt": string, "choices": string[], "tutorial": string}` | ログイン中ユーザーの直近1週間の回答ログからレベルを計算し、正規分布で難易度を決める。難易度決定後、その難易度の問題から誤答率を重みとして1問返す。`answers` は返さない。ユーザーまたは問題が存在しない場合は `404` |
 | `GET` | `/rating?user_id=...` | query: `user_id` | `{"rating": string}` | 指定時点までの全回答ログから計算した level を `rating = 1000 × (level - 0.5)` で換算して返す。rating は `0`〜`3000` の範囲に制限する。ユーザーが存在しない場合は `404` |
@@ -34,20 +34,20 @@ curl http://127.0.0.1:8000/health
 ```
 
 ユーザーを登録する例。
-`id` はバックエンドが自動で割り当てる。
+`id` はバックエンドが自動で割り当てる。`password` は4桁の数字。
 
 ```bash
 curl -X POST http://127.0.0.1:8000/users \
   -H "Content-Type: application/json" \
-  -d '{"name": "山田太郎"}'
+  -d '{"name": "山田太郎", "password": "1234"}'
 ```
 
-ユーザー名でログインする例。
+ユーザー名とパスワードでログインする例。
 
 ```bash
 curl -X POST http://127.0.0.1:8000/users/login \
   -H "Content-Type: application/json" \
-  -d '{"name": "山田太郎"}'
+  -d '{"name": "山田太郎", "password": "1234"}'
 ```
 
 回答を判定する例。

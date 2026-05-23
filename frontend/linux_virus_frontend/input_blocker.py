@@ -102,7 +102,7 @@ class _InputBlocker:
         )
         if self._tap is None:
             print(
-                "[resident-poc] keyboard event tap could not be created. "
+                "[linux-virus-frontend] keyboard event tap could not be created. "
                 "Check Accessibility/Input Monitoring permissions.",
                 file=sys.stderr,
             )
