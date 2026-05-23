@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import AnswerLog, Question, User
-from app.schemas import AnswerLogCreate, AnswerLogResponse
+from app.schemas import AnswerLogCreate, AnswerLogResponse, StreakResponse
 
 router = APIRouter(prefix="/answer_logs", tags=["answer_logs"])
 
@@ -32,3 +32,31 @@ def create_answer_log(
 
     db.refresh(db_answer_log)
     return db_answer_log
+
+
+@router.get("/streak", response_model=StreakResponse)
+def get_streak(user_id: int, db: Session = Depends(get_db)) -> dict:
+    """ユーザーの現在の連続正解数を返す。
+
+    Args:
+        user_id: 対象ユーザーのID。
+        db: データベースセッション。
+
+    Returns:
+        streak: 直近から遡った連続正解数。不正解が出た時点で打ち切り。
+    """
+    if db.get(User, user_id) is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    logs = (
+        db.query(AnswerLog)
+        .filter(AnswerLog.user_id == user_id)
+        .order_by(AnswerLog.answered_at.desc())
+        .all()
+    )
+    streak = 0
+    for log in logs:
+        if log.is_correct:
+            streak += 1
+        else:
+            break
+    return {"streak": streak}

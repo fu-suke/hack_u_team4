@@ -120,6 +120,11 @@ const LinuxVirusApi = (() => {
     });
   }
 
+  async function fetchStreak(userId) {
+    const response = await request(`/answer_logs/streak?user_id=${userId}`);
+    return response.json();
+  }
+
   async function decreaseVirusQuestion(questionId) {
     await request("/virus/decrease", {
       method: "POST",
@@ -144,6 +149,7 @@ const LinuxVirusApi = (() => {
     fetchQuestion,
     fetchRating,
     fetchRatingHistory,
+    fetchStreak,
     fetchVirusQuestion,
     increaseVirusQuestion,
     loginUser,

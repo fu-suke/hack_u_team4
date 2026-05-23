@@ -155,6 +155,8 @@ async function runCheck() {
     result.textContent = "ターミナルに入力して Enter で送信";
     result.className = "quiz__result";
     bottom.className = "quiz-bottom";
+    const streakElReset = document.querySelector("#quizStreak");
+    if (streakElReset) streakElReset.hidden = true;
     return;
   }
 
@@ -165,6 +167,15 @@ async function runCheck() {
     if (labelEl) {
       labelEl.textContent = "正解！🎉";
       labelEl.classList.add("quiz__label--correct");
+    }
+    const streakEl = document.querySelector("#quizStreak");
+    if (streakEl) {
+      if (answerResult.streak >= 2) {
+        streakEl.textContent = `${answerResult.streak}問連続正解中！`;
+        streakEl.hidden = false;
+      } else {
+        streakEl.hidden = true;
+      }
     }
     document.querySelector("#tokens").hidden = true;
     const hintEl = document.querySelector(".quiz__hint");
@@ -203,6 +214,8 @@ async function runCheck() {
     result.className = "quiz__result quiz__result--wrong";
     bottom.className = "quiz-bottom quiz-bottom--wrong";
     document.querySelector("#closeExplanation").hidden = true;
+    const streakElWrong = document.querySelector("#quizStreak");
+    if (streakElWrong) streakElWrong.hidden = true;
     quizEl.classList.add("quiz--shake");
     window.setTimeout(() => quizEl.classList.remove("quiz--shake"), 450);
   }

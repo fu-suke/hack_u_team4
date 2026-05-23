@@ -40,6 +40,13 @@
   color: #aaee44;
 }
 
+.quiz__streak {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffd700;
+  white-space: nowrap;
+}
+
 .quiz__vaccines {
   display: flex;
   gap: 6px;

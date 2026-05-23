@@ -105,3 +105,7 @@ class AnswerLogResponse(BaseModel):
     answered_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class StreakResponse(BaseModel):
+    streak: int
