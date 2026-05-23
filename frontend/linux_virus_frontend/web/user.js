@@ -12,7 +12,7 @@ const LinuxVirusUser = (() => {
   }
 
   function currentUserId() {
-    return currentUser ? currentUser.id : LinuxVirusConfig.get("defaultUserId", 0);
+    return currentUser ? currentUser.id : null;
   }
 
   function updateBadge() {
@@ -27,10 +27,12 @@ const LinuxVirusUser = (() => {
 
   async function renderUserScreen() {
     const input = document.querySelector("#userName");
+    const passwordInput = document.querySelector("#userPassword");
     const label = document.querySelector("#currentUserLabel");
     const loginView = document.querySelector("#loginUserView");
     const loggedInView = document.querySelector("#loggedInUserView");
     if (input) input.value = "";
+    if (passwordInput) passwordInput.value = "";
     if (label) label.textContent = currentUser ? `Logged in: ${currentUser.name}` : "Not logged in";
     clearMessage();
     updateBadge();
@@ -77,6 +79,10 @@ const LinuxVirusUser = (() => {
 
   function readName() {
     return document.querySelector("#userName").value.trim();
+  }
+
+  function readPassword() {
+    return document.querySelector("#userPassword").value.trim();
   }
 
   function ratingColor(rating) {
@@ -241,17 +247,25 @@ const LinuxVirusUser = (() => {
       showMessage("ユーザー名を入力してください", false);
       return;
     }
+    const password = readPassword();
+    if (!/^\d{4}$/.test(password)) {
+      showMessage("パスワードは4桁の数字で入力してください", false);
+      return;
+    }
 
     isSubmitting = true;
     setUserButtonsDisabled(true);
     showMessage("送信中…", true);
     try {
-      const user = await action(name);
+      const user = await action(name, password);
       saveUser(user);
       showMessage(successText, true);
     } catch (error) {
       console.error(failureText, error);
-      const detail = error && error.isNetwork ? "（バックエンドに接続できません）" : "";
+      let detail = "";
+      if (error && error.isNetwork) detail = "（バックエンドに接続できません）";
+      else if (error && error.status === 409) detail = "（そのユーザー名はすでに使われています）";
+      else if (error && error.status === 401) detail = "（パスワードが正しくありません）";
       showMessage(`${failureText}${detail}`, false);
     } finally {
       isSubmitting = false;

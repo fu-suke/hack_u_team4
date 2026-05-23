@@ -58,24 +58,24 @@ curl "http://127.0.0.1:8000/questions/check?id=1&answer=1"
 ```
 
 回答ログを登録する例。
-ログインしていない場合は、デフォルトユーザーとして `user_id: 0` を指定する。
+ログインしていない場合は `/answer_logs` を送信しない（フロント側で制御）。
 
 ```bash
 curl -X POST http://127.0.0.1:8000/answer_logs \
   -H "Content-Type: application/json" \
-  -d '{"user_id": 0, "question_id": 1, "is_correct": true}'
+  -d '{"user_id": 2, "question_id": 1, "is_correct": true}'
 ```
 
 rating を取得する例。
 
 ```bash
-curl "http://127.0.0.1:8000/rating?user_id=0"
+curl "http://127.0.0.1:8000/rating?user_id=2"
 ```
 
 rating 履歴を取得する例。
 
 ```bash
-curl "http://127.0.0.1:8000/rating/history?user_id=0"
+curl "http://127.0.0.1:8000/rating/history?user_id=2"
 ```
 
 
