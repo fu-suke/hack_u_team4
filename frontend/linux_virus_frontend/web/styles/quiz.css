@@ -36,6 +36,10 @@
   color: #f4f7fb;
 }
 
+.quiz__label--correct {
+  color: #aaee44;
+}
+
 .quiz__vaccines {
   display: flex;
   gap: 6px;
@@ -189,7 +193,7 @@
 }
 
 .quiz__result--correct {
-  color: var(--duo-green);
+  color: #f4f7fb;
 }
 
 .quiz__result--explanation {

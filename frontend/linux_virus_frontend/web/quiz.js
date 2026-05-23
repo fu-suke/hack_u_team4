@@ -190,6 +190,11 @@ const LinuxVirusQuiz = (() => {
     const quizEl = document.querySelector(".quiz");
     const result = document.querySelector("#quizResult");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
+    const labelEl = document.querySelector(".quiz__label");
+    if (labelEl) {
+      labelEl.textContent = "コマンドを並び替えよう";
+      labelEl.classList.remove("quiz__label--correct");
+    }
     if (quizEl) quizEl.setAttribute("aria-busy", "true");
     setActionsDisabled(true);
     document.querySelector("#retryQuiz")?.setAttribute("hidden", "");

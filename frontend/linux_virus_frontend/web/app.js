@@ -202,6 +202,11 @@ document.addEventListener("click", async (event) => {
     if (answerResult.correct) {
       LinuxVirusSound.play("correct");
       LinuxVirusQuiz.lockInteractions();
+      const labelEl = document.querySelector(".quiz__label");
+      if (labelEl) {
+        labelEl.textContent = "正解！🎉";
+        labelEl.classList.add("quiz__label--correct");
+      }
       result.innerHTML = `${LinuxVirusMarkdown.render(answerResult.tutorial)}`;
       result.className =
         "quiz__result quiz__result--correct quiz__result--explanation";
