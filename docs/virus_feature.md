@@ -1,140 +1,201 @@
-# 感染機能 設計叩き台
+# 感染機能 仕様書
 
 ## 0. 用語の定義
-- **通常出題**: ユーザのコマンド入力 or 時間経過によって出題される既存の問題
-- **virus 出題**: virus 機能によって出題される問題
+
+| 用語 | 意味 |
+|---|---|
+| **通常出題** | タイマー経過またはコマンド入力をトリガーに表示される問題 |
+| **virus 出題** | virus 機能（感染ポーリング）によって表示される問題 |
+| **ワクチン** | virus 出題を1回スキップできるアイテム。1日3個付与 |
+
+---
 
 ## 1. 機能の概要
 
-ユーザが通常出題で誤答した問題は、**全ユーザ共通の virus テーブル**に蓄積される。常駐アプリは定期的にバックエンドへ問い合わせ、virus テーブルに問題が溜まっていれば、それを「感染」として出題する。
+ユーザが通常出題で誤答した問題は、`questions.virus_count` が加算される。常駐アプリはデフォルト **5分間隔** でバックエンドへ問い合わせ、`virus_count > 0` の問題があれば独立ウィンドウで出題する。
 
-これにより、難しい問題ほど virus テーブルに残り続け、結果として「**誰かが間違えた難問が、他のユーザにも降りかかってくる**」というウイルスのような挙動を実現する。
+- 難しい問題ほど `virus_count` が高くなり、**重み付きランダム抽選** で選ばれやすくなる
+- virus 出題で正解すると `virus_count` が -1 される
+- 誰かが間違えた難問が他のユーザにも降りかかる「ウイルス感染」を表現する
 
 ---
 
 ## 2. 前提条件
 
-- これまで単一ユーザ前提だったが、本機能の追加により**複数ユーザ前提**となる
-- バックエンドと DB は Render 上にホストし、複数ユーザがアクセス可能とする
-- フロントエンドはコマンドラインから起動するクライアントとして動作する
+- バックエンドと DB は Render 上にホスト。複数ユーザが同一 DB を共有する
+- フロントエンドは macOS に常駐するクライアントとして動作する
+- ユーザは 4桁PIN で認証（`/users` / `/users/login`）
 
 ---
 
-## 3. 感染ロジック
+## 3. データモデル
 
-### 3.1 virus テーブルの構造
+### 3.1 virus_count カラム
 
-| カラム | 型 | 説明 |
-|---|---|---|
-| `question_id` | int | 問題の ID |
-| `count` | int | 誤答数(感染レベル) |
+独立した virus テーブルは作らず、`Question` テーブルに `virus_count` カラムを追加している。
 
-問題 ID は重複しない(同じ問題は 1 行で、カウントが増減する形式)。
+| カラム | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `virus_count` | INTEGER NOT NULL | 0 | 感染レベル。0のとき virus 出題対象外 |
+
+> **後付けマイグレーション**: SQLite 環境では起動時に `PRAGMA table_info(questions)` を確認し、`virus_count` カラムが存在しない場合に `ALTER TABLE` で追加する（`main.py`）。
 
 ### 3.2 状態変化のロジック
 
-| イベント | virus テーブルの変化 |
+`quiz.answerLogged` フラグ（JS側のセッション変数）で「同一出題セッションでの初回解答」を管理する。一度 `true` になると、そのセッション中に再度 increment/decrement は送信されない。
+
+| 状況 | `virus_count` の変化 |
 |---|---|
-| 通常出題で**初回**誤答 | 該当問題の `count` を **+1**(行がなければ新規作成) |
-| 通常出題で 2 回目以降の誤答 | 変化なし(同じユーザの繰り返し誤答は count に寄与しない) |
-| 通常出題で正解 | 変化なし |
-| virus 出題で誤答 | 変化なし(増えない) |
-| virus 出題で**初回**正解 | 該当問題の `count` を **-1**(0 になったら行を削除) |
-| virus 出題で 2 回目以降の正解 | 変化なし |
-
-**初回判定の管理**: フロント側で問題ごとに「初回の解答フラグ」を保持し、初回の判定時のみバックエンドに通知する(既存の解答ログのロジックと同じ仕組み)。
-
-### 3.3 感染トリガ
-
-- 常駐アプリが**n 分間隔**でバックエンドに問い合わせる
-- 取得対象は「virus テーブルで最も `count` が大きい問題」を 1 問
-- 自分が誤答した問題も自分に返ってくる可能性がある
-- 通常出題(時間経過 / コマンド検知)と**並行**して動作する
-  - 通常出題のポップアップ表示中でも、virus が届けば**上に重なって表示**される
+| 通常出題、初回回答、**誤答** | **+1** (`POST /virus/increase`) |
+| 通常出題、初回回答、正解 | 変化なし |
+| 通常出題、2回目以降の回答 | 変化なし（`answerLogged` が `true` のため送信しない） |
+| virus 出題、初回回答、**正解** | **-1** (`POST /virus/decrease`、下限 0) |
+| virus 出題、初回回答、誤答 | 変化なし |
+| virus 出題、2回目以降の回答 | 変化なし |
 
 ---
 
-## 4. シーケンス図
+## 4. エンドポイント
+
+### 既存エンドポイント（変更なし）
+
+| メソッド | パス | 概要 |
+|---|---|---|
+| GET | `/questions/random` | ランダム出題 |
+| GET | `/questions/personalize` | ユーザ別パーソナライズ出題（user_id クエリパラメータ） |
+| GET | `/questions/check` | 正誤判定 |
+| POST | `/answer_logs` | 回答ログ記録（rating 計算にも使用） |
+
+### 新規追加エンドポイント（virus 機能）
+
+#### `GET /virus`
+
+`virus_count > 0` の問題を **重み付きランダム抽選** で1問返す。
+
+- `virus_count` の合計値を分母に、各問題の `virus_count` を重みとした確率で抽選する
+- 対象問題がなければ `404` を返す
+- レスポンス形式は `GET /questions/random` と同一（`QuestionResponse`）
+
+```python
+# 実装イメージ（backend/app/routers/virus.py）
+target = random.randrange(total_count)
+cumulative = 0
+for question in questions:
+    cumulative += question.virus_count
+    if target < cumulative:
+        return question
+```
+
+#### `POST /virus/increase`
+
+```json
+Request:  { "question_id": 42 }
+Response: { "question_id": 42, "virus_count": 3 }
+```
+
+`question_id` の `virus_count` を +1 する。
+
+#### `POST /virus/decrease`
+
+```json
+Request:  { "question_id": 42 }
+Response: { "question_id": 42, "virus_count": 2 }
+```
+
+`question_id` の `virus_count` を -1 する（下限 0、行の削除はしない）。
+
+---
+
+## 5. フロントエンドの挙動
+
+### 5.1 virus ポーリングタイマー
+
+`controller.py` 内の `_tick_virus_timer` が `tickTimer_`（0.2秒間隔の NSTimer）ごとに呼ばれる。
+
+1. スリープ中または設定サスペンド中の場合 → タイマーをリセットして何もしない
+2. virus ウィンドウが既に開いている場合 → JS 状態を同期するだけ（二重起動しない）
+3. `_virus_deadline` が未設定 → タイマーを初期化して待機
+4. `_virus_deadline` を超過した場合 → `show_virus_window()` を呼んでウィンドウを開く
+
+デフォルトのポーリング間隔は **5分** (`VIRUS_POLL_INTERVAL_MINUTES = 5`)。`.env.public` で上書き可能。
+
+### 5.2 virus ウィンドウ
+
+- 通常ウィンドウ（メインの `_window`）とは **独立した別ウィンドウ** として開く
+- タイトル: `"Linux Virus Infection"`
+- サイズ: `EXPANDED_SIZE`（520×680）、画面右上に配置
+- JS 側は `state.quizMode === "virus"` を受け取り、`LinuxVirusQuiz.loadQuestion("virus")` を呼ぶ
+- ウィンドウを閉じると `_restart_virus_timer()` で次のタイマーが再起動される
+
+### 5.3 ワクチン機能
+
+| 仕様 | 詳細 |
+|---|---|
+| 1日の付与数 | **3個**（毎朝 4:00 にリセット） |
+| 保存場所 | `localStorage`（キー: `linuxVirus.vaccine`） |
+| 使用方法 | virus ウィンドウ上のワクチンボタン（💉）を押す |
+| 使用効果 | virus ウィンドウを閉じる。`virus_count` は変化しない |
+| 回復ホットキー | `Ctrl+Option+F`（デバッグ用、残数を3個に戻す） |
+
+### 5.4 ホットキー一覧
+
+| ホットキー | 動作 |
+|---|---|
+| `Ctrl+Option+Space` | 通常展開ウィンドウのトグル |
+| `Ctrl+Option+V` | virus ウィンドウを手動で開く（スリープ中は無効） |
+| `Ctrl+Option+Q` | アプリ終了 |
+| `Ctrl+Option+F` | ワクチン残数を3個に回復（デバッグ用） |
+
+---
+
+## 6. シーケンス図
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor UserA as ユーザA
     actor UserB as ユーザB
+    participant FE_A as フロント(A)
+    participant FE_B as フロント(B)
     participant Backend as バックエンド
-    participant DB as DB (virus テーブル)
+    participant DB as DB (questions.virus_count)
 
-    Note over UserA,DB: 通常出題での誤答による感染(初回のみ)
+    Note over UserA,DB: 通常出題での誤答 → 感染
 
-    UserA->>Backend: 問題Xに初回誤答
-    Backend->>DB: 問題Xの count を +1
-    Note over DB: virus: { X: 1 }
+    UserA->>Backend: GET /questions/random
+    Backend-->>FE_A: 問題X
+    UserA->>Backend: GET /questions/check?id=X&answer=...
+    Backend-->>FE_A: { is_correct: false }
+    FE_A->>Backend: POST /virus/increase { question_id: X }
+    Backend->>DB: questions[X].virus_count += 1
+    Note over DB: virus_count: { X: 1 }
 
-    UserA->>Backend: 問題Xを再挑戦して再び誤答
-    Note over DB: 変化なし(2回目以降は無視)<br/>virus: { X: 1 }
+    Note over UserB,DB: 5分後、ポーリングタイマー発火 → virus 出題
 
-    Note over UserB,DB: 別のユーザによる感染の取得
+    FE_B->>Backend: GET /virus
+    Backend->>DB: virus_count > 0 の問題を重み付き抽選
+    DB-->>Backend: 問題X (virus_count: 1)
+    Backend-->>FE_B: 問題X
+    Note over FE_B: 独立ウィンドウで出題 (quizMode="virus")
 
-    UserB->>Backend: 感染問題を要求(n分間隔)
-    Backend->>DB: 最も count が大きい問題を取得
-    DB-->>Backend: 問題X (count: 1)
-    Backend-->>UserB: 問題X を出題
-
-    Note over UserB,DB: 感染問題への解答
-
-    alt ユーザBが問題Xに正解
-        UserB->>Backend: 問題Xに正解
-        Backend->>DB: 問題Xの count を -1
-        Note over DB: virus: {} (countが0になり削除)
-    else ユーザBが問題Xに誤答
-        UserB->>Backend: 問題Xに誤答(virus由来)
-        Note over DB: 変化なし<br/>virus: { X: 1 }
+    alt ユーザBが正解
+        UserB->>Backend: GET /questions/check?id=X&answer=...
+        Backend-->>FE_B: { is_correct: true }
+        FE_B->>Backend: POST /virus/decrease { question_id: X }
+        Backend->>DB: questions[X].virus_count = max(0, 1-1) = 0
+        Note over DB: virus_count: { X: 0 } → GET /virus の対象外
+    else ユーザBが誤答またはワクチン使用
+        Note over DB: 変化なし / virus_count: { X: 1 }
     end
 ```
 
 ---
 
-## 5. 追加が必要なエンドポイント
+## 7. セキュリティ上の懸念点
 
-既存のエンドポイント(`GET /questions/random`, `GET /questions/check`, `POST /answer_logs` 等)は本機能で変更しない。本機能では以下の追加を想定:
+`POST /virus/increase` と `POST /virus/decrease` はフロントから任意に呼べる設計のため、悪意あるクライアントが `virus_count` を改ざんできる。
 
-- **virus 出題用エンドポイント**: 「最も count が大きい問題を返す」もの(例: `GET /virus`)
-- **virus 増減用エンドポイント**: 初回判定時にフロントから呼ばれ、count を増減させるもの(例: `POST /virus/increment` と `POST /virus/decrement` など)
+現状はハッカソンの内部利用かつ改竄インセンティブがないため **許容**。将来オンライン公開する場合は以下を検討:
 
-### virus 通知エンドポイントの責務
-
-`POST /virus` は、初回判定時かつ count に変化が必要な場合のみフロントから呼ばれる。
-
-| 状況 | 操作 |
-|---|---|
-| 通常出題、初回、正解 | リクエストを送らない |
-| 通常出題、初回、誤答 | `count` を **+1**(行がなければ作成) |
-| virus 出題、初回、正解 | `count` を **-1**(0 になったら削除) |
-| virus 出題、初回、誤答 | リクエストを送らない |
-
-具体的なパス・リクエスト形式は実装担当が決定する。
-
-### 懸念点
-
-フロントが increment / decrement の指示を送る設計のため、クライアントが意図的に嘘をつけば virus テーブルを操作できてしまうセキュリティ的な脆弱性がある。
-
-今回はハッカソンの内部利用かつ、改竄するインセンティブがないため、**この懸念点は許容**してもいいと思われる。
-
-将来オンライン公開する場合や、メンバーがこの点を重視する場合は、別途以下のような対策を検討する:
-
-- 出題時にサーバが一意な「出題ID」を発行し、解答通知時にそれを送る方式
-- virus 専用の判定エンドポイントを新設し、判定と count 操作を一括で行う方式
-
----
-
-## 6. 議論したい論点
-
-### 論点1: ポーリング間隔の最終決定
-
-現状「5 分間隔」で仮決定しているが、これで本当に良いか議論したい。
-
-| 案 | 概要 | メリット | デメリット |
-|---|---|---|---|
-| A | 5分間隔(現状案) | ウイルスっぽい頻度 | 短すぎ?長すぎ? |
-| B | 3〜7分のランダム間隔 | ウイルスっぽさが増す(予測不能) | 実装がやや複雑 |
-| C | デモ用に短い間隔(30秒など) | デモで挙動が見せやすい | 普段使いではうざい |
+- 出題時にサーバが一意な「出題トークン」を発行し、解答通知時に検証する方式
+- virus 専用の判定エンドポイントを新設し、サーバ側で正誤判定と count 操作を一括で行う方式
