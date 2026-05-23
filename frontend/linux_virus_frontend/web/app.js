@@ -178,6 +178,7 @@ document.addEventListener("click", async (event) => {
   const action = button.dataset.action;
   if (action === "useVaccine") {
     if (vaccineInProgress) return;
+    if (LinuxVirusQuiz.isInteractionLocked()) return;
     const vaccineState = LinuxVirusStorage.useVaccine();
     LinuxVirusQuiz.renderVaccines();
     if (!vaccineState.used) return;

@@ -203,7 +203,7 @@ const LinuxVirusQuiz = (() => {
       button.type = "button";
       button.dataset.action = "useVaccine";
       button.textContent = "💉";
-      button.disabled = index >= vaccineState.remaining;
+      button.disabled = quiz.interactionLocked || index >= vaccineState.remaining;
       button.setAttribute(
         "aria-label",
         button.disabled ? "Used vaccine" : "Use vaccine",
