@@ -1,4 +1,4 @@
-# デモ用ユーザー（id=2〜4。id=1はゲストユーザー用に予約済み）
+# デモ用ユーザー（id=2〜5。id=1はゲストユーザー用に予約済み）
 # デフォルトパスワードはすべて 0000
 - id: 2
   name: alice
@@ -10,4 +10,8 @@
 
 - id: 4
   name: charlie
+  password: "0000"
+
+- id: 5
+  name: tourist
   password: "0000"
