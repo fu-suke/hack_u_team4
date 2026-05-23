@@ -8,11 +8,12 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import AnswerLog, Question, User
-from app.routers.questions import calculate_user_level
 from app.schemas import RatingHistoryPoint, RatingHistoryResponse, RatingResponse
 
 router = APIRouter(prefix="/rating", tags=["rating"])
 RATING_HISTORY_DAYS = 30
+RATING_ALPHA = 5
+RATING_DECAY = 0.998
 
 
 def calculate_rating(level: float) -> float:
@@ -26,33 +27,94 @@ def format_rating(rating: float) -> str:
     return str(rating)
 
 
-def rating_from_stats(stats_by_difficulty: dict[int, dict[str, int]]) -> str:
-    level = calculate_user_level(stats_by_difficulty)
+def calculate_rating_level(
+    stats_by_difficulty: dict[int, dict[str, float]],
+    alpha: int = RATING_ALPHA,
+) -> float:
+    level = 0.5
+    for difficulty in (1, 2, 3):
+        stats = stats_by_difficulty.get(
+            difficulty,
+            {"weighted_correct": 0.0, "weighted_total": 0.0},
+        )
+        level += stats["weighted_correct"] / (stats["weighted_total"] + alpha)
+    return level
+
+
+def rating_from_stats(stats_by_difficulty: dict[int, dict[str, float]]) -> str:
+    level = calculate_rating_level(stats_by_difficulty)
     return format_rating(calculate_rating(level))
 
 
-def answer_stats_until(
+def latest_answer_at_before(
     db: Session,
     user_id: int,
     end_at: datetime,
-) -> dict[int, dict[str, int]]:
+) -> datetime | None:
+    row = (
+        db.query(AnswerLog.answered_at)
+        .filter(
+            AnswerLog.user_id == user_id,
+            AnswerLog.answered_at < end_at,
+        )
+        .order_by(AnswerLog.answered_at.desc())
+        .first()
+    )
+    return row[0] if row else None
+
+
+def latest_answer_at_between(
+    db: Session,
+    user_id: int,
+    start_at: datetime,
+    end_at: datetime,
+) -> datetime | None:
+    row = (
+        db.query(AnswerLog.answered_at)
+        .filter(
+            AnswerLog.user_id == user_id,
+            AnswerLog.answered_at >= start_at,
+            AnswerLog.answered_at < end_at,
+        )
+        .order_by(AnswerLog.answered_at.desc())
+        .first()
+    )
+    return row[0] if row else None
+
+
+def answer_stats_until_rating_at(
+    db: Session,
+    user_id: int,
+    rating_at: datetime | None,
+) -> dict[int, dict[str, float]]:
+    if rating_at is None:
+        return {}
+
     rows = (
         db.query(AnswerLog.is_correct, Question.difficulty)
         .join(Question, Question.id == AnswerLog.question_id)
         .filter(
             AnswerLog.user_id == user_id,
-            AnswerLog.answered_at < end_at,
+            AnswerLog.answered_at <= rating_at,
         )
+        .order_by(AnswerLog.answered_at.desc())
         .all()
     )
 
-    stats_by_difficulty: dict[int, dict[str, int]] = defaultdict(lambda: {"correct": 0, "total": 0})
-    for is_correct, difficulty in rows:
-        stats_by_difficulty[difficulty]["total"] += 1
+    stats_by_difficulty: dict[int, dict[str, float]] = defaultdict(
+        lambda: {"weighted_correct": 0.0, "weighted_total": 0.0}
+    )
+    for index, (is_correct, difficulty) in enumerate(rows):
+        weight = RATING_DECAY**index
+        stats_by_difficulty[difficulty]["weighted_total"] += weight
         if is_correct:
-            stats_by_difficulty[difficulty]["correct"] += 1
+            stats_by_difficulty[difficulty]["weighted_correct"] += weight
 
     return stats_by_difficulty
+
+
+def rating_from_anchor(db: Session, user_id: int, rating_at: datetime | None) -> str:
+    return rating_from_stats(answer_stats_until_rating_at(db, user_id, rating_at))
 
 
 def dates_with_answers(db: Session, user_id: int, start_at: datetime, end_at: datetime) -> set[str]:
@@ -76,7 +138,10 @@ def get_rating(
     if db.get(User, user_id) is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return RatingResponse(rating=rating_from_stats(answer_stats_until(db, user_id, datetime.now())))
+    now = datetime.now()
+    return RatingResponse(
+        rating=rating_from_anchor(db, user_id, latest_answer_at_before(db, user_id, now))
+    )
 
 
 @router.get("/history", response_model=RatingHistoryResponse)
@@ -101,14 +166,20 @@ def get_rating_history(
             continue
 
         if day == today:
+            rating_start_at = datetime.combine(day, time.min)
             rating_end_at = now
         else:
+            rating_start_at = datetime.combine(day, time.min)
             rating_end_at = datetime.combine(day + timedelta(days=1), time.min)
 
         ratings.append(
             RatingHistoryPoint(
                 date=day_key,
-                rating=rating_from_stats(answer_stats_until(db, user_id, rating_end_at)),
+                rating=rating_from_anchor(
+                    db,
+                    user_id,
+                    latest_answer_at_between(db, user_id, rating_start_at, rating_end_at),
+                ),
             )
         )
 
