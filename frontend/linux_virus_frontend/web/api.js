@@ -90,19 +90,19 @@ const LinuxVirusApi = (() => {
     return Boolean(data.is_correct);
   }
 
-  async function loginUser(name) {
-    return postUser("/users/login", name);
+  async function loginUser(name, password) {
+    return postUser("/users/login", name, password);
   }
 
-  async function createUser(name) {
-    return postUser("/users", name);
+  async function createUser(name, password) {
+    return postUser("/users", name, password);
   }
 
-  async function postUser(path, name) {
+  async function postUser(path, name, password) {
     const response = await request(path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, password }),
       timeoutMs: LONG_TIMEOUT_MS,
     });
     return response.json();

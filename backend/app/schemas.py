@@ -1,14 +1,35 @@
+import re
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+_PIN_RE = re.compile(r"^\d{4}$")
+
+
+def _validate_pin(v: str) -> str:
+    if not _PIN_RE.match(v):
+        raise ValueError("パスワードは4桁の数字で入力してください")
+    return v
 
 
 class UserCreate(BaseModel):
     name: str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_must_be_4digits(cls, v: str) -> str:
+        return _validate_pin(v)
 
 
 class UserLogin(BaseModel):
     name: str
+    password: str
+
+    @field_validator("password")
+    @classmethod
+    def password_must_be_4digits(cls, v: str) -> str:
+        return _validate_pin(v)
 
 
 class UserResponse(BaseModel):

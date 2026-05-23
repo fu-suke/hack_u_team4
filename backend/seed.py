@@ -20,9 +20,17 @@ def load_users() -> list[User]:
 
 def load_sample_users(path: Path) -> list[User]:
     """デモ用ユーザーを YAML から読み込む。"""
+    import hashlib
+    import os
+
+    def _hash(password: str) -> str:
+        salt = os.urandom(16).hex()
+        digest = hashlib.sha256((salt + password).encode()).hexdigest()
+        return f"{salt}:{digest}"
+
     with open(path, encoding="utf-8") as f:
         rows = yaml.safe_load(f)
-    return [User(id=row["id"], name=row["name"]) for row in rows]
+    return [User(id=row["id"], name=row["name"], password_hash=_hash(str(row["password"]))) for row in rows]
 
 
 def load_sample_logs(path: Path) -> list[AnswerLog]:
