@@ -23,7 +23,10 @@ const LinuxVirusSettings = (() => {
     }
   });
 
-  function createCommandInput(value = "") {
+  function createCommandRow(value = "") {
+    const row = document.createElement("div");
+    row.className = "command-row";
+
     const input = document.createElement("input");
     input.className = "command-input";
     input.type = "text";
@@ -32,14 +35,23 @@ const LinuxVirusSettings = (() => {
     input.autocomplete = "off";
     input.autocapitalize = "off";
     input.spellcheck = false;
-    return input;
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "icon-button command-row__remove";
+    removeButton.type = "button";
+    removeButton.dataset.action = "removeCommand";
+    removeButton.setAttribute("aria-label", "Delete command");
+    removeButton.textContent = "×";
+
+    row.append(input, removeButton);
+    return row;
   }
 
   function setCommandInputs(commands) {
     const container = document.querySelector("#commands");
     container.replaceChildren();
     for (const command of commands.length ? commands : [""]) {
-      container.appendChild(createCommandInput(command));
+      container.appendChild(createCommandRow(command));
     }
   }
 
@@ -72,31 +84,31 @@ const LinuxVirusSettings = (() => {
       return;
     }
 
-    const input = createCommandInput();
-    container.appendChild(input);
+    const row = createCommandRow();
+    const input = row.querySelector(".command-input");
+    container.appendChild(row);
     input.focus();
     input.scrollIntoView({ block: "center" });
   }
 
-  function removeFocusedCommandInput() {
-    const inputs = Array.from(document.querySelectorAll(".command-input"));
-    if (!inputs.length) return;
+  function removeCommandRow(button) {
+    const rows = Array.from(document.querySelectorAll(".command-row"));
+    const targetRow = button?.closest(".command-row");
+    if (!rows.length || !targetRow) return;
 
-    const activeInput = document.activeElement?.classList?.contains("command-input")
-      ? document.activeElement
-      : null;
-    const target = activeInput || inputs[inputs.length - 1];
-    const targetIndex = inputs.indexOf(target);
-    const nextFocus = inputs[targetIndex + 1] || inputs[targetIndex - 1] || null;
+    const targetIndex = rows.indexOf(targetRow);
+    const nextRow = rows[targetIndex + 1] || rows[targetIndex - 1] || null;
+    const nextInput = nextRow?.querySelector(".command-input");
 
-    if (inputs.length === 1) {
-      target.value = "";
-      target.focus();
+    if (rows.length === 1) {
+      const input = targetRow.querySelector(".command-input");
+      input.value = "";
+      input.focus();
       return;
     }
 
-    target.remove();
-    nextFocus?.focus();
+    targetRow.remove();
+    nextInput?.focus();
   }
 
   function showHelp() {
@@ -112,7 +124,7 @@ const LinuxVirusSettings = (() => {
     closeHelp,
     getCommandValues,
     isPersonalizeEnabled,
-    removeFocusedCommandInput,
+    removeCommandRow,
     refreshPersonalizeToggle,
     readSavedSettings,
     saveCurrentSettings,

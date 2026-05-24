@@ -295,7 +295,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "removeCommand") {
-    LinuxVirusSettings.removeFocusedCommandInput();
+    LinuxVirusSettings.removeCommandRow(button);
     return;
   }
 
