@@ -196,13 +196,14 @@ async function runCheck() {
     }
     const existingToggle = document.querySelector("#toggleExplanation");
     if (existingToggle) existingToggle.remove();
+    const actionsEl = document.querySelector(".quiz__actions");
     const toggleBtn = document.createElement("button");
     toggleBtn.id = "toggleExplanation";
     toggleBtn.className = "btn btn--ghost btn--toggle-explanation";
     toggleBtn.type = "button";
     toggleBtn.dataset.action = "toggleExplanation";
     toggleBtn.textContent = "解説を見る";
-    bottom.insertBefore(toggleBtn, result);
+    if (actionsEl) actionsEl.prepend(toggleBtn);
     document.querySelector("#closeExplanation").hidden = false;
     if (answerResult.ratingChange !== null) {
       const { newRating, delta } = answerResult.ratingChange;
@@ -216,9 +217,12 @@ async function runCheck() {
       ratingEl.className = "quiz__rating-change";
       const deltaClass = delta >= 0 ? "quiz__rating-delta--up" : "quiz__rating-delta--down";
       ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
-      bottom.appendChild(ratingEl);
+      if (actionsEl) {
+        bottom.insertBefore(ratingEl, actionsEl);
+      } else {
+        bottom.appendChild(ratingEl);
+      }
     }
-    bottom.appendChild(document.querySelector("#closeExplanation"));
   } else {
     LinuxVirusSound.play("incorrect");
     result.textContent = "😅 もう一回やってみよう!";

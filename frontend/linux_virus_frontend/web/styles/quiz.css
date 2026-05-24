@@ -190,6 +190,10 @@
   overflow: hidden;
 }
 
+.quiz-bottom--correct .quiz__actions {
+  margin-top: auto;
+}
+
 .quiz-bottom--wrong {
   border-top-color: var(--duo-red);
 }
@@ -284,8 +288,6 @@
   background: var(--duo-blue);
   border-bottom-color: var(--duo-blue-dark);
   color: #fff;
-  margin-top: auto;
-  flex: none;
 }
 
 .btn--ghost {
@@ -300,7 +302,7 @@
 }
 
 .btn--toggle-explanation {
-  align-self: stretch;
+  flex: 1;
   text-transform: none;
 }
 
