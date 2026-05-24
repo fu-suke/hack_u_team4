@@ -182,6 +182,7 @@ async function runCheck() {
     if (hintEl) hintEl.hidden = true;
     result.innerHTML = LinuxVirusMarkdown.render(answerResult.tutorial);
     result.className = "quiz__result quiz__result--correct quiz__result--explanation";
+    result.hidden = true;
     bottom.className = "quiz-bottom quiz-bottom--correct";
     quizEl.classList.add("quiz--celebrate");
     const existingOutput = document.querySelector("#sampleOutput");
@@ -193,6 +194,15 @@ async function runCheck() {
       outputEl.textContent = answerResult.sample_output;
       bottom.insertBefore(outputEl, bottom.firstChild);
     }
+    const existingToggle = document.querySelector("#toggleExplanation");
+    if (existingToggle) existingToggle.remove();
+    const toggleBtn = document.createElement("button");
+    toggleBtn.id = "toggleExplanation";
+    toggleBtn.className = "btn btn--ghost btn--toggle-explanation";
+    toggleBtn.type = "button";
+    toggleBtn.dataset.action = "toggleExplanation";
+    toggleBtn.textContent = "解説を見る";
+    bottom.insertBefore(toggleBtn, result);
     document.querySelector("#closeExplanation").hidden = false;
     if (answerResult.ratingChange !== null) {
       const { newRating, delta } = answerResult.ratingChange;
@@ -204,7 +214,8 @@ async function runCheck() {
       const ratingEl = document.createElement("div");
       ratingEl.id = "quizRatingChange";
       ratingEl.className = "quiz__rating-change";
-      ratingEl.innerHTML = `レーティング: <span style="color:${ratingColor}">${newRating}</span> <span style="color:${deltaColor}">(${sign}${delta})</span>`;
+      const deltaClass = delta >= 0 ? "quiz__rating-delta--up" : "quiz__rating-delta--down";
+      ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
       bottom.appendChild(ratingEl);
     }
     bottom.appendChild(document.querySelector("#closeExplanation"));
@@ -245,6 +256,22 @@ document.addEventListener("click", async (event) => {
 
   if (action === "retryQuiz") {
     LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
+    return;
+  }
+
+  if (action === "toggleExplanation") {
+    const explanationEl = document.querySelector("#quizResult");
+    const overlay = document.querySelector("#explanationOverlay");
+    const overlayContent = document.querySelector("#explanationOverlayContent");
+    if (!overlay || !overlayContent) return;
+    if (explanationEl) overlayContent.innerHTML = explanationEl.innerHTML;
+    overlay.hidden = false;
+    return;
+  }
+
+  if (action === "closeExplanationOverlay") {
+    const overlay = document.querySelector("#explanationOverlay");
+    if (overlay) overlay.hidden = true;
     return;
   }
 
