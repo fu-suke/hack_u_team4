@@ -1,9 +1,9 @@
 const LinuxVirusSound = (() => {
   const BASE = "../sound/";
   const SOURCES = {
-    click: "click.mp3",
     cancel: "cancel.mp3",
     correct: "correct.mp3",
+    cure: "cure.mp3",
     incorrect: "incorrect.mp3",
     normalQuestion: "normal_question.mp3",
     virusQuestion: "virus_question.mp3",

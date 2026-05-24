@@ -250,6 +250,7 @@ document.addEventListener("click", async (event) => {
     LinuxVirusQuiz.renderVaccines();
     if (!vaccineState.used) return;
     vaccineInProgress = true;
+    LinuxVirusSound.play("cure");
     LinuxVirusQuiz.showVaccineMessage();
     window.setTimeout(() => {
       post("useVaccine");
@@ -345,7 +346,6 @@ document.addEventListener("click", (event) => {
 
   const action = button.dataset.action;
   if (action === "selectToken") {
-    LinuxVirusSound.play("click");
     LinuxVirusQuiz.moveTokenToAnswer(
       LinuxVirusQuiz.choiceFromDataset(button.dataset),
     );
