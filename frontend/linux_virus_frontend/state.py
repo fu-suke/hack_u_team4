@@ -10,6 +10,7 @@ from linux_virus_frontend.config import (
     DEFAULT_TIMER_SECONDS,
     MAX_SLEEP_MINUTES,
     MAX_TIMER_SECONDS,
+    MIN_TIMER_SECONDS,
     PUBLIC_CONFIG,
 )
 
@@ -161,6 +162,8 @@ class _ResidentState:
     def timer_text(self) -> str:
         if self.is_sleeping():
             return f"Sleep: {self.remaining_sleep_seconds()}s"
+        if self.suspended_timer_seconds is not None:
+            return f"Timer: {max(0, self.suspended_timer_seconds)}s"
         if self.deadline is None:
             return "Timer: not set"
         return f"Timer: {self.remaining_seconds()}s"
@@ -188,10 +191,17 @@ class _ResidentState:
             self.suspended_sleep_seconds is not None and self.suspended_sleep_seconds > 0
         )
 
+    def is_timer_suspended(self) -> bool:
+        return (
+            self.suspended_timer_seconds is not None
+            or self.suspended_sleep_seconds is not None
+            or self.suspended_sleep_input_minutes is not None
+        )
+
     def _timer_seconds_from_message(self, body: dict[Any, Any]) -> int:
         raw_seconds = body.get("seconds", DEFAULT_TIMER_SECONDS)
         try:
-            return min(MAX_TIMER_SECONDS, max(1, int(float(str(raw_seconds)))))
+            return min(MAX_TIMER_SECONDS, max(MIN_TIMER_SECONDS, int(float(str(raw_seconds)))))
         except (TypeError, ValueError):
             return DEFAULT_TIMER_SECONDS
 

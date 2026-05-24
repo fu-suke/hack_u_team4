@@ -17,6 +17,7 @@ class FrontendSettings(BaseSettings):
     )
 
     default_timer_seconds: int = 60
+    min_timer_seconds: int = 10
     default_sleep_minutes: int = 0
     max_timer_seconds: int = 99 * 60 + 59
     max_sleep_minutes: int = 99
@@ -59,6 +60,7 @@ class FrontendSettings(BaseSettings):
             "apiBaseUrl": self.api_base_url,
             "apiTimeoutMs": self.api_timeout_ms,
             "defaultTimerSeconds": self.default_timer_seconds,
+            "minTimerSeconds": self.min_timer_seconds,
             "defaultSleepMinutes": self.default_sleep_minutes,
             "maxTimerSeconds": self.max_timer_seconds,
             "maxSleepMinutes": self.max_sleep_minutes,
@@ -77,6 +79,7 @@ class FrontendSettings(BaseSettings):
 SETTINGS = FrontendSettings()
 
 DEFAULT_TIMER_SECONDS = SETTINGS.default_timer_seconds
+MIN_TIMER_SECONDS = SETTINGS.min_timer_seconds
 DEFAULT_SLEEP_MINUTES = SETTINGS.default_sleep_minutes
 MAX_TIMER_SECONDS = SETTINGS.max_timer_seconds
 MAX_SLEEP_MINUTES = SETTINGS.max_sleep_minutes

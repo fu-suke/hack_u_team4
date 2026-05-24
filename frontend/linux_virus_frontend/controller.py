@@ -236,7 +236,7 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _tick_virus_timer(self) -> None:
-        if self._state.is_sleeping_or_suspended_sleep():
+        if self._state.view in ("settings", "user") or self._state.is_timer_suspended():
             self._restart_virus_timer()
             return
 
@@ -415,7 +415,7 @@ class _ResidentAppController(NSObject):
             return True
 
         if self._keyboard.is_virus_hotkey(event):
-            if self._state.is_sleeping_or_suspended_sleep():
+            if self._state.view in ("settings", "user") or self._state.is_timer_suspended():
                 return True
             self._events.put(_ControlEvent(name="virus", reason="hotkey"))
             return True

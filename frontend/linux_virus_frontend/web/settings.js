@@ -68,12 +68,19 @@ const LinuxVirusSettings = (() => {
   function saveCurrentSettings() {
     const timerSeconds = document.querySelector("#timerSeconds")?.value;
     const sleepMinutes = document.querySelector("#sleepMinutes")?.value;
+    const minTimerSeconds = Number(LinuxVirusConfig.get("minTimerSeconds", 10));
+    const normalizedTimerSeconds = timerSeconds
+      ? Math.max(minTimerSeconds, Number(timerSeconds))
+      : undefined;
     const settings = {
-      timerSeconds: timerSeconds ? Number(timerSeconds) : undefined,
+      timerSeconds: normalizedTimerSeconds,
       sleepMinutes: sleepMinutes ? Number(sleepMinutes) : 0,
       commands: getCommandValues(),
       personalizeEnabled,
     };
+    if (normalizedTimerSeconds !== undefined) {
+      document.querySelector("#timerSeconds").value = String(normalizedTimerSeconds);
+    }
     LinuxVirusStorage.saveSettings(settings);
     return settings;
   }
