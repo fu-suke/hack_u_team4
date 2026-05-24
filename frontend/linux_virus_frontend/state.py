@@ -191,15 +191,15 @@ class _ResidentState:
     def _timer_seconds_from_message(self, body: dict[Any, Any]) -> int:
         raw_seconds = body.get("seconds", DEFAULT_TIMER_SECONDS)
         try:
-            return min(MAX_TIMER_SECONDS, max(1, int(str(raw_seconds))))
-        except ValueError:
+            return min(MAX_TIMER_SECONDS, max(1, int(float(str(raw_seconds)))))
+        except (TypeError, ValueError):
             return DEFAULT_TIMER_SECONDS
 
     def _sleep_minutes_from_message(self, body: dict[Any, Any]) -> int:
         raw_minutes = body.get("sleepMinutes", DEFAULT_SLEEP_MINUTES)
         try:
-            return min(MAX_SLEEP_MINUTES, max(0, int(str(raw_minutes))))
-        except ValueError:
+            return min(MAX_SLEEP_MINUTES, max(0, int(float(str(raw_minutes)))))
+        except (TypeError, ValueError):
             return DEFAULT_SLEEP_MINUTES
 
     def _settings_timing_changed(self, seconds: int, sleep_minutes: int) -> bool:
