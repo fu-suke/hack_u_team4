@@ -26,20 +26,35 @@ const LinuxVirusQuiz = (() => {
     return quiz.typed.trim().split(/\s+/).filter(Boolean);
   }
 
+  function takeChoiceFromPool(pool, token) {
+    const idx = pool.findIndex((choice) => choice.label === token);
+    if (idx < 0) return null;
+    const [choice] = pool.splice(idx, 1);
+    return choice;
+  }
+
   function parsedAnswer() {
     const tokens = tokenizeTyped();
     const pool = quiz.choices.map((choice) => ({ ...choice }));
     const result = [];
     for (const tok of tokens) {
-      const idx = pool.findIndex((choice) => choice.label === tok);
-      if (idx >= 0) {
-        result.push(pool[idx]);
-        pool.splice(idx, 1);
-      } else {
-        result.push({ id: 0, label: tok });
-      }
+      result.push(takeChoiceFromPool(pool, tok) || { id: 0, label: tok });
     }
     return result;
+  }
+
+  function parsedTypedSegments() {
+    const pool = quiz.choices.map((choice) => ({ ...choice }));
+    return quiz.typed.split(/(\s+)/).map((segment) => {
+      if (!segment || /^\s+$/.test(segment)) {
+        return { text: segment, invalid: false };
+      }
+
+      if (takeChoiceFromPool(pool, segment)) {
+        return { text: segment, invalid: false };
+      }
+      return { text: segment, invalid: true };
+    });
   }
 
   function usedChoiceIds() {
@@ -358,6 +373,7 @@ const LinuxVirusQuiz = (() => {
     const tokensEl = document.querySelector("#tokens");
 
     if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
+    renderTerminalHighlight();
     renderVaccines();
     updateMascot();
 
@@ -369,7 +385,20 @@ const LinuxVirusQuiz = (() => {
       );
     }
     tokensEl.replaceChildren(tokensFrag);
-    tokensEl.classList.toggle("quiz__tokens--invalid", hasInvalidTypedTokens());
+  }
+
+  function renderTerminalHighlight() {
+    const highlightEl = document.querySelector("#terminalHighlight");
+    if (!highlightEl) return;
+
+    const frag = document.createDocumentFragment();
+    for (const segment of parsedTypedSegments()) {
+      const span = document.createElement("span");
+      span.textContent = segment.text;
+      if (segment.invalid) span.className = "quiz__terminal-invalid";
+      frag.appendChild(span);
+    }
+    highlightEl.replaceChildren(frag);
   }
 
   function moveTokenToAnswer(choice, targetIndex = quiz.selected.length) {
