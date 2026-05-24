@@ -290,6 +290,11 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  if (action === "removeCommand") {
+    LinuxVirusSettings.removeFocusedCommandInput();
+    return;
+  }
+
   if (action === "showHelp") {
     LinuxVirusSettings.showHelp();
     return;

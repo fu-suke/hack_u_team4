@@ -4,8 +4,37 @@
 .user-panel {
   flex-direction: column;
   gap: 14px;
-  overflow: auto;
   padding: 14px;
+}
+
+.user-panel {
+  overflow: auto;
+}
+
+.settings {
+  overflow: hidden;
+}
+
+.settings__body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.settings__body,
+.user-panel,
+.help-dialog__body {
+  scrollbar-width: none;
+}
+
+.settings__body::-webkit-scrollbar,
+.user-panel::-webkit-scrollbar,
+.help-dialog__body::-webkit-scrollbar {
+  display: none;
 }
 
 .topline,
@@ -102,15 +131,6 @@
 .commands {
   display: grid;
   gap: 7px;
-  max-height: 132px;
-  overflow: auto;
-}
-
-.hint {
-  color: var(--duo-text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.45;
 }
 
 .user-current {
@@ -262,6 +282,12 @@
   gap: 10px;
 }
 
+.settings__footer {
+  flex: 0 0 auto;
+  padding-top: 10px;
+  border-top: 2px solid var(--duo-border);
+}
+
 .settings .actions .btn,
 .user-actions .btn,
 .user-profile__logout {
@@ -328,7 +354,8 @@
   grid-template-columns: max-content 46px;
   align-items: center;
   gap: 12px;
-  min-height: 32px;
+  min-height: 28px;
+  margin-block: -4px;
   padding: 0;
   cursor: pointer;
   user-select: none;

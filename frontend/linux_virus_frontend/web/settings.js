@@ -75,7 +75,28 @@ const LinuxVirusSettings = (() => {
     const input = createCommandInput();
     container.appendChild(input);
     input.focus();
-    input.scrollIntoView({ block: "nearest" });
+    input.scrollIntoView({ block: "center" });
+  }
+
+  function removeFocusedCommandInput() {
+    const inputs = Array.from(document.querySelectorAll(".command-input"));
+    if (!inputs.length) return;
+
+    const activeInput = document.activeElement?.classList?.contains("command-input")
+      ? document.activeElement
+      : null;
+    const target = activeInput || inputs[inputs.length - 1];
+    const targetIndex = inputs.indexOf(target);
+    const nextFocus = inputs[targetIndex + 1] || inputs[targetIndex - 1] || null;
+
+    if (inputs.length === 1) {
+      target.value = "";
+      target.focus();
+      return;
+    }
+
+    target.remove();
+    nextFocus?.focus();
   }
 
   function showHelp() {
@@ -91,6 +112,7 @@ const LinuxVirusSettings = (() => {
     closeHelp,
     getCommandValues,
     isPersonalizeEnabled,
+    removeFocusedCommandInput,
     refreshPersonalizeToggle,
     readSavedSettings,
     saveCurrentSettings,
