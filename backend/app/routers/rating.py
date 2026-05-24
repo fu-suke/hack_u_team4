@@ -63,25 +63,6 @@ def latest_answer_at_before(
     return row[0] if row else None
 
 
-def latest_answer_at_between(
-    db: Session,
-    user_id: int,
-    start_at: datetime,
-    end_at: datetime,
-) -> datetime | None:
-    row = (
-        db.query(AnswerLog.answered_at)
-        .filter(
-            AnswerLog.user_id == user_id,
-            AnswerLog.answered_at >= start_at,
-            AnswerLog.answered_at < end_at,
-        )
-        .order_by(AnswerLog.answered_at.desc())
-        .first()
-    )
-    return row[0] if row else None
-
-
 def answer_stats_until_rating_at(
     db: Session,
     user_id: int,
@@ -166,10 +147,8 @@ def get_rating_history(
             continue
 
         if day == today:
-            rating_start_at = datetime.combine(day, time.min)
             rating_end_at = now
         else:
-            rating_start_at = datetime.combine(day, time.min)
             rating_end_at = datetime.combine(day + timedelta(days=1), time.min)
 
         ratings.append(
@@ -178,7 +157,7 @@ def get_rating_history(
                 rating=rating_from_anchor(
                     db,
                     user_id,
-                    latest_answer_at_between(db, user_id, rating_start_at, rating_end_at),
+                    latest_answer_at_before(db, user_id, rating_end_at),
                 ),
             )
         )
