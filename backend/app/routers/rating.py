@@ -138,12 +138,19 @@ def get_rating_history(
     first_day = today - timedelta(days=RATING_HISTORY_DAYS - 1)
     start_at = datetime.combine(first_day, time.min)
     answered_dates = dates_with_answers(db, user_id, start_at, now)
+    first_day_end_at = datetime.combine(first_day + timedelta(days=1), time.min)
+    has_answer_by_first_day = latest_answer_at_before(db, user_id, first_day_end_at) is not None
 
     ratings: list[RatingHistoryPoint] = []
     for offset in range(RATING_HISTORY_DAYS):
         day = first_day + timedelta(days=offset)
         day_key = day.isoformat()
-        if day not in (first_day, today) and day_key not in answered_dates:
+        should_include_day = (
+            day == today
+            or day_key in answered_dates
+            or (day == first_day and has_answer_by_first_day)
+        )
+        if not should_include_day:
             continue
 
         if day == today:
