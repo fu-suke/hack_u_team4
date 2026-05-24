@@ -184,10 +184,17 @@ const LinuxVirusQuiz = (() => {
     const sampleOutput = document.querySelector("#sampleOutput");
     const ratingChange = document.querySelector("#quizRatingChange");
     const shellCommand = document.querySelector("#quizShellCommand");
+    const toggleExplanation = document.querySelector("#toggleExplanation");
+    const explanationOverlay = document.querySelector("#explanationOverlay");
+    const explanationOverlayContent = document.querySelector("#explanationOverlayContent");
     if (sampleOutput) sampleOutput.remove();
     if (ratingChange) ratingChange.remove();
     if (shellCommand) shellCommand.remove();
+    if (toggleExplanation) toggleExplanation.remove();
+    if (explanationOverlay) explanationOverlay.hidden = true;
+    if (explanationOverlayContent) explanationOverlayContent.innerHTML = "";
     if (result) {
+      result.hidden = false;
       result.textContent = "ターミナルにコマンドを入力してね！";
       result.className = "quiz__result";
     }
