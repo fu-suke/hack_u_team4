@@ -20,7 +20,7 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   overflow: auto;
   padding-right: 2px;
 }
@@ -285,7 +285,6 @@
 .settings__footer {
   flex: 0 0 auto;
   padding-top: 10px;
-  border-top: 2px solid var(--duo-border);
 }
 
 .settings .actions .btn,
