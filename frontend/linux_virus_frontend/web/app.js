@@ -214,7 +214,8 @@ async function runCheck() {
       const ratingEl = document.createElement("div");
       ratingEl.id = "quizRatingChange";
       ratingEl.className = "quiz__rating-change";
-      ratingEl.innerHTML = `レーティング: <span style="color:${ratingColor}">${newRating}</span> <span style="color:${deltaColor}">(${sign}${delta})</span>`;
+      const deltaClass = delta >= 0 ? "quiz__rating-delta--up" : "quiz__rating-delta--down";
+      ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
       bottom.appendChild(ratingEl);
     }
     bottom.appendChild(document.querySelector("#closeExplanation"));
