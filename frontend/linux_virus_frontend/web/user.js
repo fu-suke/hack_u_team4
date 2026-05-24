@@ -2,13 +2,26 @@ const LinuxVirusUser = (() => {
   let currentUser = null;
   let isSubmitting = false;
   let ratingRequestId = 0;
+  let currentRatingColor = ratingColor(0).color;
 
   function currentUserId() {
     return currentUser ? currentUser.id : null;
   }
 
   function updateBadge() {
+    const avatar = document.querySelector("#minimizedUserAvatar");
     const badge = document.querySelector("#userBadge");
+    if (avatar) {
+      avatar.textContent = currentUser ? userInitial(currentUser.name) : "👤";
+      avatar.className = currentUser
+        ? "user-avatar minimized__user-avatar minimized__user-avatar--logged-in"
+        : "user-avatar minimized__user-avatar";
+      avatar.style.color = currentUser ? currentRatingColor : "";
+    }
+    const userButton = document.querySelector(".minimized__user");
+    if (userButton) {
+      userButton.style.borderColor = currentUser ? currentRatingColor : "";
+    }
     if (!badge) return;
 
     badge.textContent = currentUser ? "✓" : "?";
@@ -17,7 +30,7 @@ const LinuxVirusUser = (() => {
       : "minimized__badge minimized__badge--logged-out";
   }
 
-  async function renderUserScreen() {
+  function renderUserScreen() {
     const input = document.querySelector("#userName");
     const passwordInput = document.querySelector("#userPassword");
     const loginView = document.querySelector("#loginUserView");
@@ -31,7 +44,7 @@ const LinuxVirusUser = (() => {
     if (loggedInView) loggedInView.hidden = !currentUser;
 
     if (currentUser) {
-      await refreshRatingProfile();
+      refreshRatingProfile();
     } else {
       renderRatingChart([]);
     }
@@ -56,6 +69,7 @@ const LinuxVirusUser = (() => {
       currentUser = { id: Number(user.id), name: String(user.name) };
     } else {
       currentUser = null;
+      currentRatingColor = ratingColor(0).color;
       ratingRequestId += 1;
     }
     updateBadge();
@@ -72,6 +86,7 @@ const LinuxVirusUser = (() => {
 
   function logout() {
     currentUser = null;
+    currentRatingColor = ratingColor(0).color;
     ratingRequestId += 1;
     post("setUser", {});
     renderUserScreen();
@@ -96,6 +111,10 @@ const LinuxVirusUser = (() => {
     return { name: "gray", color: "#9aa4ad" };
   }
 
+  function userInitial(name) {
+    return String(name || "").trim().slice(0, 1).toUpperCase() || "U";
+  }
+
   async function refreshRatingProfile() {
     const requestId = ratingRequestId + 1;
     ratingRequestId = requestId;
@@ -108,7 +127,7 @@ const LinuxVirusUser = (() => {
       nameEl.style.color = ratingColor(0).color;
     }
     if (initialEl) {
-      initialEl.textContent = currentUser.name.trim().slice(0, 1) || "U";
+      initialEl.textContent = userInitial(currentUser.name);
       initialEl.style.borderColor = ratingColor(0).color;
     }
     if (ratingEl) ratingEl.textContent = "Rating: 読み込み中";
@@ -123,6 +142,7 @@ const LinuxVirusUser = (() => {
 
       const rating = Math.round(Number(ratingData.rating || 0));
       const color = ratingColor(rating);
+      currentRatingColor = color.color;
       if (nameEl) {
         nameEl.textContent = currentUser.name;
         nameEl.style.color = color.color;
@@ -132,6 +152,7 @@ const LinuxVirusUser = (() => {
         initialEl.style.color = color.color;
       }
       if (ratingEl) ratingEl.textContent = `Rating: ${rating}`;
+      updateBadge();
       renderRatingChart(historyData.ratings || []);
     } catch (error) {
       console.error("Failed to load rating", error);

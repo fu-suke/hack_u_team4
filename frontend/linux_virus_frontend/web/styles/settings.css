@@ -199,20 +199,23 @@
   padding: 2px 0;
 }
 
-.user-profile__avatar {
+.user-avatar {
   display: grid;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 auto;
   place-items: center;
   border: 2px solid var(--duo-border);
-  border-radius: 10px;
+  border-radius: 50%;
   background: var(--duo-surface);
   color: #f4f7fb;
-  font-size: 17px;
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
+}
+
+.user-profile__avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  font-size: 17px;
 }
 
 .user-profile__name,

@@ -26,7 +26,7 @@
         </div>
         <div class="minimized__actions">
           <button class="minimized__user" type="button" data-action="showUser" aria-label="User">
-            👤
+            <span id="minimizedUserAvatar" class="user-avatar minimized__user-avatar">👤</span>
             <span id="userBadge" class="minimized__badge minimized__badge--logged-out">?</span>
           </button>
           <button
@@ -128,7 +128,7 @@
         </div>
         <div id="loggedInUserView" class="user-profile" hidden>
           <div class="user-profile__summary">
-            <div id="profileInitial" class="user-profile__avatar">U</div>
+            <div id="profileInitial" class="user-avatar user-profile__avatar">U</div>
             <span id="profileUserName" class="user-profile__name">User</span>
             <span id="profileRating" class="user-profile__rating">Rating: 0</span>
           </div>
