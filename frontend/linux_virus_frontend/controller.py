@@ -44,6 +44,7 @@ from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 _WINDOW_TITLE = "Linux Virus"
 _SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
 _VIRUS_WINDOW_TITLE = "Linux Virus Infection"
+_QUIZ_REVEAL_DELAY_SECONDS = 0.5
 
 _RECOVER_VACCINES_SCRIPT = """
 try {
@@ -69,7 +70,7 @@ class _ResidentAppController(NSObject):
         self._local_monitor: object | None = None
         self._input_blocker = _InputBlocker(self)
         self._window: NSWindow | None = None
-        self._overlays: list[NSWindow] = []
+        self._overlays: list[tuple[NSWindow, WKWebView]] = []
         self._webview: WKWebView | None = None
         self._message_handler: _ScriptMessageHandler | None = None
         self._virus_window: NSWindow | None = None
@@ -149,6 +150,13 @@ class _ResidentAppController(NSObject):
         self._state.disable_timer()
         self._state.view = "expanded"
         self._sync_overlay_visibility()
+        self._play_overlay_noise()
+        AppHelper.callLater(_QUIZ_REVEAL_DELAY_SECONDS, self._reveal_expanded_window, reason)
+
+    @python_method
+    def _reveal_expanded_window(self, reason: str) -> None:
+        if self._state.view != "expanded":
+            return
         self._resize_window(*EXPANDED_SIZE)
         print(f"[linux-virus-frontend] expanded reason={reason}", flush=True)
         self._send_state_to_web(status=f"Expanded by {reason}")
@@ -265,6 +273,14 @@ class _ResidentAppController(NSObject):
             self._send_virus_state_to_web()
             return
 
+        self._sync_overlay_visibility()
+        self._play_overlay_infection()
+        AppHelper.callLater(_QUIZ_REVEAL_DELAY_SECONDS, self._reveal_virus_window)
+
+    @python_method
+    def _reveal_virus_window(self) -> None:
+        if self._virus_window is not None:
+            return
         self._virus_window, self._virus_webview, self._virus_message_handler = _build_web_window(
             self,
             *EXPANDED_SIZE,
@@ -327,13 +343,26 @@ class _ResidentAppController(NSObject):
             return
 
         if self._state.view == "expanded" or self._virus_window is not None:
-            for overlay in self._overlays:
+            for overlay, _ in self._overlays:
                 overlay.orderFront_(None)
             self._refocus_blocking_window()
             return
 
-        for overlay in self._overlays:
+        for overlay, _ in self._overlays:
             overlay.orderOut_(None)
+
+    @python_method
+    def _play_overlay_noise(self) -> None:
+        self._eval_overlay_script("typeof playNoise === 'function' && playNoise();")
+
+    @python_method
+    def _play_overlay_infection(self) -> None:
+        self._eval_overlay_script("typeof playInfection === 'function' && playInfection();")
+
+    @python_method
+    def _eval_overlay_script(self, script: str) -> None:
+        for _, webview in self._overlays:
+            webview.evaluateJavaScript_completionHandler_(script, None)
 
     @python_method
     def _is_blocking_input(self) -> bool:

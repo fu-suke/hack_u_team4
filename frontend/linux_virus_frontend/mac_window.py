@@ -79,8 +79,8 @@ def _build_web_window(
     return window, webview, message_handler
 
 
-def _build_overlay() -> list[NSWindow]:
-    overlays: list[NSWindow] = []
+def _build_overlay() -> list[tuple[NSWindow, WKWebView]]:
+    overlays: list[tuple[NSWindow, WKWebView]] = []
     for screen in NSScreen.screens():
         overlay = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
             screen.frame(),
@@ -99,14 +99,26 @@ def _build_overlay() -> list[NSWindow]:
             | NSWindowCollectionBehaviorStationary
         )
         overlay.setReleasedWhenClosed_(False)
-        overlays.append(overlay)
+
+        content = overlay.contentView()
+        configuration = WKWebViewConfiguration.alloc().init()
+        webview = WKWebView.alloc().initWithFrame_configuration_(
+            content.bounds(),
+            configuration,
+        )
+        webview.setAutoresizingMask_(18)
+        webview.setValue_forKey_(False, "drawsBackground")
+        content.addSubview_(webview)
+        _load_web_ui(webview, "overlay_noise.html")
+
+        overlays.append((overlay, webview))
     return overlays
 
 
-def _load_web_ui(webview: WKWebView) -> None:
+def _load_web_ui(webview: WKWebView, filename: str = "index.html") -> None:
     package_dir = files("linux_virus_frontend")
     web_dir = package_dir.joinpath("web")
-    index_path = web_dir.joinpath("index.html")
+    index_path = web_dir.joinpath(filename)
     index_url = NSURL.fileURLWithPath_(str(index_path))
     read_access_url = NSURL.fileURLWithPath_(str(package_dir))
     webview.loadFileURL_allowingReadAccessToURL_(index_url, read_access_url)

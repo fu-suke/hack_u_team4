@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>overlay-noise</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* ====== 共通: ノイズパッチ ====== */
+    #noise, #infection {
+      position: fixed;
+      inset: 0;
+    }
+    .patch {
+      position: fixed;
+      opacity: 0;
+      will-change: opacity, transform;
+      mix-blend-mode: screen;
+    }
+    .patch svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ====== 通常ノイズ ====== */
+    #noise.playing .patch {
+      animation: patch 0.65s linear forwards;
+    }
+    #noise.playing .patch--2 { animation-delay: 0.08s; }
+    #noise.playing .patch--3 { animation-delay: 0.16s; }
+    #noise.playing .patch--4 { animation-delay: 0.24s; }
+    #noise.playing .patch--5 { animation-delay: 0.32s; }
+    #noise.playing .patch--6 { animation-delay: 0.40s; }
+    #noise.playing .patch--7 { animation-delay: 0.48s; }
+    @keyframes patch {
+      0%   { opacity: 0;    transform: translate(0, 0); }
+      20%  { opacity: 0.95; transform: translate(-6px, 3px); }
+      55%  { opacity: 0.75; transform: translate(4px, -2px); }
+      100% { opacity: 0;    transform: translate(0, 0); }
+    }
+
+    #noise .bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      opacity: 0;
+      background: rgba(230, 240, 255, 0.85);
+      mix-blend-mode: screen;
+      will-change: opacity, transform;
+    }
+    #noise.playing .bar {
+      animation: bar 0.7s linear forwards;
+    }
+    #noise.playing .bar--2 { animation-delay: 0.14s; }
+    #noise.playing .bar--3 { animation-delay: 0.3s; }
+    @keyframes bar {
+      0%   { opacity: 0;    transform: translateX(-30px); }
+      18%  { opacity: 0.9;  transform: translateX(20px); }
+      40%  { opacity: 0.35; transform: translateX(-8px); }
+      100% { opacity: 0;    transform: translateX(0); }
+    }
+
+    #scanlines {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 255, 120, 0) 0,
+        rgba(0, 255, 120, 0.18) 2px,
+        rgba(0, 0, 0, 0) 3px
+      );
+      mix-blend-mode: screen;
+    }
+    #noise.playing ~ #scanlines {
+      animation: scan 1.1s linear forwards;
+    }
+    @keyframes scan {
+      0%   { opacity: 0; }
+      15%  { opacity: 0.4; }
+      80%  { opacity: 0.2; }
+      100% { opacity: 0; }
+    }
+
+    /* ====== 感染エフェクト ====== */
+    #infection .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(28px);
+      opacity: 0;
+      mix-blend-mode: screen;
+      background: radial-gradient(
+        circle,
+        rgba(120, 255, 140, 0.95) 0%,
+        rgba(40, 200, 70, 0.55) 45%,
+        rgba(10, 80, 30, 0.0) 80%
+      );
+      will-change: opacity, transform;
+    }
+    #infection.playing .blob {
+      animation: blob 1.0s ease-out forwards;
+    }
+    #infection.playing .blob--2 { animation-delay: 0.07s; }
+    #infection.playing .blob--3 { animation-delay: 0.14s; }
+    #infection.playing .blob--4 { animation-delay: 0.22s; }
+    #infection.playing .blob--5 { animation-delay: 0.30s; }
+    #infection.playing .blob--6 { animation-delay: 0.40s; }
+    @keyframes blob {
+      0%   { opacity: 0;    transform: scale(0.4); }
+      30%  { opacity: 0.9;  transform: scale(1.1); }
+      60%  { opacity: 0.75; transform: scale(1.25); }
+      100% { opacity: 0;    transform: scale(1.5); }
+    }
+
+    #infection.playing .patch {
+      animation: patchInfect 0.7s linear forwards;
+    }
+    #infection.playing .patch--2 { animation-delay: 0.1s; }
+    #infection.playing .patch--3 { animation-delay: 0.22s; }
+    #infection.playing .patch--4 { animation-delay: 0.34s; }
+    @keyframes patchInfect {
+      0%   { opacity: 0; }
+      25%  { opacity: 0.85; }
+      60%  { opacity: 0.5; }
+      100% { opacity: 0; }
+    }
+
+    #infection .vignette {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0) 35%,
+        rgba(15, 70, 25, 0.55) 75%,
+        rgba(5, 40, 15, 0.9) 100%
+      );
+      mix-blend-mode: multiply;
+      will-change: opacity;
+    }
+    #infection.playing .vignette {
+      animation: vignette 1.2s ease-out forwards;
+    }
+    @keyframes vignette {
+      0%   { opacity: 0; }
+      40%  { opacity: 1; }
+      85%  { opacity: 0.75; }
+      100% { opacity: 0; }
+    }
+
+    #infection .label {
+      position: fixed;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.6);
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 6vw;
+      letter-spacing: 0.35em;
+      color: rgb(140, 255, 150);
+      text-shadow:
+        0 0 12px rgba(120, 255, 140, 0.9),
+        0 0 26px rgba(60, 220, 90, 0.7),
+        0 0 48px rgba(20, 160, 50, 0.5);
+      opacity: 0;
+      white-space: nowrap;
+    }
+    #infection.playing .label {
+      animation: label 1.1s ease-out forwards;
+      animation-delay: 0.1s;
+    }
+    @keyframes label {
+      0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.6); }
+      30%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.05); }
+      55%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1.0); }
+      100% { opacity: 0;   transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    #infection .pulse-tint {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      background: rgba(30, 180, 60, 0.35);
+      mix-blend-mode: screen;
+    }
+    #infection.playing .pulse-tint {
+      animation: pulseTint 1.2s ease-out forwards;
+    }
+    @keyframes pulseTint {
+      0%   { opacity: 0; }
+      15%  { opacity: 0.85; }
+      35%  { opacity: 0.3; }
+      55%  { opacity: 0.6; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 通常出題用: 白色砂嵐 -->
+  <div id="noise">
+    <div class="patch patch--1"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p1"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.6 -0.35"/></filter><rect width="100%" height="100%" filter="url(#p1)"/></svg></div>
+    <div class="patch patch--2"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p2"><feTurbulence type="turbulence" baseFrequency="0.12" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.5 -0.45"/></filter><rect width="100%" height="100%" filter="url(#p2)"/></svg></div>
+    <div class="patch patch--3"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p3"><feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.5 -0.4"/></filter><rect width="100%" height="100%" filter="url(#p3)"/></svg></div>
+    <div class="patch patch--4"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p4"><feTurbulence type="turbulence" baseFrequency="0.18" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.4 -0.5"/></filter><rect width="100%" height="100%" filter="url(#p4)"/></svg></div>
+    <div class="patch patch--5"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p5"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.6 -0.4"/></filter><rect width="100%" height="100%" filter="url(#p5)"/></svg></div>
+    <div class="patch patch--6"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p6"><feTurbulence type="turbulence" baseFrequency="0.15" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.5 -0.45"/></filter><rect width="100%" height="100%" filter="url(#p6)"/></svg></div>
+    <div class="patch patch--7"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="p7"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 1.6 -0.4"/></filter><rect width="100%" height="100%" filter="url(#p7)"/></svg></div>
+
+    <div class="bar bar--1"></div>
+    <div class="bar bar--2"></div>
+    <div class="bar bar--3"></div>
+  </div>
+  <div id="scanlines"></div>
+
+  <!-- ウイルス出題用: 緑色感染エフェクト -->
+  <div id="infection">
+    <div class="pulse-tint"></div>
+    <div class="blob blob--1"></div>
+    <div class="blob blob--2"></div>
+    <div class="blob blob--3"></div>
+    <div class="blob blob--4"></div>
+    <div class="blob blob--5"></div>
+    <div class="blob blob--6"></div>
+    <div class="patch patch--1"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="ip1"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 0.25   0 0 0 0 1   0 0 0 0 0.35   0 0 0 1.6 -0.35"/></filter><rect width="100%" height="100%" filter="url(#ip1)"/></svg></div>
+    <div class="patch patch--2"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="ip2"><feTurbulence type="turbulence" baseFrequency="0.1" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 0.3   0 0 0 0 1   0 0 0 0 0.4   0 0 0 1.5 -0.4"/></filter><rect width="100%" height="100%" filter="url(#ip2)"/></svg></div>
+    <div class="patch patch--3"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="ip3"><feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 0.2   0 0 0 0 1   0 0 0 0 0.3   0 0 0 1.5 -0.4"/></filter><rect width="100%" height="100%" filter="url(#ip3)"/></svg></div>
+    <div class="patch patch--4"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><filter id="ip4"><feTurbulence type="turbulence" baseFrequency="0.14" numOctaves="2" stitchTiles="stitch" seed="0"/><feColorMatrix values="0 0 0 0 0.35   0 0 0 0 1   0 0 0 0 0.45   0 0 0 1.4 -0.45"/></filter><rect width="100%" height="100%" filter="url(#ip4)"/></svg></div>
+    <div class="vignette"></div>
+    <div class="label">⚠ INFECTED ⚠</div>
+  </div>
+
+  <script>
+    function randomizeTurbulence(filter, freqMin, freqMax) {
+      const t = filter.querySelector("feTurbulence");
+      if (!t) return;
+      t.setAttribute("seed", String(Math.floor(Math.random() * 1000)));
+      const base = freqMin + Math.random() * (freqMax - freqMin);
+      t.setAttribute("baseFrequency", base.toFixed(3));
+    }
+
+    function randomizePatch(el, sizeRange) {
+      const widthPct = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      const heightPct = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      el.style.width = widthPct + "%";
+      el.style.height = heightPct + "%";
+      el.style.left = (Math.random() * (100 - widthPct)) + "%";
+      el.style.top = (Math.random() * (100 - heightPct)) + "%";
+    }
+
+    function randomizeBar(el) {
+      el.style.top = (Math.random() * 92) + "%";
+      el.style.height = (1 + Math.random() * 5) + "%";
+    }
+
+    function randomizeBlob(el) {
+      const sizePct = 22 + Math.random() * 30;
+      el.style.width = sizePct + "vw";
+      el.style.height = sizePct + "vw";
+      el.style.left = (Math.random() * 100 - sizePct / 2) + "vw";
+      el.style.top = (Math.random() * 100 - sizePct / 2) + "vh";
+    }
+
+    function restart(el) {
+      el.classList.remove("playing");
+      void el.offsetWidth;
+      el.classList.add("playing");
+    }
+
+    window.playNoise = function () {
+      const noise = document.getElementById("noise");
+      noise.querySelectorAll(".patch").forEach((p, i) => {
+        const f = p.querySelector("filter");
+        if (f) randomizeTurbulence(f, 0.04 + i * 0.02, 0.12 + i * 0.03);
+        const sizeRange = i < 3 ? [18, 38] : [8, 22];
+        randomizePatch(p, sizeRange);
+      });
+      noise.querySelectorAll(".bar").forEach(randomizeBar);
+      restart(noise);
+    };
+
+    window.playInfection = function () {
+      const infection = document.getElementById("infection");
+      infection.querySelectorAll(".patch").forEach((p, i) => {
+        const f = p.querySelector("filter");
+        if (f) randomizeTurbulence(f, 0.05 + i * 0.02, 0.13 + i * 0.02);
+        randomizePatch(p, [14, 32]);
+      });
+      infection.querySelectorAll(".blob").forEach(randomizeBlob);
+      restart(infection);
+    };
+  </script>
+</body>
+</html>
