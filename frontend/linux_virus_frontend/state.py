@@ -139,7 +139,7 @@ class _ResidentState:
     def record_key(self, label: str) -> bool:
         self.key_count += 1
         self.typed_buffer = (self.typed_buffer + label)[-80:]
-        if self.view == "expanded" or self.is_sleeping():
+        if self.view in ("expanded", "settings") or self.is_sleeping():
             return False
 
         return any(self.typed_buffer.endswith(command) for command in self.commands)
