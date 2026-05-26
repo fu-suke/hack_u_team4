@@ -68,7 +68,7 @@ const LinuxVirusSettings = (() => {
   function saveCurrentSettings() {
     const timerSeconds = document.querySelector("#timerSeconds")?.value;
     const sleepMinutes = document.querySelector("#sleepMinutes")?.value;
-    const minTimerSeconds = Number(LinuxVirusConfig.get("minTimerSeconds", 10));
+    const minTimerSeconds = Number(LinuxVirusConfig.get("minTimerSeconds"));
     const normalizedTimerSeconds = timerSeconds
       ? Math.max(minTimerSeconds, Number(timerSeconds))
       : undefined;

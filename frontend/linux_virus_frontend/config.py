@@ -16,22 +16,34 @@ class FrontendSettings(BaseSettings):
         extra="ignore",
     )
 
-    default_timer_seconds: int = 60
-    min_timer_seconds: int = 10
-    default_sleep_minutes: int = 0
-    max_timer_seconds: int = 99 * 60 + 59
-    max_sleep_minutes: int = 99
-    default_commands: list[str] = Field(default_factory=lambda: ["<cmd>+v"])
+    default_timer_seconds: int = Field(60, validation_alias="DEFAULT_TIMER_SECONDS")
+    min_timer_seconds: int = Field(10, validation_alias="MIN_TIMER_SECONDS")
+    default_sleep_minutes: int = Field(0, validation_alias="DEFAULT_SLEEP_MINUTES")
+    max_timer_seconds: int = Field(99 * 60 + 59, validation_alias="MAX_TIMER_SECONDS")
+    max_sleep_minutes: int = Field(99, validation_alias="MAX_SLEEP_MINUTES")
+    default_commands: list[str] = Field(
+        default_factory=lambda: ["<cmd>+v"],
+        validation_alias="DEFAULT_COMMANDS",
+    )
 
-    edge_margin: float = 32.0
-    top_margin: float = 56.0
-    minimized_size: tuple[float, float] = (220.0, 112.0)
-    expanded_size: tuple[float, float] = (520.0, 580.0)
-    settings_size: tuple[float, float] = (520.0, 440.0)
+    edge_margin: float = Field(32.0, validation_alias="EDGE_MARGIN")
+    top_margin: float = Field(56.0, validation_alias="TOP_MARGIN")
+    minimized_size: tuple[float, float] = Field(
+        (220.0, 112.0),
+        validation_alias="MINIMIZED_SIZE",
+    )
+    expanded_size: tuple[float, float] = Field(
+        (520.0, 450.0),
+        validation_alias="EXPANDED_SIZE",
+    )
+    settings_size: tuple[float, float] = Field(
+        (520.0, 440.0),
+        validation_alias="SETTINGS_SIZE",
+    )
 
-    poll_interval_seconds: float = 0.1
-    timer_interval_seconds: float = 0.2
-    virus_poll_interval_minutes: int = 5
+    poll_interval_seconds: float = Field(0.1, validation_alias="POLL_INTERVAL_SECONDS")
+    timer_interval_seconds: float = Field(0.2, validation_alias="TIMER_INTERVAL_SECONDS")
+    virus_poll_interval_minutes: int = Field(5, validation_alias="VIRUS_POLL_INTERVAL_MINUTES")
 
     special_key_labels: dict[int, str] = Field(
         default_factory=lambda: {
@@ -44,16 +56,32 @@ class FrontendSettings(BaseSettings):
             124: "<right>",
             125: "<down>",
             126: "<up>",
-        }
+        },
+        validation_alias="SPECIAL_KEY_LABELS",
     )
 
-    api_base_url: str = "http://127.0.0.1:8000"
-    api_timeout_ms: int = 8000
-    default_tutorial: str = "この問題の解説はまだ登録されていません。"
-    penguin_small_image: str = "../image/penguin_small.png"
-    penguin_medium_image: str = "../image/penguin_medium.png"
-    penguin_big_image: str = "../image/penguin_big.png"
-    penguin_virus_image: str = "../image/penguin_virus.png"
+    api_base_url: str = Field("http://127.0.0.1:8000", validation_alias="API_BASE_URL")
+    api_timeout_ms: int = Field(8000, validation_alias="API_TIMEOUT_MS")
+    default_tutorial: str = Field(
+        "この問題の解説はまだ登録されていません。",
+        validation_alias="DEFAULT_TUTORIAL",
+    )
+    penguin_small_image: str = Field(
+        "../image/penguin_small.png",
+        validation_alias="PENGUIN_SMALL_IMAGE",
+    )
+    penguin_medium_image: str = Field(
+        "../image/penguin_medium.png",
+        validation_alias="PENGUIN_MEDIUM_IMAGE",
+    )
+    penguin_big_image: str = Field(
+        "../image/penguin_big.png",
+        validation_alias="PENGUIN_BIG_IMAGE",
+    )
+    penguin_virus_image: str = Field(
+        "../image/penguin_virus.png",
+        validation_alias="PENGUIN_VIRUS_IMAGE",
+    )
 
     def public_payload(self) -> dict[str, Any]:
         return {
