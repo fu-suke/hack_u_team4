@@ -362,8 +362,32 @@ document.addEventListener("input", (event) => {
 
 document.addEventListener("keydown", (event) => {
   const target = event.target;
-  if (!target || target.id !== "terminalInput") return;
-  if (event.key === "Enter") {
+  if (!target) return;
+
+  if (event.key === "Enter" && !event.isComposing && target.id === "userPassword") {
+    event.preventDefault();
+    LinuxVirusUser.login();
+    return;
+  }
+
+  if (event.key === "Enter" && !event.isComposing && target.id === "userName") {
+    event.preventDefault();
+    document.querySelector("#userPassword")?.focus();
+    return;
+  }
+
+  if (
+    event.key === "Enter"
+    && !event.isComposing
+    && !document.querySelector("#closeExplanation").hidden
+  ) {
+    event.preventDefault();
+    document.querySelector("#closeExplanation").click();
+    return;
+  }
+
+  if (target.id !== "terminalInput") return;
+  if (event.key === "Enter" && !event.isComposing) {
     event.preventDefault();
     runCheck();
     return;
