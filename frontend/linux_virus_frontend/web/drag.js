@@ -1,16 +1,10 @@
 const LinuxVirusDrag = (() => {
-  let didDrag = false;
   let isActive = false;
   let activeDrag = null;
-  let suppressTokenClickUntil = 0;
   let installed = false;
 
   function isDragging() {
     return isActive;
-  }
-
-  function isClickSuppressed() {
-    return didDrag || Date.now() < suppressTokenClickUntil;
   }
 
   function tokensDropIndex(event) {
@@ -31,7 +25,7 @@ const LinuxVirusDrag = (() => {
     }
   }
 
-  function clearDragState(suppressClick = true) {
+  function clearDragState() {
     for (const token of document.querySelectorAll(".token--dragging")) {
       token.classList.remove("token--dragging");
     }
@@ -41,13 +35,6 @@ const LinuxVirusDrag = (() => {
 
     activeDrag = null;
     isActive = false;
-
-    if (!suppressClick) return;
-    didDrag = true;
-    suppressTokenClickUntil = Date.now() + 300;
-    window.setTimeout(() => {
-      if (Date.now() >= suppressTokenClickUntil) didDrag = false;
-    }, 300);
   }
 
   function install() {
@@ -61,11 +48,9 @@ const LinuxVirusDrag = (() => {
         return;
       }
 
-      didDrag = true;
       isActive = true;
       activeDrag = {
         choice: LinuxVirusQuiz.choiceFromDataset(token.dataset),
-        sourceAction: token.dataset.action,
         sourceIndex: Number(token.dataset.index),
       };
       event.dataTransfer.clearData();
@@ -126,7 +111,6 @@ const LinuxVirusDrag = (() => {
 
   return {
     install,
-    isClickSuppressed,
     isDragging,
   };
 })();

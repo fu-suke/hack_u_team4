@@ -389,20 +389,6 @@ document.addEventListener("click", async (event) => {
   post(action);
 });
 
-document.addEventListener("click", (event) => {
-  if (LinuxVirusDrag.isClickSuppressed()) return;
-  const button = event.target.closest(".token");
-  if (!button) return;
-  if (LinuxVirusQuiz.isInteractionLocked()) return;
-
-  const action = button.dataset.action;
-  if (action === "selectToken") {
-    LinuxVirusQuiz.appendTokenToInput(
-      LinuxVirusQuiz.choiceFromDataset(button.dataset),
-    );
-  }
-});
-
 document.addEventListener("input", (event) => {
   const target = event.target;
   if (target && target.id === "terminalInput") {

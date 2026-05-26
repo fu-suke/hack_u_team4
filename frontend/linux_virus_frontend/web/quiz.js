@@ -167,7 +167,7 @@ const LinuxVirusQuiz = (() => {
     mascot.setAttribute("alt", alt);
   }
 
-  function createTokenButton(choice, action, className, index = "", { dimmed = false } = {}) {
+  function createTokenButton(choice, className, index = "", { dimmed = false } = {}) {
     const button = document.createElement("button");
     button.className = dimmed ? `${className} token--used` : className;
     button.type = "button";
@@ -175,7 +175,6 @@ const LinuxVirusQuiz = (() => {
     const interactive = !quiz.interactionLocked && !dimmed;
     button.draggable = interactive;
     button.disabled = !interactive;
-    button.dataset.action = action;
     button.dataset.id = String(choice.id);
     button.dataset.label = choice.label;
     button.dataset.index = String(index);
@@ -410,7 +409,7 @@ const LinuxVirusQuiz = (() => {
     const used = usedChoiceIds();
     for (const [index, choice] of quiz.choices.entries()) {
       tokensFrag.appendChild(
-        createTokenButton(choice, "selectToken", "token", index, { dimmed: used.has(choice.id) }),
+        createTokenButton(choice, "token", index, { dimmed: used.has(choice.id) }),
       );
     }
     tokensEl.replaceChildren(tokensFrag);
@@ -428,19 +427,6 @@ const LinuxVirusQuiz = (() => {
       frag.appendChild(span);
     }
     highlightEl.replaceChildren(frag);
-  }
-
-  function appendTokenToInput(choice) {
-    if (quiz.interactionLocked) return;
-    const separator = quiz.typed.trim() ? " " : "";
-    quiz.typed = `${quiz.typed.trim()}${separator}${choice.label}`;
-    const terminalInput = document.querySelector("#terminalInput");
-    if (terminalInput) {
-      terminalInput.value = quiz.typed;
-      terminalInput.focus();
-    }
-    quizVersion++;
-    renderQuiz(true);
   }
 
   function buildAnswerResult(correct, ratingChange, extra = {}) {
@@ -596,7 +582,6 @@ const LinuxVirusQuiz = (() => {
     isVirusMode,
     loadQuestion,
     lockInteractions,
-    appendTokenToInput,
     renderQuiz,
     renderVaccines,
     completeToken,
