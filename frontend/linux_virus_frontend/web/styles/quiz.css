@@ -203,7 +203,7 @@
 }
 
 .quiz-bottom--correct .quiz__actions {
-  margin-top: 2px;
+  margin-top: auto;
 }
 
 .quiz-bottom--wrong {
