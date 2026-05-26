@@ -12,36 +12,45 @@ const state = {
   quizMode: "normal",
 };
 
+const APP_ROOT = document.querySelector("#app");
+const IS_QUIZ_PAGE = APP_ROOT?.dataset.waitForState === "true";
+
 let lastRenderedState = state.state;
 let restoredSettings = false;
 let vaccineInProgress = false;
+let questionSoundPlayed = false;
 
 function post(action, payload = {}) {
   window.webkit.messageHandlers.resident.postMessage({ action, ...payload });
 }
 
-function setText(selector, value) {
-  for (const node of document.querySelectorAll(selector)) {
-    node.textContent = value;
-  }
+function hasQuizModule() {
+  return typeof LinuxVirusQuiz !== "undefined";
+}
+
+function playQuestionSoundOnce() {
+  if (questionSoundPlayed) return;
+  LinuxVirusSound.play(
+    state.quizMode === "virus" ? "virusQuestion" : "normalQuestion",
+  );
+  questionSoundPlayed = true;
 }
 
 function render() {
-  const app = document.querySelector("#app");
+  if (!APP_ROOT) return;
   const enteredExpanded =
     state.state === "expanded" && lastRenderedState !== "expanded";
   const enteredSettings =
     state.state === "settings" && lastRenderedState !== "settings";
   const enteredUser = state.state === "user" && lastRenderedState !== "user";
   const virusClass = state.quizMode === "virus" ? " app--virus" : "";
-  app.className = `app app--${state.state}${virusClass}`;
+  APP_ROOT.className = `app app--${state.state}${virusClass}`;
   LinuxVirusConfig.update(state.config);
   applyConfigToDom();
   LinuxVirusUser.updateBadge();
-  LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
-  setText('[data-bind="status"]', state.status);
-  setText('[data-bind="keyCount"]', `Keys: ${state.keyCount}`);
-  setText('[data-bind="buffer"]', `Buffer: ${state.buffer}`);
+  if (typeof LinuxVirusTimer !== "undefined") {
+    LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
+  }
 
   const secondsInput = document.querySelector("#timerSeconds");
   if (enteredSettings && secondsInput) {
@@ -69,17 +78,18 @@ function render() {
     );
     LinuxVirusSettings.refreshPersonalizeToggle();
   }
-  if (enteredExpanded) {
-    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
-    LinuxVirusSound.play(
-      state.quizMode === "virus" ? "virusQuestion" : "normalQuestion",
-    );
+  if (state.state !== "expanded") {
+    questionSoundPlayed = false;
+  }
+  if (enteredExpanded && hasQuizModule()) {
+    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal", { force: true });
+    playQuestionSoundOnce();
   }
   if (enteredUser) {
     LinuxVirusUser.renderUserScreen();
   }
 
-  if (state.state === "expanded") {
+  if (state.state === "expanded" && hasQuizModule()) {
     LinuxVirusQuiz.renderQuiz();
   }
   lastRenderedState = state.state;
@@ -120,7 +130,7 @@ window.residentSetState = (nextState) => {
     if (!hadBaseUrl && LinuxVirusConfig.get("apiBaseUrl")) {
       LinuxVirusApi.pingHealth();
     }
-    if (incoming.state === "minimized") {
+    if (incoming.state === "minimized" && !isQuizPage()) {
       restoreSavedSettingsOnce();
     }
   }
@@ -326,7 +336,6 @@ document.addEventListener("click", async (event) => {
     if (LinuxVirusQuiz.isVirusMode()) {
       post("closeVirus");
     } else {
-      LinuxVirusQuiz.loadQuestion("normal");
       post("minimize");
     }
     return;
@@ -403,17 +412,24 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
-  if (
-    event.key === "Enter"
-    && !event.isComposing
-    && !document.querySelector("#closeExplanation").hidden
-  ) {
-    event.preventDefault();
-    document.querySelector("#closeExplanation").click();
+  if (target.id !== "terminalInput") {
+    const closeBtn = document.querySelector("#closeExplanation");
+    const isFormControl =
+      target instanceof HTMLInputElement
+      || target instanceof HTMLTextAreaElement
+      || target.isContentEditable;
+    if (
+      event.key === "Enter"
+      && !event.isComposing
+      && closeBtn
+      && !closeBtn.hidden
+      && !isFormControl
+    ) {
+      event.preventDefault();
+      closeBtn.click();
+    }
     return;
   }
-
-  if (target.id !== "terminalInput") return;
   if (event.key === "Enter" && !event.isComposing) {
     event.preventDefault();
     runCheck();
@@ -439,12 +455,20 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-LinuxVirusDrag.install();
-LinuxVirusQuiz.setTimeoutHandler(runTimeout);
-render();
+function isQuizPage() {
+  return IS_QUIZ_PAGE;
+}
 
-window.setInterval(() => LinuxVirusApi.pingHealth(), 60000);
-window.setInterval(() => LinuxVirusQuiz.renderVaccines(), 60000);
+if (isQuizPage()) {
+  LinuxVirusDrag.install();
+  LinuxVirusQuiz.setTimeoutHandler(runTimeout);
+  post("quizPageReady");
+  window.setInterval(() => LinuxVirusQuiz.renderVaccines(), 60000);
+} else {
+  LinuxVirusDrag.install();
+  render();
+  window.setInterval(() => LinuxVirusApi.pingHealth(), 60000);
+}
 
 function restoreSavedSettingsOnce() {
   if (restoredSettings) return;

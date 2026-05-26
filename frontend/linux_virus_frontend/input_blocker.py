@@ -170,7 +170,15 @@ class _InputBlocker:
 
     def _mouse_location_in_app_windows(self) -> bool:
         location = NSEvent.mouseLocation()
-        for window in (self._controller._window, self._controller._virus_window):
-            if window is not None and NSPointInRect(location, window.frame()):
+        for window in (
+            self._controller._window,
+            self._controller._quiz_window,
+            self._controller._virus_window,
+        ):
+            if (
+                window is not None
+                and window.isVisible()
+                and NSPointInRect(location, window.frame())
+            ):
                 return True
         return False

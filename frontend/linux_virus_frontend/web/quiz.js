@@ -3,29 +3,34 @@ const LinuxVirusQuiz = (() => {
   let quizVersion = 0;
   let renderedQuizVersion = -1;
   let isLoading = false;
+  let loadRequestId = 0;
   let isChecking = false;
   let countdownTimer = null;
   let countdownDeadline = 0;
   let timeoutHandler = null;
   let latestExplanationHtml = "";
 
-  const quiz = {
-    id: null,
-    difficulty: 1,
-    prompt: "問題を読み込み中…",
-    tutorial: "",
-    sample_output: "",
-    correct_answer: "",
-    choices: [],
-    typed: "",
-    answers: [],
-    mode: "normal",
-    answerLogged: false,
-    interactionLocked: false,
-    preAnswerRating: null,
-    lastStreak: 0,
-    lastRatingChange: null,
-  };
+  function emptyQuizState(mode = "normal", prompt = "問題を読み込み中…") {
+    return {
+      id: null,
+      difficulty: 1,
+      prompt,
+      tutorial: "",
+      sample_output: "",
+      correct_answer: "",
+      choices: [],
+      typed: "",
+      answers: [],
+      mode,
+      answerLogged: false,
+      interactionLocked: false,
+      preAnswerRating: null,
+      lastStreak: 0,
+      lastRatingChange: null,
+    };
+  }
+
+  const quiz = emptyQuizState();
 
   function tokenizeTyped() {
     return quiz.typed.trim().split(/\s+/).filter(Boolean);
@@ -271,7 +276,8 @@ const LinuxVirusQuiz = (() => {
     if (explanationOverlayContent) explanationOverlayContent.innerHTML = "";
     setExplanationHtml("");
     if (bottom) bottom.className = "quiz-bottom";
-    document.querySelector("#closeExplanation").hidden = true;
+    const closeExplanation = document.querySelector("#closeExplanation");
+    if (closeExplanation) closeExplanation.hidden = true;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--resolved", "quiz--shake");
     }
@@ -319,7 +325,11 @@ const LinuxVirusQuiz = (() => {
       return LinuxVirusApi.fetchVirusQuestion();
     }
     const userId = LinuxVirusUser.currentUserId();
-    if (userId && LinuxVirusSettings.isPersonalizeEnabled()) {
+    const personalizeEnabled =
+      typeof LinuxVirusSettings === "undefined"
+        ? true
+        : LinuxVirusSettings.isPersonalizeEnabled();
+    if (userId && personalizeEnabled) {
       try {
         return await LinuxVirusApi.fetchPersonalizedQuestion(userId);
       } catch (error) {
@@ -330,10 +340,13 @@ const LinuxVirusQuiz = (() => {
     return LinuxVirusApi.fetchQuestion();
   }
 
-  async function loadQuestion(mode = "normal") {
-    if (isLoading) return;
+  async function loadQuestion(mode = "normal", { force = false } = {}) {
+    if (isLoading && !force) return;
+    const requestId = loadRequestId + 1;
+    loadRequestId = requestId;
     stopCountdown();
     isLoading = true;
+    Object.assign(quiz, emptyQuizState(mode));
     const promptEl = document.querySelector("#quizPrompt");
     const quizEl = document.querySelector(".quiz");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
@@ -345,9 +358,12 @@ const LinuxVirusQuiz = (() => {
     if (quizEl) quizEl.setAttribute("aria-busy", "true");
     setActionsDisabled(true);
     document.querySelector("#retryQuiz")?.setAttribute("hidden", "");
+    resetQuizState();
+    renderQuiz(true);
 
     try {
       const data = await fetchQuestionByMode(mode);
+      if (requestId !== loadRequestId) return;
       Object.assign(quiz, normalizeQuestion(data, mode), {
         typed: "",
         answerLogged: false,
@@ -360,12 +376,14 @@ const LinuxVirusQuiz = (() => {
       if (userId) {
         try {
           const ratingData = await LinuxVirusApi.fetchRating(userId);
+          if (requestId !== loadRequestId) return;
           quiz.preAnswerRating = Math.round(Number(ratingData.rating || 0));
         } catch (_) {
           quiz.preAnswerRating = null;
         }
         try {
           const streakData = await LinuxVirusApi.fetchStreak(userId);
+          if (requestId !== loadRequestId) return;
           quiz.lastStreak = streakData.streak;
         } catch (_) {
           quiz.lastStreak = 0;
@@ -385,18 +403,16 @@ const LinuxVirusQuiz = (() => {
         }
       }
     } catch (error) {
+      if (requestId !== loadRequestId) return;
       console.error("Failed to load question", error);
-      quiz.id = null;
-      quiz.difficulty = 1;
-      quiz.choices = [];
-      quiz.answers = [];
-      quiz.correct_answer = "";
-      quiz.mode = mode;
-      quiz.interactionLocked = false;
+      Object.assign(quiz, emptyQuizState(mode, "問題を読み込めませんでした。"));
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
       stopCountdown();
+      resetQuizState();
+      renderQuiz(true);
       document.querySelector("#retryQuiz")?.removeAttribute("hidden");
     } finally {
+      if (requestId !== loadRequestId) return;
       if (quizEl) quizEl.removeAttribute("aria-busy");
       setActionsDisabled(false);
       isLoading = false;
@@ -411,12 +427,13 @@ const LinuxVirusQuiz = (() => {
   }
 
   function renderQuiz(force = false) {
-    if (!force && LinuxVirusDrag.isDragging()) return;
+    if (!force && typeof LinuxVirusDrag !== "undefined" && LinuxVirusDrag.isDragging()) return;
     if (!force && renderedQuizVersion === quizVersion) return;
     renderedQuizVersion = quizVersion;
 
     const promptEl = document.querySelector("#quizPrompt");
     const tokensEl = document.querySelector("#tokens");
+    if (!tokensEl) return;
 
     if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
     renderTerminalHighlight();

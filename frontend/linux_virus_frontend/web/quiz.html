@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Linux Virus Quiz</title>
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/quiz.css" />
+    <link rel="stylesheet" href="./styles/virus.css" />
+    <link rel="preload" as="image" href="../image/penguin_small.png" />
+    <link rel="preload" as="image" href="../image/penguin_medium.png" />
+    <link rel="preload" as="image" href="../image/penguin_big.png" />
+    <link rel="preload" as="image" href="../image/penguin_virus.png" />
+  </head>
+  <body>
+    <main id="app" class="app app--expanded" data-wait-for-state="true">
+      <section class="expanded" data-panel="expanded">
+        <div class="virus-overlay" aria-hidden="true">
+          <span class="virus-blob virus-blob--1"></span>
+          <span class="virus-blob virus-blob--2"></span>
+          <span class="virus-blob virus-blob--3"></span>
+          <span class="virus-blob virus-blob--4"></span>
+          <span class="virus-particle virus-particle--1"></span>
+          <span class="virus-particle virus-particle--2"></span>
+          <span class="virus-particle virus-particle--3"></span>
+          <span class="virus-particle virus-particle--4"></span>
+          <span class="virus-particle virus-particle--5"></span>
+          <span class="virus-scar virus-scar--1"></span>
+          <span class="virus-scar virus-scar--2"></span>
+          <span class="virus-vignette"></span>
+        </div>
+        <div class="virus-banner" aria-hidden="true">
+          <span class="virus-banner__dot"></span>
+          <span class="virus-banner__text">⚠ VIRUS DETECTED ⚠</span>
+          <span class="virus-banner__dot"></span>
+        </div>
+        <div class="quiz">
+          <div class="quiz__header">
+            <img
+              id="quizMascot"
+              class="quiz__mascot"
+              src="../image/penguin_small.png"
+              alt="Linux penguin"
+            />
+            <div class="quiz__label">ターミナルにコマンドを入力しよう</div>
+            <span id="quizStreak" class="quiz__streak" hidden></span>
+            <div id="vaccineButtons" class="quiz__vaccines" aria-label="Vaccines"></div>
+          </div>
+          <div id="quizTimebar" class="quiz__timebar" aria-hidden="true">
+            <span id="quizTimebarFill" class="quiz__timebar-fill"></span>
+          </div>
+          <div id="quizPrompt" class="quiz__question">問題を読み込み中…</div>
+          <label class="quiz__terminal" aria-label="Command input">
+            <span class="quiz__terminal-prompt">$</span>
+            <span class="quiz__terminal-entry">
+              <span id="terminalHighlight" class="quiz__terminal-highlight" aria-hidden="true"></span>
+              <input
+                id="terminalInput"
+                class="quiz__terminal-input"
+                type="text"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="ここにコマンドを入力"
+              />
+            </span>
+          </label>
+          <div id="tokens" class="quiz__tokens" aria-label="Command tokens"></div>
+        </div>
+        <div class="quiz-bottom" id="quizBottom">
+          <div class="quiz__actions">
+            <button
+              id="closeExplanation"
+              class="btn btn--close-explanation"
+              type="button"
+              data-action="closeExplanation"
+              hidden
+            >
+              閉じる
+            </button>
+            <button
+              id="retryQuiz"
+              class="btn btn--check"
+              type="button"
+              data-action="retryQuiz"
+              hidden
+            >
+              再試行
+            </button>
+          </div>
+        </div>
+        <div id="explanationOverlay" class="explanation-overlay" hidden>
+          <div class="explanation-overlay__panel">
+            <div class="explanation-overlay__header">
+              <span class="explanation-overlay__title">解説</span>
+              <button class="icon-button" type="button" data-action="closeExplanationOverlay" aria-label="Close">✕</button>
+            </div>
+            <div id="explanationOverlayContent" class="explanation-overlay__content"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="./markdown.js"></script>
+    <script src="./config.js"></script>
+    <script src="./storage.js"></script>
+    <script src="./sound.js"></script>
+    <script src="./api.js"></script>
+    <script src="./user.js"></script>
+    <script src="./settings.js"></script>
+    <script src="./quiz.js"></script>
+    <script src="./drag.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

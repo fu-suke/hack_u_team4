@@ -43,6 +43,7 @@ from linux_virus_frontend.web_bridge import _ScriptMessageHandler
 
 _WINDOW_TITLE = "Linux Virus"
 _SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
+_QUIZ_WINDOW_TITLE = "Linux Virus Quiz"
 _VIRUS_WINDOW_TITLE = "Linux Virus Infection"
 _QUIZ_REVEAL_DELAY_SECONDS = 0.5
 
@@ -73,6 +74,9 @@ class _ResidentAppController(NSObject):
         self._overlays: list[tuple[NSWindow, WKWebView]] = []
         self._webview: WKWebView | None = None
         self._message_handler: _ScriptMessageHandler | None = None
+        self._quiz_window: NSWindow | None = None
+        self._quiz_webview: WKWebView | None = None
+        self._quiz_message_handler: _ScriptMessageHandler | None = None
         self._virus_window: NSWindow | None = None
         self._virus_webview: WKWebView | None = None
         self._virus_message_handler: _ScriptMessageHandler | None = None
@@ -92,6 +96,11 @@ class _ResidentAppController(NSObject):
         self._send_state_to_web()
 
     def windowWillClose_(self, notification: Any) -> None:
+        if self._quiz_window is not None and notification.object() == self._quiz_window:
+            self._clear_quiz_window()
+            if self._state.view == "expanded":
+                self.minimize_window()
+            return
         if self._virus_window is not None and notification.object() == self._virus_window:
             self._clear_virus_window()
             return
@@ -118,6 +127,8 @@ class _ResidentAppController(NSObject):
             self.minimize_window()
         if action == "expand":
             self.expand_window("web")
+        if action == "quizPageReady":
+            self._handle_quiz_page_ready()
         if action == "quit":
             self.shutdown()
         if action == "setTimer":
@@ -133,6 +144,13 @@ class _ResidentAppController(NSObject):
                 self._state.current_user = {"id": int(user_id), "name": str(user_name)}
             else:
                 self._state.current_user = None
+            self._send_state_to_web()
+            if self._state.view == "expanded":
+                self._send_quiz_state_to_web()
+            else:
+                self._send_quiz_minimized_state_to_web()
+            if self._virus_window is not None:
+                self._send_virus_state_to_web()
 
     @python_method
     def _normalize_script_message(self, body: Any) -> dict[str, Any] | None:
@@ -147,6 +165,11 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def expand_window(self, reason: str) -> None:
+        quiz_visible = self._quiz_window is not None and self._quiz_window.isVisible()
+        if self._state.view == "expanded" or quiz_visible:
+            self._refocus_blocking_window()
+            return
+
         self._state.disable_timer()
         self._state.view = "expanded"
         self._sync_overlay_visibility()
@@ -157,9 +180,10 @@ class _ResidentAppController(NSObject):
     def _reveal_expanded_window(self, reason: str) -> None:
         if self._state.view != "expanded":
             return
-        self._resize_window(*EXPANDED_SIZE)
+        created_window = self._show_quiz_window()
         print(f"[linux-virus-frontend] expanded reason={reason}", flush=True)
-        self._send_state_to_web(status=f"Expanded by {reason}")
+        if not created_window:
+            self._send_quiz_state_to_web(status=f"Expanded by {reason}")
 
     @python_method
     def show_settings_window(self) -> None:
@@ -179,6 +203,9 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def minimize_window(self) -> None:
+        if self._quiz_window is not None:
+            self._quiz_window.orderOut_(None)
+
         self._state.view = "minimized"
         if (
             self._state.suspended_timer_seconds is not None
@@ -188,9 +215,12 @@ class _ResidentAppController(NSObject):
         elif self._state.deadline is None and self._state.sleep_deadline is None:
             self._state.restart_timer()
         self._sync_overlay_visibility()
-        self._resize_window(*MINIMIZED_SIZE)
+        if self._window is not None:
+            self._window.setFrame_display_(_top_right_frame(*MINIMIZED_SIZE), True)
+            self._window.makeKeyAndOrderFront_(None)
         print("[linux-virus-frontend] minimized", flush=True)
         self._send_state_to_web()
+        self._send_quiz_minimized_state_to_web()
 
     @python_method
     def _resize_window(self, width: float, height: float) -> None:
@@ -228,8 +258,30 @@ class _ResidentAppController(NSObject):
 
         self._update_window_title()
         payload = self._state.payload(status)
-        script = f"window.residentSetState({json.dumps(payload)});"
+        script = self._resident_state_script(payload)
         self._webview.evaluateJavaScript_completionHandler_(script, None)
+
+    @python_method
+    def _send_quiz_state_to_web(self, status: str | None = None) -> None:
+        if self._quiz_webview is None:
+            return
+
+        payload = self._state.payload(status)
+        payload["state"] = "expanded"
+        payload["quizMode"] = "normal"
+        script = self._resident_state_script(payload)
+        self._quiz_webview.evaluateJavaScript_completionHandler_(script, None)
+
+    @python_method
+    def _send_quiz_minimized_state_to_web(self) -> None:
+        if self._quiz_webview is None:
+            return
+
+        payload = self._state.payload("Idle")
+        payload["state"] = "minimized"
+        payload["quizMode"] = "normal"
+        script = self._resident_state_script(payload)
+        self._quiz_webview.evaluateJavaScript_completionHandler_(script, None)
 
     @python_method
     def _send_virus_state_to_web(self) -> None:
@@ -239,8 +291,32 @@ class _ResidentAppController(NSObject):
         payload = self._state.payload("Infection")
         payload["state"] = "expanded"
         payload["quizMode"] = "virus"
-        script = f"window.residentSetState({json.dumps(payload)});"
+        script = self._resident_state_script(payload)
         self._virus_webview.evaluateJavaScript_completionHandler_(script, None)
+
+    @python_method
+    def _handle_quiz_page_ready(self) -> None:
+        if self._virus_window is not None and self._virus_webview is not None:
+            self._send_virus_state_to_web()
+            return
+        if self._state.view == "expanded" and self._quiz_webview is not None:
+            self._send_quiz_state_to_web(status="Expanded")
+
+    @python_method
+    def _resident_state_script(self, payload: dict[str, Any]) -> str:
+        return f"""
+(() => {{
+  const payload = {json.dumps(payload)};
+  const applyState = () => {{
+    if (typeof window.residentSetState === "function") {{
+      window.residentSetState(payload);
+      return;
+    }}
+    window.setTimeout(applyState, 25);
+  }};
+  applyState();
+}})();
+"""
 
     @python_method
     def _tick_virus_timer(self) -> None:
@@ -278,18 +354,37 @@ class _ResidentAppController(NSObject):
         AppHelper.callLater(_QUIZ_REVEAL_DELAY_SECONDS, self._reveal_virus_window)
 
     @python_method
+    def _show_quiz_window(self) -> bool:
+        if self._window is not None:
+            self._window.orderOut_(None)
+
+        created_window = self._quiz_window is None
+        if self._quiz_window is None:
+            self._quiz_window, self._quiz_webview, self._quiz_message_handler = _build_web_window(
+                self,
+                *EXPANDED_SIZE,
+                "quiz.html",
+            )
+            self._quiz_window.setFrame_display_(_top_right_frame(*EXPANDED_SIZE), True)
+            self._quiz_window.setTitle_(_QUIZ_WINDOW_TITLE)
+
+        self._quiz_window.makeKeyAndOrderFront_(None)
+        self._sync_overlay_visibility()
+        return created_window
+
+    @python_method
     def _reveal_virus_window(self) -> None:
         if self._virus_window is not None:
             return
         self._virus_window, self._virus_webview, self._virus_message_handler = _build_web_window(
             self,
             *EXPANDED_SIZE,
+            "quiz.html",
         )
         self._virus_window.setFrame_display_(_top_right_frame(*EXPANDED_SIZE), True)
         self._virus_window.setTitle_(_VIRUS_WINDOW_TITLE)
         self._sync_overlay_visibility()
         self._virus_window.makeKeyAndOrderFront_(None)
-        self._send_virus_state_to_web()
         print("[linux-virus-frontend] virus_window opened", flush=True)
 
     @python_method
@@ -304,7 +399,7 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def recover_vaccines(self) -> None:
-        for webview in (self._webview, self._virus_webview):
+        for webview in (self._webview, self._quiz_webview, self._virus_webview):
             if webview is not None:
                 webview.evaluateJavaScript_completionHandler_(
                     _RECOVER_VACCINES_SCRIPT,
@@ -338,11 +433,22 @@ class _ResidentAppController(NSObject):
         self._restart_virus_timer()
 
     @python_method
+    def _clear_quiz_window(self) -> None:
+        self._quiz_window = None
+        self._quiz_webview = None
+        self._quiz_message_handler = None
+        self._sync_overlay_visibility()
+
+    @python_method
     def _sync_overlay_visibility(self) -> None:
         if not self._overlays:
             return
 
-        if self._state.view == "expanded" or self._virus_window is not None:
+        if (
+            self._state.view == "expanded"
+            or (self._quiz_window is not None and self._quiz_window.isVisible())
+            or self._virus_window is not None
+        ):
             for overlay, _ in self._overlays:
                 overlay.orderFront_(None)
             self._refocus_blocking_window()
@@ -366,7 +472,11 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _is_blocking_input(self) -> bool:
-        return self._state.view == "expanded" or self._virus_window is not None
+        return (
+            self._state.view == "expanded"
+            or (self._quiz_window is not None and self._quiz_window.isVisible())
+            or self._virus_window is not None
+        )
 
     @python_method
     def _frontmost_app_is_self(self) -> bool:
@@ -386,6 +496,9 @@ class _ResidentAppController(NSObject):
         NSApp.activateIgnoringOtherApps_(True)
         if self._virus_window is not None:
             self._virus_window.makeKeyAndOrderFront_(None)
+            return
+        if self._quiz_window is not None and self._quiz_window.isVisible():
+            self._quiz_window.makeKeyAndOrderFront_(None)
             return
         if self._window is not None:
             self._window.makeKeyAndOrderFront_(None)
@@ -442,6 +555,9 @@ class _ResidentAppController(NSObject):
         if self._keyboard.is_recover_vaccine_hotkey(event):
             AppHelper.callAfter(self.recover_vaccines)
             return True
+
+        if self._is_blocking_input():
+            return False
 
         if self._keyboard.is_virus_hotkey(event):
             if self._state.view in ("settings", "user") or self._state.is_timer_suspended():

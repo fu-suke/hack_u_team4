@@ -42,6 +42,7 @@ def _build_web_window(
     controller: Any,
     width: float,
     height: float,
+    filename: str = "default.html",
 ) -> tuple[NSWindow, WKWebView, _ScriptMessageHandler]:
     style = NSWindowStyleMaskTitled
     window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
@@ -75,7 +76,7 @@ def _build_web_window(
     webview = WKWebView.alloc().initWithFrame_configuration_(content.bounds(), configuration)
     webview.setAutoresizingMask_(18)
     content.addSubview_(webview)
-    _load_web_ui(webview)
+    _load_web_ui(webview, filename)
     return window, webview, message_handler
 
 
@@ -109,13 +110,13 @@ def _build_overlay() -> list[tuple[NSWindow, WKWebView]]:
         webview.setAutoresizingMask_(18)
         webview.setValue_forKey_(False, "drawsBackground")
         content.addSubview_(webview)
-        _load_web_ui(webview, "overlay_noise.html")
+        _load_web_ui(webview, "blocking_overlay.html")
 
         overlays.append((overlay, webview))
     return overlays
 
 
-def _load_web_ui(webview: WKWebView, filename: str = "index.html") -> None:
+def _load_web_ui(webview: WKWebView, filename: str = "default.html") -> None:
     package_dir = files("linux_virus_frontend")
     web_dir = package_dir.joinpath("web")
     index_path = web_dir.joinpath(filename)
