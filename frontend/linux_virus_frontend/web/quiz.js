@@ -193,6 +193,23 @@ const LinuxVirusQuiz = (() => {
     return latestExplanationHtml;
   }
 
+  function setQuizLabel(content, ...classes) {
+    const labelEl = document.querySelector(".quiz__label");
+    if (!labelEl) return;
+    labelEl.replaceChildren();
+    if (typeof content === "string") {
+      labelEl.textContent = content;
+    } else {
+      labelEl.append(content);
+    }
+    labelEl.classList.remove(
+      "quiz__label--correct",
+      "quiz__label--timeout",
+      "quiz__label--vaccine",
+    );
+    labelEl.classList.add(...classes);
+  }
+
   function resetTimebar() {
     const timebar = document.querySelector("#quizTimebar");
     const fill = document.querySelector("#quizTimebarFill");
@@ -284,8 +301,13 @@ const LinuxVirusQuiz = (() => {
   }
 
   function showVaccineMessage() {
-    const bottom = document.querySelector("#quizBottom");
-    if (bottom) bottom.className = "quiz-bottom quiz-bottom--vaccine";
+    const message = document.createDocumentFragment();
+    message.append("ワクチンを使用!");
+    message.append(document.createElement("br"));
+    message.append("問題をスキップしました");
+    setQuizLabel(message, "quiz__label--vaccine");
+    const streakEl = document.querySelector("#quizStreak");
+    if (streakEl) streakEl.hidden = true;
     setActionsDisabled(true);
     for (const button of document.querySelectorAll(".quiz__vaccine")) {
       button.disabled = true;
@@ -315,11 +337,7 @@ const LinuxVirusQuiz = (() => {
     const promptEl = document.querySelector("#quizPrompt");
     const quizEl = document.querySelector(".quiz");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
-    const labelEl = document.querySelector(".quiz__label");
-    if (labelEl) {
-      labelEl.textContent = "ターミナルにコマンドを入力しよう";
-      labelEl.classList.remove("quiz__label--correct", "quiz__label--timeout");
-    }
+    setQuizLabel("ターミナルにコマンドを入力しよう");
     const streakEl = document.querySelector("#quizStreak");
     if (streakEl) streakEl.hidden = true;
     const tokensContainer = document.querySelector("#tokens");
@@ -589,6 +607,7 @@ const LinuxVirusQuiz = (() => {
     reorderChoice,
     resetQuizState,
     choiceCount: () => quiz.choices.length,
+    setQuizLabel,
     setTimeoutHandler,
     setExplanationHtml,
     setTyped,

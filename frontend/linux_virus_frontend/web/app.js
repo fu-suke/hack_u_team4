@@ -143,7 +143,6 @@ async function runCheck() {
     answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
   } catch (error) {
     console.error("Failed to check answer", error);
-    if (bottom) bottom.className = "quiz-bottom quiz-bottom--wrong";
     return;
   }
   if (!answerResult) {
@@ -157,7 +156,6 @@ async function runCheck() {
     renderResolvedAnswer(answerResult);
   } else {
     LinuxVirusSound.play("incorrect");
-    if (bottom) bottom.className = "quiz-bottom quiz-bottom--wrong";
     document.querySelector("#closeExplanation").hidden = true;
     const streakElWrong = document.querySelector("#quizStreak");
     if (streakElWrong) streakElWrong.hidden = true;
@@ -168,9 +166,6 @@ async function runCheck() {
 
 async function runTimeout() {
   if (LinuxVirusQuiz.isBusy() || LinuxVirusQuiz.isInteractionLocked()) return;
-  const bottom = document.querySelector("#quizBottom");
-  if (bottom) bottom.className = "quiz-bottom quiz-bottom--wrong";
-
   let answerResult = null;
   try {
     answerResult = await LinuxVirusQuiz.timeoutAndLogAnswer();
@@ -183,12 +178,10 @@ async function runTimeout() {
 }
 
 function updateResolvedHeader(answerResult, timedOut) {
-  const labelEl = document.querySelector(".quiz__label");
-  if (labelEl) {
-    labelEl.textContent = timedOut ? "時間切れ！⌛" : "正解！🎉";
-    labelEl.classList.toggle("quiz__label--correct", !timedOut);
-    labelEl.classList.toggle("quiz__label--timeout", timedOut);
-  }
+  LinuxVirusQuiz.setQuizLabel(
+    timedOut ? "時間切れ！⌛" : "正解！🎉",
+    timedOut ? "quiz__label--timeout" : "quiz__label--correct",
+  );
 
   const streakEl = document.querySelector("#quizStreak");
   if (!streakEl) return;
@@ -274,9 +267,7 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
     LinuxVirusMarkdown.render(answerResult.tutorial),
   );
   if (bottom) {
-    bottom.className = timedOut
-      ? "quiz-bottom quiz-bottom--timeout"
-      : "quiz-bottom quiz-bottom--correct";
+    bottom.className = "quiz-bottom";
   }
   if (quizEl) {
     quizEl.classList.add("quiz--resolved");

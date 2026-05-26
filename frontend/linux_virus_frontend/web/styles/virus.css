@@ -179,6 +179,10 @@
   color: #ff7676;
   text-shadow: 0 0 8px rgba(255, 75, 75, 0.55), 1px 0 0 rgba(136, 197, 64, 0.35), -1px 0 0 rgba(108, 60, 160, 0.35);
 }
+.app--virus .quiz__label--vaccine {
+  color: #64d2ff;
+  text-shadow: 0 0 8px rgba(100, 210, 255, 0.55), 1px 0 0 rgba(136, 197, 64, 0.35), -1px 0 0 rgba(108, 60, 160, 0.35);
+}
 .app--virus .quiz__question {
   color: #c8d6a8;
 }
@@ -202,11 +206,6 @@
 .app--virus .token:hover {
   background: linear-gradient(180deg, #3a5223 0%, #243514 100%);
 }
-.app--virus .quiz-bottom {
-  border-top-color: rgba(255, 75, 75, 0.55);
-}
-.app--virus .quiz-bottom--correct { border-top-color: #88c540; }
-.app--virus .quiz-bottom--wrong { border-top-color: #ff4b4b; }
 .app--virus .btn--check {
   background: linear-gradient(180deg, #88c540 0%, #5e8a1f 100%);
   border-bottom-color: #3e5b18;

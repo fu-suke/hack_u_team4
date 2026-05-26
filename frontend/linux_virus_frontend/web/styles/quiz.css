@@ -44,6 +44,12 @@
   color: var(--duo-red);
 }
 
+.quiz__label--vaccine {
+  color: #64d2ff;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
 .quiz__streak {
   font-size: 13px;
   font-weight: 700;
@@ -206,43 +212,23 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px 0 8px;
-  border-top: 2px solid var(--duo-border);
-  margin-top: 8px;
+  padding: 4px 0 8px;
 }
 
-.quiz-bottom--correct {
-  border-top-color: var(--duo-green);
+.quiz--resolved .quiz-bottom {
   flex: 1;
   overflow: hidden;
   gap: 8px;
   padding-top: 10px;
-}
-
-.quiz-bottom--timeout {
-  border-top-color: var(--duo-red);
-  flex: 1;
-  overflow: hidden;
-  gap: 8px;
-  padding-top: 10px;
-}
-
-.quiz-bottom--correct .quiz__actions,
-.quiz-bottom--timeout .quiz__actions {
-  margin-top: auto;
-}
-
-.quiz-bottom--wrong {
-  border-top-color: var(--duo-red);
-}
-
-.quiz-bottom--vaccine {
-  border-top-color: #64d2ff;
 }
 
 .quiz__actions {
   display: flex;
   gap: 10px;
+}
+
+.quiz--resolved .quiz__actions {
+  margin-top: auto;
 }
 
 /* Duolingo-style buttons */
