@@ -80,9 +80,9 @@ const LinuxVirusApi = (() => {
     }
   }
 
-  async function checkAnswer(questionId, selectedChoices) {
+  async function checkAnswer(questionId, choices) {
     const params = new URLSearchParams({ id: String(questionId) });
-    for (const choice of selectedChoices) {
+    for (const choice of choices) {
       params.append("answer", String(choice.id));
     }
     const response = await request(`/questions/check?${params}`);

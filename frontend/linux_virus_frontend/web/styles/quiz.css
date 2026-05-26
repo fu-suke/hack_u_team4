@@ -200,16 +200,6 @@
   opacity: 0.4;
 }
 
-.token--selected {
-  background: var(--duo-blue-dark);
-  border-color: var(--duo-blue);
-  color: #fff;
-}
-
-.token--selected:hover {
-  background: var(--duo-blue);
-}
-
 /* Quiz bottom bar */
 
 .quiz-bottom {

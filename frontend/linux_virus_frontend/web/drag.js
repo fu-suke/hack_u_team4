@@ -15,7 +15,7 @@ const LinuxVirusDrag = (() => {
 
   function tokensDropIndex(event) {
     const targetToken = event.target.closest("#tokens .token");
-    if (!targetToken) return LinuxVirusQuiz.selectedLength();
+    if (!targetToken) return LinuxVirusQuiz.choiceCount();
     const rect = targetToken.getBoundingClientRect();
     const index = Number(targetToken.dataset.index);
     const afterTarget = event.clientX > rect.left + rect.width / 2;

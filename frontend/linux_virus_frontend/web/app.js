@@ -15,7 +15,6 @@ const state = {
 let lastRenderedState = state.state;
 let restoredSettings = false;
 let vaccineInProgress = false;
-let latestExplanationHtml = "";
 
 function post(action, payload = {}) {
   window.webkit.messageHandlers.resident.postMessage({ action, ...payload });
@@ -183,6 +182,82 @@ async function runTimeout() {
   renderResolvedAnswer(answerResult, { timedOut: true });
 }
 
+function updateResolvedHeader(answerResult, timedOut) {
+  const labelEl = document.querySelector(".quiz__label");
+  if (labelEl) {
+    labelEl.textContent = timedOut ? "時間切れ！⌛" : "正解！🎉";
+    labelEl.classList.toggle("quiz__label--correct", !timedOut);
+    labelEl.classList.toggle("quiz__label--timeout", timedOut);
+  }
+
+  const streakEl = document.querySelector("#quizStreak");
+  if (!streakEl) return;
+  if (!timedOut && answerResult.streak >= 2) {
+    streakEl.textContent = `${answerResult.streak}問連続正解中！`;
+    streakEl.hidden = false;
+  } else {
+    streakEl.hidden = true;
+  }
+}
+
+function insertBeforeActions(element) {
+  const bottom = document.querySelector("#quizBottom");
+  const actionsEl = document.querySelector(".quiz__actions");
+  if (!bottom) return;
+  if (actionsEl) {
+    bottom.insertBefore(element, actionsEl);
+  } else {
+    bottom.appendChild(element);
+  }
+}
+
+function renderSampleOutput(answerResult, timedOut) {
+  const existingOutput = document.querySelector("#sampleOutput");
+  if (existingOutput) existingOutput.remove();
+  if (!answerResult.sample_output) return;
+
+  const outputEl = document.createElement("pre");
+  outputEl.id = "sampleOutput";
+  outputEl.className = timedOut
+    ? "quiz__sample-output quiz__sample-output--timeout"
+    : "quiz__sample-output";
+  outputEl.textContent = answerResult.sample_output;
+  insertBeforeActions(outputEl);
+}
+
+function renderExplanationButton() {
+  const actionsEl = document.querySelector(".quiz__actions");
+  const existingToggle = document.querySelector("#toggleExplanation");
+  if (existingToggle) existingToggle.remove();
+  if (!actionsEl) return;
+
+  const toggleBtn = document.createElement("button");
+  toggleBtn.id = "toggleExplanation";
+  toggleBtn.className = "btn btn--ghost btn--toggle-explanation";
+  toggleBtn.type = "button";
+  toggleBtn.dataset.action = "toggleExplanation";
+  toggleBtn.textContent = "解説を見る";
+  actionsEl.prepend(toggleBtn);
+}
+
+function renderRatingChange(answerResult) {
+  const existingRating = document.querySelector("#quizRatingChange");
+  if (existingRating) existingRating.remove();
+  if (answerResult.ratingChange === null) return;
+
+  const { newRating, delta } = answerResult.ratingChange;
+  const sign = delta >= 0 ? "+" : "";
+  const ratingColor = LinuxVirusUser.ratingColor(newRating).color;
+  const deltaClass = delta >= 0
+    ? "quiz__rating-delta--up"
+    : "quiz__rating-delta--down";
+  const ratingEl = document.createElement("div");
+  ratingEl.id = "quizRatingChange";
+  ratingEl.className = "quiz__rating-change";
+  ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
+  insertBeforeActions(ratingEl);
+}
+
 function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
   if (!timedOut) {
     LinuxVirusSound.play("correct");
@@ -193,23 +268,11 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
 
   const bottom = document.querySelector("#quizBottom");
   const quizEl = document.querySelector(".quiz");
-  const labelEl = document.querySelector(".quiz__label");
-  if (labelEl) {
-    labelEl.textContent = timedOut ? "時間切れ！⌛" : "正解！🎉";
-    labelEl.classList.toggle("quiz__label--correct", !timedOut);
-    labelEl.classList.toggle("quiz__label--timeout", timedOut);
-  }
-  const streakEl = document.querySelector("#quizStreak");
-  if (streakEl) {
-    if (!timedOut && answerResult.streak >= 2) {
-      streakEl.textContent = `${answerResult.streak}問連続正解中！`;
-      streakEl.hidden = false;
-    } else {
-      streakEl.hidden = true;
-    }
-  }
+  updateResolvedHeader(answerResult, timedOut);
   document.querySelector("#tokens").hidden = true;
-  latestExplanationHtml = LinuxVirusMarkdown.render(answerResult.tutorial);
+  LinuxVirusQuiz.setExplanationHtml(
+    LinuxVirusMarkdown.render(answerResult.tutorial),
+  );
   if (bottom) {
     bottom.className = timedOut
       ? "quiz-bottom quiz-bottom--timeout"
@@ -219,52 +282,10 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
     quizEl.classList.add("quiz--resolved");
     if (!timedOut) quizEl.classList.add("quiz--celebrate");
   }
-  const actionsEl = document.querySelector(".quiz__actions");
-
-  const existingOutput = document.querySelector("#sampleOutput");
-  if (existingOutput) existingOutput.remove();
-  if (answerResult.sample_output) {
-    const outputEl = document.createElement("pre");
-    outputEl.id = "sampleOutput";
-    outputEl.className = timedOut
-      ? "quiz__sample-output quiz__sample-output--timeout"
-      : "quiz__sample-output";
-    outputEl.textContent = answerResult.sample_output;
-    if (actionsEl && bottom) {
-      bottom.insertBefore(outputEl, actionsEl);
-    } else if (bottom) {
-      bottom.appendChild(outputEl);
-    }
-  }
-
-  const existingToggle = document.querySelector("#toggleExplanation");
-  if (existingToggle) existingToggle.remove();
-  const toggleBtn = document.createElement("button");
-  toggleBtn.id = "toggleExplanation";
-  toggleBtn.className = "btn btn--ghost btn--toggle-explanation";
-  toggleBtn.type = "button";
-  toggleBtn.dataset.action = "toggleExplanation";
-  toggleBtn.textContent = "解説を見る";
-  if (actionsEl) actionsEl.prepend(toggleBtn);
+  renderSampleOutput(answerResult, timedOut);
+  renderExplanationButton();
   document.querySelector("#closeExplanation").hidden = false;
-
-  if (answerResult.ratingChange !== null) {
-    const { newRating, delta } = answerResult.ratingChange;
-    const sign = delta >= 0 ? "+" : "";
-    const ratingColor = LinuxVirusUser.ratingColor(newRating).color;
-    const existingRating = document.querySelector("#quizRatingChange");
-    if (existingRating) existingRating.remove();
-    const ratingEl = document.createElement("div");
-    ratingEl.id = "quizRatingChange";
-    ratingEl.className = "quiz__rating-change";
-    const deltaClass = delta >= 0 ? "quiz__rating-delta--up" : "quiz__rating-delta--down";
-    ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
-    if (actionsEl && bottom) {
-      bottom.insertBefore(ratingEl, actionsEl);
-    } else if (bottom) {
-      bottom.appendChild(ratingEl);
-    }
-  }
+  renderRatingChange(answerResult);
 }
 
 document.addEventListener("click", async (event) => {
@@ -299,7 +320,7 @@ document.addEventListener("click", async (event) => {
     const overlay = document.querySelector("#explanationOverlay");
     const overlayContent = document.querySelector("#explanationOverlayContent");
     if (!overlay || !overlayContent) return;
-    overlayContent.innerHTML = latestExplanationHtml;
+    overlayContent.innerHTML = LinuxVirusQuiz.explanationHtml();
     overlay.hidden = false;
     return;
   }
@@ -376,7 +397,7 @@ document.addEventListener("click", (event) => {
 
   const action = button.dataset.action;
   if (action === "selectToken") {
-    LinuxVirusQuiz.moveTokenToAnswer(
+    LinuxVirusQuiz.appendTokenToInput(
       LinuxVirusQuiz.choiceFromDataset(button.dataset),
     );
   }
