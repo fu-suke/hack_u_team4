@@ -88,7 +88,7 @@ function render() {
 function applyConfigToDom() {
   const secondsInput = document.querySelector("#timerSeconds");
   if (secondsInput) {
-    secondsInput.min = String(LinuxVirusConfig.get("minTimerSeconds", 10));
+    secondsInput.min = String(LinuxVirusConfig.get("minTimerSeconds"));
     secondsInput.max = String(LinuxVirusConfig.get("maxTimerSeconds", ""));
   }
 

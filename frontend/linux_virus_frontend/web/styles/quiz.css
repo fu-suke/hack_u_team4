@@ -130,22 +130,32 @@
   border-style: solid;
   border-color: var(--duo-border);
   background: var(--duo-surface);
+  flex-shrink: 0;
+  align-content: flex-start;
+  max-height: 116px;
+  overflow-y: auto;
 }
 
 /* Tokens (Duolingo 3D pill buttons) */
 
 .token {
   min-width: 52px;
+  max-width: 100%;
+  min-height: 42px;
   font-family: "SF Mono", Menlo, Consolas, monospace;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 1.25;
   cursor: grab;
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 12px;
   border: 2px solid var(--duo-border);
   border-bottom-width: 4px;
   background: var(--duo-surface-light);
   color: #f4f7fb;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
   transition: transform 0.1s, box-shadow 0.1s, opacity 0.15s;
   user-select: none;
 }
@@ -188,10 +198,12 @@
   border-top-color: var(--duo-green);
   flex: 1;
   overflow: hidden;
+  gap: 8px;
+  padding-top: 10px;
 }
 
 .quiz-bottom--correct .quiz__actions {
-  margin-top: auto;
+  margin-top: 2px;
 }
 
 .quiz-bottom--wrong {
@@ -350,8 +362,9 @@
   margin: 0;
   white-space: pre-wrap;
   word-break: break-all;
-  max-height: 120px;
+  max-height: clamp(72px, 22vh, 150px);
   overflow-y: auto;
+  flex: 0 1 auto;
 }
 
 /* Shell command display after correct answer */
