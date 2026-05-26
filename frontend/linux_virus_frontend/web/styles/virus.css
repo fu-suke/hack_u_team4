@@ -213,7 +213,6 @@
 }
 .app--virus .quiz-bottom--correct { border-top-color: #88c540; }
 .app--virus .quiz-bottom--wrong { border-top-color: #ff4b4b; }
-.app--virus .quiz__result { color: #c8d6a8; }
 .app--virus .btn--check {
   background: linear-gradient(180deg, #88c540 0%, #5e8a1f 100%);
   border-bottom-color: #3e5b18;

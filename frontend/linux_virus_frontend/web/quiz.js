@@ -239,7 +239,6 @@ const LinuxVirusQuiz = (() => {
     document.querySelector(".quiz__terminal")?.classList.remove("quiz__terminal--timeout");
     quiz.interactionLocked = false;
     quizVersion++;
-    const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
     const sampleOutput = document.querySelector("#sampleOutput");
@@ -254,15 +253,8 @@ const LinuxVirusQuiz = (() => {
     if (toggleExplanation) toggleExplanation.remove();
     if (explanationOverlay) explanationOverlay.hidden = true;
     if (explanationOverlayContent) explanationOverlayContent.innerHTML = "";
-    if (result) {
-      result.hidden = false;
-      result.textContent = "ターミナルにコマンドを入力してね！";
-      result.className = "quiz__result";
-    }
     if (bottom) bottom.className = "quiz-bottom";
     document.querySelector("#closeExplanation").hidden = true;
-    const hintEl = document.querySelector(".quiz__hint");
-    if (hintEl) hintEl.hidden = false;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--resolved", "quiz--shake");
     }
@@ -292,12 +284,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function showVaccineMessage() {
-    const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
-    if (result) {
-      result.textContent = "ワクチンを使用しました。問題をスキップします。";
-      result.className = "quiz__result quiz__result--vaccine";
-    }
     if (bottom) bottom.className = "quiz-bottom quiz-bottom--vaccine";
     setActionsDisabled(true);
     for (const button of document.querySelectorAll(".quiz__vaccine")) {
@@ -327,7 +314,6 @@ const LinuxVirusQuiz = (() => {
     isLoading = true;
     const promptEl = document.querySelector("#quizPrompt");
     const quizEl = document.querySelector(".quiz");
-    const result = document.querySelector("#quizResult");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
     const labelEl = document.querySelector(".quiz__label");
     if (labelEl) {
@@ -392,13 +378,6 @@ const LinuxVirusQuiz = (() => {
       quiz.mode = mode;
       quiz.interactionLocked = false;
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
-      if (result) {
-        result.textContent =
-          error && error.isNetwork
-            ? "バックエンドに接続できません。再試行してください。"
-            : "問題の取得に失敗しました。";
-        result.className = "quiz__result quiz__result--wrong";
-      }
       stopCountdown();
       document.querySelector("#retryQuiz")?.removeAttribute("hidden");
     } finally {
@@ -457,7 +436,6 @@ const LinuxVirusQuiz = (() => {
     const normalizedIndex = Math.max(0, Math.min(targetIndex, quiz.selected.length));
     quiz.selected.splice(normalizedIndex, 0, choice);
     quizVersion++;
-    document.querySelector("#quizResult").textContent = "いい感じ！並び替え中…";
     renderQuiz();
   }
 
@@ -467,7 +445,6 @@ const LinuxVirusQuiz = (() => {
       quiz.selected.splice(index, 1);
     }
     quizVersion++;
-    document.querySelector("#quizResult").textContent = "トークンを戻したよ";
     renderQuiz();
   }
 
@@ -478,7 +455,6 @@ const LinuxVirusQuiz = (() => {
     const dest = fromIndex < toIndex ? toIndex - 1 : toIndex;
     quiz.selected.splice(Math.max(0, dest), 0, token);
     quizVersion++;
-    document.querySelector("#quizResult").textContent = "並び替えたよ！";
     renderQuiz();
   }
 

@@ -15,6 +15,7 @@ const state = {
 let lastRenderedState = state.state;
 let restoredSettings = false;
 let vaccineInProgress = false;
+let latestExplanationHtml = "";
 
 function post(action, payload = {}) {
   window.webkit.messageHandlers.resident.postMessage({ action, ...payload });
@@ -135,27 +136,19 @@ window.residentSetState = (nextState) => {
 
 async function runCheck() {
   if (LinuxVirusQuiz.isBusy()) return;
-  const result = document.querySelector("#quizResult");
   const bottom = document.querySelector("#quizBottom");
   const quizEl = document.querySelector(".quiz");
-  result.textContent = "判定中…";
-  result.className = "quiz__result";
+  if (bottom) bottom.className = "quiz-bottom";
   let answerResult = null;
   try {
     answerResult = await LinuxVirusQuiz.checkAndLogAnswer();
   } catch (error) {
     console.error("Failed to check answer", error);
-    result.textContent = error && error.isNetwork
-      ? "バックエンドに接続できません。"
-      : "判定できませんでした。";
-    result.className = "quiz__result quiz__result--wrong";
-    bottom.className = "quiz-bottom quiz-bottom--wrong";
+    if (bottom) bottom.className = "quiz-bottom quiz-bottom--wrong";
     return;
   }
   if (!answerResult) {
-    result.textContent = "ターミナルに入力して Enter で送信";
-    result.className = "quiz__result";
-    bottom.className = "quiz-bottom";
+    if (bottom) bottom.className = "quiz-bottom";
     const streakElReset = document.querySelector("#quizStreak");
     if (streakElReset) streakElReset.hidden = true;
     return;
@@ -165,25 +158,18 @@ async function runCheck() {
     renderResolvedAnswer(answerResult);
   } else {
     LinuxVirusSound.play("incorrect");
-    result.textContent = "😅 もう一回やってみよう!";
-    result.className = "quiz__result quiz__result--wrong";
-    bottom.className = "quiz-bottom quiz-bottom--wrong";
+    if (bottom) bottom.className = "quiz-bottom quiz-bottom--wrong";
     document.querySelector("#closeExplanation").hidden = true;
     const streakElWrong = document.querySelector("#quizStreak");
     if (streakElWrong) streakElWrong.hidden = true;
-    quizEl.classList.add("quiz--shake");
-    window.setTimeout(() => quizEl.classList.remove("quiz--shake"), 450);
+    quizEl?.classList.add("quiz--shake");
+    window.setTimeout(() => quizEl?.classList.remove("quiz--shake"), 450);
   }
 }
 
 async function runTimeout() {
   if (LinuxVirusQuiz.isBusy() || LinuxVirusQuiz.isInteractionLocked()) return;
-  const result = document.querySelector("#quizResult");
   const bottom = document.querySelector("#quizBottom");
-  if (result) {
-    result.textContent = "時間切れを記録中…";
-    result.className = "quiz__result quiz__result--wrong";
-  }
   if (bottom) bottom.className = "quiz-bottom quiz-bottom--wrong";
 
   let answerResult = null;
@@ -191,7 +177,6 @@ async function runTimeout() {
     answerResult = await LinuxVirusQuiz.timeoutAndLogAnswer();
   } catch (error) {
     console.error("Failed to log timeout answer", error);
-    if (result) result.textContent = "時間切れです。";
   }
   if (!answerResult) return;
   LinuxVirusSound.play("incorrect");
@@ -206,7 +191,6 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
     LinuxVirusQuiz.showCorrectAnswerInTerminal({ timeout: true });
   }
 
-  const result = document.querySelector("#quizResult");
   const bottom = document.querySelector("#quizBottom");
   const quizEl = document.querySelector(".quiz");
   const labelEl = document.querySelector(".quiz__label");
@@ -225,14 +209,12 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
     }
   }
   document.querySelector("#tokens").hidden = true;
-  const hintEl = document.querySelector(".quiz__hint");
-  if (hintEl) hintEl.hidden = true;
-  result.innerHTML = LinuxVirusMarkdown.render(answerResult.tutorial);
-  result.className = "quiz__result quiz__result--correct quiz__result--explanation";
-  result.hidden = true;
-  bottom.className = timedOut
-    ? "quiz-bottom quiz-bottom--timeout"
-    : "quiz-bottom quiz-bottom--correct";
+  latestExplanationHtml = LinuxVirusMarkdown.render(answerResult.tutorial);
+  if (bottom) {
+    bottom.className = timedOut
+      ? "quiz-bottom quiz-bottom--timeout"
+      : "quiz-bottom quiz-bottom--correct";
+  }
   if (quizEl) {
     quizEl.classList.add("quiz--resolved");
     if (!timedOut) quizEl.classList.add("quiz--celebrate");
@@ -248,9 +230,9 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
       ? "quiz__sample-output quiz__sample-output--timeout"
       : "quiz__sample-output";
     outputEl.textContent = answerResult.sample_output;
-    if (actionsEl) {
+    if (actionsEl && bottom) {
       bottom.insertBefore(outputEl, actionsEl);
-    } else {
+    } else if (bottom) {
       bottom.appendChild(outputEl);
     }
   }
@@ -277,9 +259,9 @@ function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
     ratingEl.className = "quiz__rating-change";
     const deltaClass = delta >= 0 ? "quiz__rating-delta--up" : "quiz__rating-delta--down";
     ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
-    if (actionsEl) {
+    if (actionsEl && bottom) {
       bottom.insertBefore(ratingEl, actionsEl);
-    } else {
+    } else if (bottom) {
       bottom.appendChild(ratingEl);
     }
   }
@@ -314,11 +296,10 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "toggleExplanation") {
-    const explanationEl = document.querySelector("#quizResult");
     const overlay = document.querySelector("#explanationOverlay");
     const overlayContent = document.querySelector("#explanationOverlayContent");
     if (!overlay || !overlayContent) return;
-    if (explanationEl) overlayContent.innerHTML = explanationEl.innerHTML;
+    overlayContent.innerHTML = latestExplanationHtml;
     overlay.hidden = false;
     return;
   }
