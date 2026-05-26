@@ -35,6 +35,24 @@ def answer_to_tokens(choices: list[str], answer: list[int]) -> list[str] | None:
     return tokens
 
 
+def question_response(question: Question) -> QuestionResponse:
+    correct_answer = ""
+    if question.answers:
+        answer_tokens = answer_to_tokens(question.choices, question.answers[0])
+        if answer_tokens is not None:
+            correct_answer = " ".join(answer_tokens)
+
+    return QuestionResponse(
+        id=question.id,
+        difficulty=question.difficulty,
+        prompt=question.prompt,
+        choices=question.choices,
+        tutorial=question.tutorial,
+        sample_output=question.sample_output,
+        correct_answer=correct_answer,
+    )
+
+
 def is_correct_answer(question: QuestionWithAnswerResponse, answer: list[int]) -> bool:
     answer_tokens = answer_to_tokens(question.choices, answer)
     if answer_tokens is None:
@@ -167,7 +185,7 @@ def get_personalized_question(
         weights.append(1 - correct_rate)
 
     question = weighted_choice(questions, weights)
-    return QuestionResponse.model_validate(question)
+    return question_response(question)
 
 
 @router.get(
@@ -179,4 +197,4 @@ def get_question(db: Session = Depends(get_db)) -> QuestionResponse:
     if question is None:
         raise HTTPException(status_code=404, detail="No questions found")
 
-    return QuestionWithAnswerResponse.model_validate(question)
+    return question_response(question)

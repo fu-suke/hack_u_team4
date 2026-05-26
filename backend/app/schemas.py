@@ -56,6 +56,7 @@ class QuestionResponse(BaseModel):
     choices: list[str]
     tutorial: str
     sample_output: str
+    correct_answer: str = ""
 
     model_config = {"from_attributes": True}
 
