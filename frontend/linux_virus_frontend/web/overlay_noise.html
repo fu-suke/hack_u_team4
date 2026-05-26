@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>overlay-noise</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* ====== 共通: ノイズパッチ ====== */
+    #noise, #infection {
+      position: fixed;
+      inset: 0;
+    }
+    .patch {
+      position: fixed;
+      opacity: 0;
+      will-change: opacity, transform;
+      mix-blend-mode: screen;
+    }
+    .patch svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ====== 通常ノイズ ====== */
+    #noise.playing .patch {
+      animation: patch 0.65s linear forwards;
+    }
+    #noise.playing .patch--2  { animation-delay: 0.05s; }
+    #noise.playing .patch--3  { animation-delay: 0.10s; }
+    #noise.playing .patch--4  { animation-delay: 0.15s; }
+    #noise.playing .patch--5  { animation-delay: 0.20s; }
+    #noise.playing .patch--6  { animation-delay: 0.25s; }
+    #noise.playing .patch--7  { animation-delay: 0.30s; }
+    #noise.playing .patch--8  { animation-delay: 0.35s; }
+    #noise.playing .patch--9  { animation-delay: 0.40s; }
+    #noise.playing .patch--10 { animation-delay: 0.45s; }
+    #noise.playing .patch--11 { animation-delay: 0.50s; }
+    #noise.playing .patch--12 { animation-delay: 0.55s; }
+    @keyframes patch {
+      0%   { opacity: 0;    transform: translate(0, 0); }
+      20%  { opacity: 0.95; transform: translate(-6px, 3px); }
+      55%  { opacity: 0.75; transform: translate(4px, -2px); }
+      100% { opacity: 0;    transform: translate(0, 0); }
+    }
+
+    #noise .bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      opacity: 0;
+      background: rgba(230, 240, 255, 0.85);
+      mix-blend-mode: screen;
+      will-change: opacity, transform;
+    }
+    #noise.playing .bar {
+      animation: bar 0.7s linear forwards;
+    }
+    #noise.playing .bar--2 { animation-delay: 0.14s; }
+    #noise.playing .bar--3 { animation-delay: 0.3s; }
+    @keyframes bar {
+      0%   { opacity: 0;    transform: translateX(-30px); }
+      18%  { opacity: 0.9;  transform: translateX(20px); }
+      40%  { opacity: 0.35; transform: translateX(-8px); }
+      100% { opacity: 0;    transform: translateX(0); }
+    }
+
+    #scanlines {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 255, 120, 0) 0,
+        rgba(0, 255, 120, 0.18) 2px,
+        rgba(0, 0, 0, 0) 3px
+      );
+      mix-blend-mode: screen;
+    }
+    #noise.playing ~ #scanlines {
+      animation: scan 1.1s linear forwards;
+    }
+    @keyframes scan {
+      0%   { opacity: 0; }
+      15%  { opacity: 0.4; }
+      80%  { opacity: 0.2; }
+      100% { opacity: 0; }
+    }
+
+    /* ====== 感染エフェクト ====== */
+    #infection .ink {
+      position: fixed;
+      opacity: 0;
+      mix-blend-mode: screen;
+      will-change: opacity, transform;
+      filter: blur(0.4px);
+    }
+    #infection .ink svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+    #infection.playing .ink {
+      animation: ink 1.0s linear forwards;
+    }
+    #infection.playing .ink--2  { animation-delay: 0.05s; }
+    #infection.playing .ink--3  { animation-delay: 0.10s; }
+    #infection.playing .ink--4  { animation-delay: 0.15s; }
+    #infection.playing .ink--5  { animation-delay: 0.20s; }
+    #infection.playing .ink--6  { animation-delay: 0.25s; }
+    #infection.playing .ink--7  { animation-delay: 0.30s; }
+    #infection.playing .ink--8  { animation-delay: 0.35s; }
+    #infection.playing .ink--9  { animation-delay: 0.40s; }
+    #infection.playing .ink--10 { animation-delay: 0.45s; }
+    #infection.playing .ink--11 { animation-delay: 0.50s; }
+    #infection.playing .ink--12 { animation-delay: 0.55s; }
+    #infection.playing .ink--13 { animation-delay: 0.60s; }
+    #infection.playing .ink--14 { animation-delay: 0.65s; }
+    #infection.playing .ink--15 { animation-delay: 0.70s; }
+    #infection.playing .ink--16 { animation-delay: 0.75s; }
+    @keyframes ink {
+      0%   { opacity: 0;    transform: scale(0.7); }
+      25%  { opacity: 1;    transform: scale(1.05); }
+      65%  { opacity: 0.85; transform: scale(1.12); }
+      100% { opacity: 0;    transform: scale(1.18); }
+    }
+
+    #infection .vignette {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0) 35%,
+        rgba(15, 70, 25, 0.55) 75%,
+        rgba(5, 40, 15, 0.9) 100%
+      );
+      mix-blend-mode: multiply;
+      will-change: opacity;
+    }
+    #infection.playing .vignette {
+      animation: vignette 1.2s ease-out forwards;
+    }
+    @keyframes vignette {
+      0%   { opacity: 0; }
+      40%  { opacity: 1; }
+      85%  { opacity: 0.75; }
+      100% { opacity: 0; }
+    }
+
+    #infection .pulse-tint {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      background: rgba(30, 180, 60, 0.3);
+      mix-blend-mode: screen;
+    }
+    #infection.playing .pulse-tint {
+      animation: pulseTint 1.2s ease-out forwards;
+    }
+    @keyframes pulseTint {
+      0%   { opacity: 0; }
+      15%  { opacity: 0.75; }
+      35%  { opacity: 0.25; }
+      55%  { opacity: 0.5; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 通常出題用: 白色砂嵐 -->
+  <div id="noise">
+    <div class="patch patch--1"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--2"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--3"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--4"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--5"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--6"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--7"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--8"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--9"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--10"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--11"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="patch patch--12"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+
+    <div class="bar bar--1"></div>
+    <div class="bar bar--2"></div>
+    <div class="bar bar--3"></div>
+  </div>
+  <div id="scanlines"></div>
+
+  <!-- ウイルス出題用: 緑色感染エフェクト (インク水滴) -->
+  <div id="infection">
+    <div class="pulse-tint"></div>
+    <div class="ink ink--1"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--2"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--3"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--4"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--5"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--6"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--7"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--8"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--9"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--10"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--11"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--12"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--13"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--14"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--15"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="ink ink--16"><svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100"></svg></div>
+    <div class="vignette"></div>
+  </div>
+
+  <script>
+    function randomizeTurbulence(filter, freqMin, freqMax) {
+      const t = filter.querySelector("feTurbulence");
+      if (!t) return;
+      t.setAttribute("seed", String(Math.floor(Math.random() * 1000)));
+      const base = freqMin + Math.random() * (freqMax - freqMin);
+      t.setAttribute("baseFrequency", base.toFixed(3));
+    }
+
+    function randomizePatch(el, sizeRange) {
+      const widthPct = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      const heightPct = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      el.style.width = widthPct + "%";
+      el.style.height = heightPct + "%";
+      el.style.left = (Math.random() * (100 - widthPct)) + "%";
+      el.style.top = (Math.random() * (100 - heightPct)) + "%";
+    }
+
+    function randomizeBar(el) {
+      el.style.top = (Math.random() * 92) + "%";
+      el.style.height = (1 + Math.random() * 5) + "%";
+    }
+
+    function fillInkDrops(inkEl) {
+      const svg = inkEl.querySelector("svg");
+      if (!svg) return;
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      const ns = "http://www.w3.org/2000/svg";
+      const count = 42 + Math.floor(Math.random() * 22);
+      for (let i = 0; i < count; i++) {
+        const cx = Math.random() * 100;
+        const cy = Math.random() * 100;
+        // メインの不定形インク玉（楕円を回転させて滴のように）
+        const rx = 0.8 + Math.random() * 2.6;
+        const ry = rx * (0.55 + Math.random() * 0.85);
+        const rot = Math.random() * 360;
+        const main = document.createElementNS(ns, "ellipse");
+        main.setAttribute("cx", cx.toFixed(2));
+        main.setAttribute("cy", cy.toFixed(2));
+        main.setAttribute("rx", rx.toFixed(2));
+        main.setAttribute("ry", ry.toFixed(2));
+        main.setAttribute("transform", `rotate(${rot.toFixed(1)} ${cx.toFixed(2)} ${cy.toFixed(2)})`);
+        const alpha = (0.65 + Math.random() * 0.3).toFixed(2);
+        main.setAttribute("fill", `rgba(120, 255, 140, ${alpha})`);
+        svg.appendChild(main);
+        // 飛沫の小さな粒を 1-4 個
+        const splashCount = 1 + Math.floor(Math.random() * 4);
+        for (let j = 0; j < splashCount; j++) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = rx * (1.3 + Math.random() * 1.4);
+          const sx = cx + Math.cos(angle) * dist;
+          const sy = cy + Math.sin(angle) * dist;
+          const sr = 0.15 + Math.random() * 0.6;
+          const splash = document.createElementNS(ns, "circle");
+          splash.setAttribute("cx", sx.toFixed(2));
+          splash.setAttribute("cy", sy.toFixed(2));
+          splash.setAttribute("r", sr.toFixed(2));
+          splash.setAttribute("fill", `rgba(140, 255, 160, ${(0.55 + Math.random() * 0.35).toFixed(2)})`);
+          svg.appendChild(splash);
+        }
+      }
+    }
+
+    function randomizeInk(el) {
+      const widthPct = 14 + Math.random() * 28;
+      const heightPct = 12 + Math.random() * 26;
+      el.style.width = widthPct + "%";
+      el.style.height = heightPct + "%";
+      el.style.left = (Math.random() * (100 - widthPct)) + "%";
+      el.style.top = (Math.random() * (100 - heightPct)) + "%";
+    }
+
+    function restart(el) {
+      el.classList.remove("playing");
+      void el.offsetWidth;
+      el.classList.add("playing");
+    }
+
+    function fillNoiseSquares(patchEl) {
+      const svg = patchEl.querySelector("svg");
+      if (!svg) return;
+      while (svg.firstChild) svg.removeChild(svg.firstChild);
+      const count = 320 + Math.floor(Math.random() * 180);
+      const ns = "http://www.w3.org/2000/svg";
+      for (let i = 0; i < count; i++) {
+        const r = document.createElementNS(ns, "rect");
+        const size = 0.6 + Math.random() * 1.6;
+        r.setAttribute("x", (Math.random() * (100 - size)).toFixed(2));
+        r.setAttribute("y", (Math.random() * (100 - size)).toFixed(2));
+        r.setAttribute("width", size.toFixed(2));
+        r.setAttribute("height", size.toFixed(2));
+        const alpha = (0.55 + Math.random() * 0.45).toFixed(2);
+        r.setAttribute("fill", `rgba(255,255,255,${alpha})`);
+        svg.appendChild(r);
+      }
+    }
+
+    window.playNoise = function () {
+      const noise = document.getElementById("noise");
+      noise.querySelectorAll(".patch").forEach((p, i) => {
+        const sizeRange = i < 3 ? [18, 38] : [8, 22];
+        randomizePatch(p, sizeRange);
+        fillNoiseSquares(p);
+      });
+      noise.querySelectorAll(".bar").forEach(randomizeBar);
+      restart(noise);
+    };
+
+    window.playInfection = function () {
+      const infection = document.getElementById("infection");
+      infection.querySelectorAll(".ink").forEach((el) => {
+        randomizeInk(el);
+        fillInkDrops(el);
+      });
+      restart(infection);
+    };
+  </script>
+</body>
+</html>
