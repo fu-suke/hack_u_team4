@@ -1,8 +1,12 @@
 const LinuxVirusQuiz = (() => {
+  const ANSWER_TIME_LIMIT_MS = 60000;
   let quizVersion = 0;
   let renderedQuizVersion = -1;
   let isLoading = false;
   let isChecking = false;
+  let countdownTimer = null;
+  let countdownDeadline = 0;
+  let timeoutHandler = null;
 
   const quiz = {
     id: null,
@@ -10,6 +14,7 @@ const LinuxVirusQuiz = (() => {
     prompt: "問題を読み込み中…",
     tutorial: "",
     sample_output: "",
+    correct_answer: "",
     choices: [],
     selected: [],
     typed: "",
@@ -126,6 +131,7 @@ const LinuxVirusQuiz = (() => {
       prompt: String(data.prompt),
       tutorial: String(data.tutorial || LinuxVirusConfig.get("defaultTutorial", "")),
       sample_output: String(data.sample_output || ""),
+      correct_answer: String(data.correct_answer || ""),
       answers,
       mode,
       choices: shuffleChoices(
@@ -183,6 +189,45 @@ const LinuxVirusQuiz = (() => {
     return -1;
   }
 
+  function setTimeoutHandler(handler) {
+    timeoutHandler = typeof handler === "function" ? handler : null;
+  }
+
+  function resetTimebar() {
+    const timebar = document.querySelector("#quizTimebar");
+    const fill = document.querySelector("#quizTimebarFill");
+    if (timebar) timebar.hidden = false;
+    if (fill) fill.style.transform = "scaleX(1)";
+  }
+
+  function stopCountdown() {
+    if (countdownTimer !== null) {
+      window.clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  }
+
+  function updateCountdown() {
+    const fill = document.querySelector("#quizTimebarFill");
+    const remaining = Math.max(0, countdownDeadline - Date.now());
+    if (fill) {
+      fill.style.transform = `scaleX(${remaining / ANSWER_TIME_LIMIT_MS})`;
+    }
+    if (quiz.interactionLocked || isChecking || isLoading || quiz.id === null) return;
+    if (remaining > 0) return;
+
+    stopCountdown();
+    if (timeoutHandler) timeoutHandler();
+  }
+
+  function startCountdown() {
+    stopCountdown();
+    countdownDeadline = Date.now() + ANSWER_TIME_LIMIT_MS;
+    resetTimebar();
+    countdownTimer = window.setInterval(updateCountdown, 200);
+    updateCountdown();
+  }
+
   function resetQuizState() {
     quiz.selected = [];
     quiz.typed = "";
@@ -191,6 +236,7 @@ const LinuxVirusQuiz = (() => {
       terminalInput.value = "";
       terminalInput.disabled = false;
     }
+    document.querySelector(".quiz__terminal")?.classList.remove("quiz__terminal--timeout");
     quiz.interactionLocked = false;
     quizVersion++;
     const result = document.querySelector("#quizResult");
@@ -218,8 +264,9 @@ const LinuxVirusQuiz = (() => {
     const hintEl = document.querySelector(".quiz__hint");
     if (hintEl) hintEl.hidden = false;
     if (quizEl) {
-      quizEl.classList.remove("quiz--celebrate", "quiz--shake");
+      quizEl.classList.remove("quiz--celebrate", "quiz--resolved", "quiz--shake");
     }
+    resetTimebar();
   }
 
   function renderVaccines() {
@@ -276,6 +323,7 @@ const LinuxVirusQuiz = (() => {
 
   async function loadQuestion(mode = "normal") {
     if (isLoading) return;
+    stopCountdown();
     isLoading = true;
     const promptEl = document.querySelector("#quizPrompt");
     const quizEl = document.querySelector(".quiz");
@@ -284,7 +332,7 @@ const LinuxVirusQuiz = (() => {
     const labelEl = document.querySelector(".quiz__label");
     if (labelEl) {
       labelEl.textContent = "ターミナルにコマンドを入力しよう";
-      labelEl.classList.remove("quiz__label--correct");
+      labelEl.classList.remove("quiz__label--correct", "quiz__label--timeout");
     }
     const streakEl = document.querySelector("#quizStreak");
     if (streakEl) streakEl.hidden = true;
@@ -323,6 +371,7 @@ const LinuxVirusQuiz = (() => {
       if (promptEl) promptEl.innerHTML = LinuxVirusMarkdown.render(quiz.prompt);
       resetQuizState();
       renderQuiz(true);
+      startCountdown();
       const streakBadge = document.querySelector("#quizStreak");
       if (streakBadge) {
         if (quiz.lastStreak >= 2) {
@@ -339,6 +388,7 @@ const LinuxVirusQuiz = (() => {
       quiz.choices = [];
       quiz.selected = [];
       quiz.answers = [];
+      quiz.correct_answer = "";
       quiz.mode = mode;
       quiz.interactionLocked = false;
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
@@ -349,6 +399,7 @@ const LinuxVirusQuiz = (() => {
             : "問題の取得に失敗しました。";
         result.className = "quiz__result quiz__result--wrong";
       }
+      stopCountdown();
       document.querySelector("#retryQuiz")?.removeAttribute("hidden");
     } finally {
       if (quizEl) quizEl.removeAttribute("aria-busy");
@@ -440,42 +491,74 @@ const LinuxVirusQuiz = (() => {
     setActionsDisabled(true);
     try {
       const correct = await LinuxVirusApi.checkAnswer(quiz.id, parsedAnswer());
-      let ratingChange = null;
-      if (!quiz.answerLogged) {
-        quiz.answerLogged = true;
-        const userId = LinuxVirusUser.currentUserId();
-        if (userId) {
-          try {
-            await LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId);
-            if (quiz.preAnswerRating !== null) {
-              const ratingData = await LinuxVirusApi.fetchRating(userId);
-              const newRating = Math.round(Number(ratingData.rating || 0));
-              ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
-              quiz.lastRatingChange = ratingChange;
-            }
-            if (correct) {
-              const streakData = await LinuxVirusApi.fetchStreak(userId);
-              quiz.lastStreak = streakData.streak;
-            } else {
-              quiz.lastStreak = 0;
-            }
-          } catch (err) {
-            console.error("Failed to submit answer log or fetch rating", err);
-          }
-        }
-        if (quiz.mode === "virus" && correct) {
-          LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
-            console.error("Failed to decrease virus question", err);
-          });
-        }
-        if (quiz.mode !== "virus" && !correct) {
-          LinuxVirusApi.increaseVirusQuestion(quiz.id).catch((err) => {
-            console.error("Failed to increase virus question", err);
-          });
-        }
-      }
+      const ratingChange = await logAnswerResult(correct);
       const command = quiz.typed.trim() || quiz.selected.map((c) => c.label).join(" ");
       return { correct, command, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange: ratingChange ?? quiz.lastRatingChange, streak: quiz.lastStreak ?? 0 };
+    } finally {
+      isChecking = false;
+      setActionsDisabled(false);
+    }
+  }
+
+  async function logAnswerResult(correct) {
+    let ratingChange = null;
+    if (quiz.answerLogged) return ratingChange;
+
+    quiz.answerLogged = true;
+    const userId = LinuxVirusUser.currentUserId();
+    if (userId) {
+      try {
+        await LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId);
+        if (quiz.preAnswerRating !== null) {
+          const ratingData = await LinuxVirusApi.fetchRating(userId);
+          const newRating = Math.round(Number(ratingData.rating || 0));
+          ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
+          quiz.lastRatingChange = ratingChange;
+        }
+        if (correct) {
+          const streakData = await LinuxVirusApi.fetchStreak(userId);
+          quiz.lastStreak = streakData.streak;
+        } else {
+          quiz.lastStreak = 0;
+        }
+      } catch (err) {
+        console.error("Failed to submit answer log or fetch rating", err);
+      }
+    }
+    if (quiz.mode === "virus" && correct) {
+      LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
+        console.error("Failed to decrease virus question", err);
+      });
+    }
+    if (quiz.mode !== "virus" && !correct) {
+      LinuxVirusApi.increaseVirusQuestion(quiz.id).catch((err) => {
+        console.error("Failed to increase virus question", err);
+      });
+    }
+    return ratingChange;
+  }
+
+  async function timeoutAndLogAnswer() {
+    if (quiz.id === null) {
+      throw new Error("Question is not loaded");
+    }
+    if (isChecking) return null;
+    isChecking = true;
+    stopCountdown();
+    lockInteractions();
+    setActionsDisabled(true);
+    try {
+      const ratingChange = await logAnswerResult(false);
+      return {
+        correct: false,
+        timedOut: true,
+        command: quiz.typed.trim() || quiz.selected.map((c) => c.label).join(" "),
+        tutorial: quiz.tutorial,
+        sample_output: quiz.sample_output,
+        correct_answer: quiz.correct_answer,
+        ratingChange: ratingChange ?? quiz.lastRatingChange,
+        streak: quiz.lastStreak ?? 0,
+      };
     } finally {
       isChecking = false;
       setActionsDisabled(false);
@@ -487,11 +570,25 @@ const LinuxVirusQuiz = (() => {
   }
 
   function lockInteractions() {
+    stopCountdown();
     quiz.interactionLocked = true;
     const terminalInput = document.querySelector("#terminalInput");
     if (terminalInput) terminalInput.disabled = true;
     quizVersion++;
     renderQuiz(true);
+  }
+
+  function showCorrectAnswerInTerminal({ timeout = false } = {}) {
+    const answer = quiz.correct_answer;
+    if (!answer) return;
+
+    quiz.typed = answer;
+    const terminalInput = document.querySelector("#terminalInput");
+    if (terminalInput) terminalInput.value = answer;
+    document
+      .querySelector(".quiz__terminal")
+      ?.classList.toggle("quiz__terminal--timeout", timeout);
+    renderTerminalHighlight();
   }
 
   function setTyped(value) {
@@ -533,7 +630,10 @@ const LinuxVirusQuiz = (() => {
     reorderChoice,
     resetQuizState,
     selectedLength: () => quiz.choices.length,
+    setTimeoutHandler,
     setTyped,
+    showCorrectAnswerInTerminal,
     showVaccineMessage,
+    timeoutAndLogAnswer,
   };
 })();

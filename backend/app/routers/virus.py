@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Question
+from app.routers.questions import question_response
 from app.schemas import QuestionResponse, VirusQuestionResponse, VirusQuestionUpdate
 
 router = APIRouter(prefix="/virus", tags=["virus"])
@@ -24,9 +25,9 @@ def get_virus_question(db: Session = Depends(get_db)) -> QuestionResponse:
     for question in questions:
         cumulative += question.virus_count
         if target < cumulative:
-            return QuestionResponse.model_validate(question)
+            return question_response(question)
 
-    return QuestionResponse.model_validate(questions[-1])
+    return question_response(questions[-1])
 
 
 @router.post("/increase", response_model=VirusQuestionResponse)
