@@ -7,6 +7,7 @@ const LinuxVirusQuiz = (() => {
   let countdownTimer = null;
   let countdownDeadline = 0;
   let timeoutHandler = null;
+  let latestExplanationHtml = "";
 
   const quiz = {
     id: null,
@@ -16,7 +17,6 @@ const LinuxVirusQuiz = (() => {
     sample_output: "",
     correct_answer: "",
     choices: [],
-    selected: [],
     typed: "",
     answers: [],
     mode: "normal",
@@ -182,15 +182,16 @@ const LinuxVirusQuiz = (() => {
     return button;
   }
 
-  function findSelectedIndex(choice) {
-    for (let index = quiz.selected.length - 1; index >= 0; index--) {
-      if (quiz.selected[index].id === choice.id) return index;
-    }
-    return -1;
-  }
-
   function setTimeoutHandler(handler) {
     timeoutHandler = typeof handler === "function" ? handler : null;
+  }
+
+  function setExplanationHtml(html) {
+    latestExplanationHtml = String(html || "");
+  }
+
+  function explanationHtml() {
+    return latestExplanationHtml;
   }
 
   function resetTimebar() {
@@ -229,7 +230,6 @@ const LinuxVirusQuiz = (() => {
   }
 
   function resetQuizState() {
-    quiz.selected = [];
     quiz.typed = "";
     const terminalInput = document.querySelector("#terminalInput");
     if (terminalInput) {
@@ -239,7 +239,6 @@ const LinuxVirusQuiz = (() => {
     document.querySelector(".quiz__terminal")?.classList.remove("quiz__terminal--timeout");
     quiz.interactionLocked = false;
     quizVersion++;
-    const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
     const quizEl = document.querySelector(".quiz");
     const sampleOutput = document.querySelector("#sampleOutput");
@@ -254,15 +253,9 @@ const LinuxVirusQuiz = (() => {
     if (toggleExplanation) toggleExplanation.remove();
     if (explanationOverlay) explanationOverlay.hidden = true;
     if (explanationOverlayContent) explanationOverlayContent.innerHTML = "";
-    if (result) {
-      result.hidden = false;
-      result.textContent = "ターミナルにコマンドを入力してね！";
-      result.className = "quiz__result";
-    }
+    setExplanationHtml("");
     if (bottom) bottom.className = "quiz-bottom";
     document.querySelector("#closeExplanation").hidden = true;
-    const hintEl = document.querySelector(".quiz__hint");
-    if (hintEl) hintEl.hidden = false;
     if (quizEl) {
       quizEl.classList.remove("quiz--celebrate", "quiz--resolved", "quiz--shake");
     }
@@ -292,12 +285,7 @@ const LinuxVirusQuiz = (() => {
   }
 
   function showVaccineMessage() {
-    const result = document.querySelector("#quizResult");
     const bottom = document.querySelector("#quizBottom");
-    if (result) {
-      result.textContent = "ワクチンを使用しました。問題をスキップします。";
-      result.className = "quiz__result quiz__result--vaccine";
-    }
     if (bottom) bottom.className = "quiz-bottom quiz-bottom--vaccine";
     setActionsDisabled(true);
     for (const button of document.querySelectorAll(".quiz__vaccine")) {
@@ -327,7 +315,6 @@ const LinuxVirusQuiz = (() => {
     isLoading = true;
     const promptEl = document.querySelector("#quizPrompt");
     const quizEl = document.querySelector(".quiz");
-    const result = document.querySelector("#quizResult");
     if (promptEl) promptEl.textContent = "問題を読み込み中…";
     const labelEl = document.querySelector(".quiz__label");
     if (labelEl) {
@@ -345,7 +332,6 @@ const LinuxVirusQuiz = (() => {
     try {
       const data = await fetchQuestionByMode(mode);
       Object.assign(quiz, normalizeQuestion(data, mode), {
-        selected: [],
         typed: "",
         answerLogged: false,
         interactionLocked: false,
@@ -386,19 +372,11 @@ const LinuxVirusQuiz = (() => {
       quiz.id = null;
       quiz.difficulty = 1;
       quiz.choices = [];
-      quiz.selected = [];
       quiz.answers = [];
       quiz.correct_answer = "";
       quiz.mode = mode;
       quiz.interactionLocked = false;
       if (promptEl) promptEl.textContent = "問題を読み込めませんでした。";
-      if (result) {
-        result.textContent =
-          error && error.isNetwork
-            ? "バックエンドに接続できません。再試行してください。"
-            : "問題の取得に失敗しました。";
-        result.className = "quiz__result quiz__result--wrong";
-      }
       stopCountdown();
       document.querySelector("#retryQuiz")?.removeAttribute("hidden");
     } finally {
@@ -452,34 +430,29 @@ const LinuxVirusQuiz = (() => {
     highlightEl.replaceChildren(frag);
   }
 
-  function moveTokenToAnswer(choice, targetIndex = quiz.selected.length) {
+  function appendTokenToInput(choice) {
     if (quiz.interactionLocked) return;
-    const normalizedIndex = Math.max(0, Math.min(targetIndex, quiz.selected.length));
-    quiz.selected.splice(normalizedIndex, 0, choice);
-    quizVersion++;
-    document.querySelector("#quizResult").textContent = "いい感じ！並び替え中…";
-    renderQuiz();
-  }
-
-  function removeTokenFromAnswer(choice, index = findSelectedIndex(choice)) {
-    if (quiz.interactionLocked) return;
-    if (index >= 0) {
-      quiz.selected.splice(index, 1);
+    const separator = quiz.typed.trim() ? " " : "";
+    quiz.typed = `${quiz.typed.trim()}${separator}${choice.label}`;
+    const terminalInput = document.querySelector("#terminalInput");
+    if (terminalInput) {
+      terminalInput.value = quiz.typed;
+      terminalInput.focus();
     }
     quizVersion++;
-    document.querySelector("#quizResult").textContent = "トークンを戻したよ";
-    renderQuiz();
+    renderQuiz(true);
   }
 
-  function reorderAnswerToken(fromIndex, toIndex) {
-    if (quiz.interactionLocked) return;
-    if (fromIndex < 0 || fromIndex >= quiz.selected.length) return;
-    const [token] = quiz.selected.splice(fromIndex, 1);
-    const dest = fromIndex < toIndex ? toIndex - 1 : toIndex;
-    quiz.selected.splice(Math.max(0, dest), 0, token);
-    quizVersion++;
-    document.querySelector("#quizResult").textContent = "並び替えたよ！";
-    renderQuiz();
+  function buildAnswerResult(correct, ratingChange, extra = {}) {
+    return {
+      correct,
+      command: quiz.typed.trim(),
+      tutorial: quiz.tutorial,
+      sample_output: quiz.sample_output,
+      ratingChange: ratingChange ?? quiz.lastRatingChange,
+      streak: quiz.lastStreak ?? 0,
+      ...extra,
+    };
   }
 
   async function checkAndLogAnswer() {
@@ -492,39 +465,39 @@ const LinuxVirusQuiz = (() => {
     try {
       const correct = await LinuxVirusApi.checkAnswer(quiz.id, parsedAnswer());
       const ratingChange = await logAnswerResult(correct);
-      const command = quiz.typed.trim() || quiz.selected.map((c) => c.label).join(" ");
-      return { correct, command, tutorial: quiz.tutorial, sample_output: quiz.sample_output, ratingChange: ratingChange ?? quiz.lastRatingChange, streak: quiz.lastStreak ?? 0 };
+      return buildAnswerResult(correct, ratingChange);
     } finally {
       isChecking = false;
       setActionsDisabled(false);
     }
   }
 
-  async function logAnswerResult(correct) {
+  async function updateUserProgress(correct) {
     let ratingChange = null;
-    if (quiz.answerLogged) return ratingChange;
-
-    quiz.answerLogged = true;
     const userId = LinuxVirusUser.currentUserId();
-    if (userId) {
-      try {
-        await LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId);
-        if (quiz.preAnswerRating !== null) {
-          const ratingData = await LinuxVirusApi.fetchRating(userId);
-          const newRating = Math.round(Number(ratingData.rating || 0));
-          ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
-          quiz.lastRatingChange = ratingChange;
-        }
-        if (correct) {
-          const streakData = await LinuxVirusApi.fetchStreak(userId);
-          quiz.lastStreak = streakData.streak;
-        } else {
-          quiz.lastStreak = 0;
-        }
-      } catch (err) {
-        console.error("Failed to submit answer log or fetch rating", err);
+    if (!userId) return ratingChange;
+
+    try {
+      await LinuxVirusApi.submitAnswerLog(quiz.id, correct, userId);
+      if (quiz.preAnswerRating !== null) {
+        const ratingData = await LinuxVirusApi.fetchRating(userId);
+        const newRating = Math.round(Number(ratingData.rating || 0));
+        ratingChange = { newRating, delta: newRating - quiz.preAnswerRating };
+        quiz.lastRatingChange = ratingChange;
       }
+      if (correct) {
+        const streakData = await LinuxVirusApi.fetchStreak(userId);
+        quiz.lastStreak = streakData.streak;
+      } else {
+        quiz.lastStreak = 0;
+      }
+    } catch (err) {
+      console.error("Failed to submit answer log or fetch rating", err);
     }
+    return ratingChange;
+  }
+
+  function updateVirusQuestionWeight(correct) {
     if (quiz.mode === "virus" && correct) {
       LinuxVirusApi.decreaseVirusQuestion(quiz.id).catch((err) => {
         console.error("Failed to decrease virus question", err);
@@ -535,6 +508,14 @@ const LinuxVirusQuiz = (() => {
         console.error("Failed to increase virus question", err);
       });
     }
+  }
+
+  async function logAnswerResult(correct) {
+    if (quiz.answerLogged) return null;
+
+    quiz.answerLogged = true;
+    const ratingChange = await updateUserProgress(correct);
+    updateVirusQuestionWeight(correct);
     return ratingChange;
   }
 
@@ -549,16 +530,10 @@ const LinuxVirusQuiz = (() => {
     setActionsDisabled(true);
     try {
       const ratingChange = await logAnswerResult(false);
-      return {
-        correct: false,
+      return buildAnswerResult(false, ratingChange, {
         timedOut: true,
-        command: quiz.typed.trim() || quiz.selected.map((c) => c.label).join(" "),
-        tutorial: quiz.tutorial,
-        sample_output: quiz.sample_output,
         correct_answer: quiz.correct_answer,
-        ratingChange: ratingChange ?? quiz.lastRatingChange,
-        streak: quiz.lastStreak ?? 0,
-      };
+      });
     } finally {
       isChecking = false;
       setActionsDisabled(false);
@@ -614,23 +589,23 @@ const LinuxVirusQuiz = (() => {
   return {
     checkAndLogAnswer,
     choiceFromDataset,
+    explanationHtml,
     hasChoiceId,
     isInteractionLocked,
     isBusy,
     isVirusMode,
     loadQuestion,
     lockInteractions,
-    moveTokenToAnswer,
-    removeTokenFromAnswer,
+    appendTokenToInput,
     renderQuiz,
     renderVaccines,
-    reorderAnswerToken,
     completeToken,
     hasInvalidTypedTokens,
     reorderChoice,
     resetQuizState,
-    selectedLength: () => quiz.choices.length,
+    choiceCount: () => quiz.choices.length,
     setTimeoutHandler,
+    setExplanationHtml,
     setTyped,
     showCorrectAnswerInTerminal,
     showVaccineMessage,

@@ -200,16 +200,6 @@
   opacity: 0.4;
 }
 
-.token--selected {
-  background: var(--duo-blue-dark);
-  border-color: var(--duo-blue);
-  color: #fff;
-}
-
-.token--selected:hover {
-  background: var(--duo-blue);
-}
-
 /* Quiz bottom bar */
 
 .quiz-bottom {
@@ -248,42 +238,6 @@
 
 .quiz-bottom--vaccine {
   border-top-color: #64d2ff;
-}
-
-.quiz__result {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--duo-text-muted);
-  min-height: 20px;
-  line-height: 1.45;
-}
-
-.quiz__result--correct {
-  color: #f4f7fb;
-}
-
-.quiz__result--explanation {
-  font-size: 16px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-}
-
-.quiz__result--wrong {
-  color: var(--duo-red);
-}
-
-.quiz__result--vaccine {
-  color: #64d2ff;
-}
-
-.quiz__result code {
-  font-family: ui-monospace, monospace;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 0.85em;
-  font-weight: normal;
 }
 
 .quiz__actions {
@@ -567,13 +521,6 @@
 
 .quiz__terminal-input:disabled {
   opacity: 0.55;
-}
-
-.quiz__hint {
-  margin-top: 6px;
-  font-size: 11px;
-  color: var(--duo-text-muted);
-  opacity: 0.85;
 }
 
 .token--used {

@@ -202,18 +202,11 @@
 .app--virus .token:hover {
   background: linear-gradient(180deg, #3a5223 0%, #243514 100%);
 }
-.app--virus .token--selected {
-  background: linear-gradient(180deg, #6b3aa0 0%, #4a236c 100%);
-  border-color: #b56ce2;
-  border-bottom-color: #4a236c;
-  color: #f4e6ff;
-}
 .app--virus .quiz-bottom {
   border-top-color: rgba(255, 75, 75, 0.55);
 }
 .app--virus .quiz-bottom--correct { border-top-color: #88c540; }
 .app--virus .quiz-bottom--wrong { border-top-color: #ff4b4b; }
-.app--virus .quiz__result { color: #c8d6a8; }
 .app--virus .btn--check {
   background: linear-gradient(180deg, #88c540 0%, #5e8a1f 100%);
   border-bottom-color: #3e5b18;
