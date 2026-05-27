@@ -156,8 +156,8 @@
 
 - difficulty: 1
   category: [echo]
-  prompt: 文字列 `Hello World` を画面に表示する。
-  choices: [echo, '"Hello World"', print]
+  prompt: 文字列 `Linux` を画面に表示する。
+  choices: [echo, '"Linux"', print]
   answers: [[1, 2]]
   tutorial: |
     【正解で使う要素】
@@ -166,7 +166,7 @@
     【今回は使わない要素】
     - `print` : Linux標準には存在しないコマンド（プログラミング言語の関数と混同しやすい）
   sample_output: |
-    Hello World
+    Linux
 
 - difficulty: 1
   category: [find]
@@ -1563,8 +1563,8 @@
 
 - difficulty: 3
   category: [echo]
-  prompt: 文字列 `--- new entry ---` をファイル `log.txt` の末尾に追記する。
-  choices: [echo, '"--- new entry ---"', ">>", log.txt, ">", 2>]
+  prompt: 文字列 `DONE` をファイル `log.txt` の末尾に追記する。
+  choices: [echo, '"DONE"', ">>", log.txt, ">", 2>]
   answers: [[1, 2, 3, 4]]
   tutorial: |
     【正解で使う要素】
