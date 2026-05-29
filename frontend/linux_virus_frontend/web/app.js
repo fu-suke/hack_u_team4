@@ -155,15 +155,10 @@ function updateResolvedHeader(answerResult, timedOut) {
   }
 }
 
-function insertBeforeActions(element) {
-  const bottom = document.querySelector("#quizBottom");
-  const actionsEl = document.querySelector(".quiz__actions");
-  if (!bottom) return;
-  if (actionsEl) {
-    bottom.insertBefore(element, actionsEl);
-  } else {
-    bottom.appendChild(element);
-  }
+function appendResultDetail(element) {
+  const quizEl = document.querySelector(".quiz");
+  if (!quizEl) return;
+  quizEl.appendChild(element);
 }
 
 function renderSampleOutput(answerResult, timedOut) {
@@ -177,7 +172,7 @@ function renderSampleOutput(answerResult, timedOut) {
     ? "quiz__sample-output quiz__sample-output--timeout"
     : "quiz__sample-output";
   outputEl.textContent = answerResult.sample_output;
-  insertBeforeActions(outputEl);
+  appendResultDetail(outputEl);
 }
 
 function renderExplanationButton() {
@@ -210,7 +205,7 @@ function renderRatingChange(answerResult) {
   ratingEl.id = "quizRatingChange";
   ratingEl.className = "quiz__rating-change";
   ratingEl.innerHTML = `<span class="quiz__rating-label">レーティング</span><span class="quiz__rating-value" style="color:${ratingColor}">${newRating}</span><span class="quiz__rating-delta ${deltaClass}">${sign}${delta}</span>`;
-  insertBeforeActions(ratingEl);
+  appendResultDetail(ratingEl);
 }
 
 function renderResolvedAnswer(answerResult, { timedOut = false } = {}) {
