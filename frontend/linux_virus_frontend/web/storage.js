@@ -1,5 +1,5 @@
 const LinuxVirusStorage = (() => {
-  const SETTINGS_KEY = "linuxVirus.settings";
+  const LEGACY_SETTINGS_KEY = "linuxVirus.settings";
   const VACCINE_KEY = "linuxVirus.vaccine";
   const DAILY_VACCINE_COUNT = 3;
   const RESET_HOUR = 4;
@@ -29,6 +29,8 @@ const LinuxVirusStorage = (() => {
       console.warn(`Failed to remove local storage: ${key}`, error);
     }
   }
+
+  remove(LEGACY_SETTINGS_KEY);
 
   function currentVaccinePeriodKey(now = new Date()) {
     const period = new Date(now);
@@ -74,18 +76,8 @@ const LinuxVirusStorage = (() => {
     return next;
   }
 
-  function readSettings() {
-    return readJson(SETTINGS_KEY, null);
-  }
-
-  function saveSettings(settings) {
-    writeJson(SETTINGS_KEY, settings);
-  }
-
   return {
-    readSettings,
     readVaccineState,
-    saveSettings,
     useVaccine,
     resetVaccines,
   };

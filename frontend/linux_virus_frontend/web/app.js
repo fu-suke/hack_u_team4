@@ -47,10 +47,7 @@ function render() {
     LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
   }
   if (enteredSettings) {
-    const savedSettings = LinuxVirusSettings.readSavedSettings();
-    state.sleepMinutes = LinuxVirusSettings.normalizeSleepMinutes(
-      LinuxVirusSettings.sleepMinutesFromSettings(savedSettings, state.sleepMinutes),
-    );
+    state.sleepMinutes = LinuxVirusSettings.normalizeSleepMinutes(state.sleepMinutes);
     const sleepInput = document.querySelector("#sleepMinutes");
     if (sleepInput) {
       sleepInput.value = String(state.sleepMinutes);

@@ -1,10 +1,5 @@
 const LinuxVirusSettings = (() => {
-  const SETTINGS_VERSION = 1;
   let personalizeEnabled = true;
-  const savedSettings = LinuxVirusStorage.readSettings();
-  if (savedSettings && typeof savedSettings.personalizeEnabled === "boolean") {
-    personalizeEnabled = savedSettings.personalizeEnabled;
-  }
 
   function isPersonalizeEnabled() {
     return personalizeEnabled;
@@ -14,23 +9,6 @@ const LinuxVirusSettings = (() => {
     const toggle = document.querySelector("#personalizeToggle");
     if (!toggle) return;
     toggle.checked = personalizeEnabled;
-  }
-
-  function readSavedSettings() {
-    return LinuxVirusStorage.readSettings();
-  }
-
-  function sleepMinutesFromSettings(settings, fallback) {
-    if (
-      !settings ||
-      !Object.prototype.hasOwnProperty.call(settings, "sleepMinutes")
-    ) {
-      return fallback;
-    }
-    if (!settings.version && Number(settings.sleepMinutes) === 1) {
-      return LinuxVirusConfig.get("defaultSleepMinutes", 0);
-    }
-    return settings.sleepMinutes;
   }
 
   function normalizeSleepMinutes(value) {
@@ -52,21 +30,17 @@ const LinuxVirusSettings = (() => {
   function saveCurrentSettings() {
     const sleepMinutes = document.querySelector("#sleepMinutes")?.value;
     const settings = {
-      version: SETTINGS_VERSION,
       sleepMinutes: normalizeSleepMinutes(sleepMinutes),
       personalizeEnabled,
     };
     const sleepInput = document.querySelector("#sleepMinutes");
     if (sleepInput) sleepInput.value = String(settings.sleepMinutes);
-    LinuxVirusStorage.saveSettings(settings);
     return settings;
   }
 
   return {
     isPersonalizeEnabled,
     refreshPersonalizeToggle,
-    readSavedSettings,
-    sleepMinutesFromSettings,
     normalizeSleepMinutes,
     saveCurrentSettings,
   };

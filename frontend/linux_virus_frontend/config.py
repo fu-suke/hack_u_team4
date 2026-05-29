@@ -56,7 +56,7 @@ class FrontendSettings(BaseSettings):
         validation_alias="MINIMIZED_SIZE",
     )
     expanded_size: tuple[float, float] = Field(
-        (520.0, 450.0),
+        (520.0, 480.0),
         validation_alias="EXPANDED_SIZE",
     )
     settings_size: tuple[float, float] = Field(
