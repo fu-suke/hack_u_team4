@@ -134,45 +134,12 @@
               </span>
             </span>
           </label>
-          <div class="command-header">
-            <span>コマンド</span>
-            <div class="command-header__actions">
-              <button class="icon-button" type="button" data-action="addCommand">+</button>
-              <button class="icon-button" type="button" data-action="showHelp">?</button>
-            </div>
-          </div>
-          <div id="commands" class="commands"></div>
         </div>
         <div class="actions settings__footer">
           <button class="btn btn--check" type="button" data-action="done">完了</button>
         </div>
       </section>
 
-      <dialog id="helpDialog" class="help-dialog">
-        <div class="help-dialog__header">
-          <strong>コマンド表記</strong>
-          <button class="icon-button" type="button" data-action="closeHelp">×</button>
-        </div>
-        <div class="help-dialog__body">
-          <p>コマンドは最大10件まで登録できます。<code>/focus</code> のような文字列や <code>&lt;cmd&gt;+k</code> のようなショートカットを使えます。</p>
-          <p>文字列コマンドは入力された文字列と完全一致で判定します。</p>
-          <ul>
-            <li><code>&lt;cmd&gt;+v</code></li>
-            <li><code>/focus</code></li>
-            <li><code>start quiz</code></li>
-          </ul>
-          <p>修飾キーを使うショートカットは、キーの前に山括弧で指定します。</p>
-          <ul>
-            <li><code>&lt;cmd&gt;+k</code></li>
-            <li><code>&lt;ctrl&gt;+j</code></li>
-            <li><code>&lt;option&gt;+x</code></li>
-            <li><code>&lt;shift&gt;+a</code></li>
-            <li><code>&lt;ctrl+option&gt;+&lt;space&gt;</code></li>
-            <li><code>&lt;cmd+shift&gt;+p</code></li>
-          </ul>
-          <p>使用できる修飾キー名は <code>cmd</code>、<code>ctrl</code>、<code>option</code>、<code>shift</code> です。</p>
-        </div>
-      </dialog>
     </main>
     <script src="./config.js"></script>
     <script src="./storage.js"></script>

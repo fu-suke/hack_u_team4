@@ -14,6 +14,8 @@ from AppKit import (
     NSApplicationActivationPolicyAccessory,  # ty: ignore[unresolved-import]
     NSEvent,  # ty: ignore[unresolved-import]
     NSEventMaskKeyDown,  # ty: ignore[unresolved-import]
+    NSPasteboard,  # ty: ignore[unresolved-import]
+    NSPasteboardTypeString,  # ty: ignore[unresolved-import]
     NSWindow,  # ty: ignore[unresolved-import]
     NSWorkspace,  # ty: ignore[unresolved-import]
 )
@@ -30,11 +32,12 @@ from linux_virus_frontend.config import (
     EXPANDED_SIZE,
     MINIMIZED_SIZE,
     POLL_INTERVAL_SECONDS,
+    SETTINGS,
     SETTINGS_SIZE,
     TIMER_INTERVAL_SECONDS,
     VIRUS_POLL_INTERVAL_MINUTES,
 )
-from linux_virus_frontend.events import _ControlEvent, _KeyEvent
+from linux_virus_frontend.events import _ControlEvent
 from linux_virus_frontend.input_blocker import _InputBlocker
 from linux_virus_frontend.keyboard import _KeyboardInterpreter
 from linux_virus_frontend.mac_window import _build_overlay, _build_web_window, _top_right_frame
@@ -46,6 +49,8 @@ _SLEEPING_WINDOW_TITLE = "Linux Virus (sleeping)"
 _QUIZ_WINDOW_TITLE = "Linux Virus Quiz"
 _VIRUS_WINDOW_TITLE = "Linux Virus Infection"
 _QUIZ_REVEAL_DELAY_SECONDS = 0.5
+_CLIPBOARD_READ_DELAY_SECONDS = 0.15
+_SUPPORTED_LINUX_COMMANDS = {command.lower() for command in SETTINGS.supported_linux_commands}
 
 _RECOVER_VACCINES_SCRIPT = """
 try {
@@ -64,7 +69,7 @@ try {
 class _ResidentAppController(NSObject):
     def init(self) -> _ResidentAppController:
         self = objc_super(_ResidentAppController, self).init()
-        self._events: queue.Queue[_KeyEvent | _ControlEvent] = queue.Queue()
+        self._events: queue.Queue[_ControlEvent] = queue.Queue()
         self._keyboard = _KeyboardInterpreter()
         self._state = _ResidentState()
         self._global_monitor: object | None = None
@@ -164,7 +169,7 @@ class _ResidentAppController(NSObject):
             return None
 
     @python_method
-    def expand_window(self, reason: str) -> None:
+    def expand_window(self, reason: str, trigger_command: str | None = None) -> None:
         quiz_visible = self._quiz_window is not None and self._quiz_window.isVisible()
         if self._state.view == "expanded" or quiz_visible:
             self._refocus_blocking_window()
@@ -172,6 +177,7 @@ class _ResidentAppController(NSObject):
 
         self._state.disable_timer()
         self._state.view = "expanded"
+        self._state.trigger_command = trigger_command
         self._sync_overlay_visibility()
         self._play_overlay_noise()
         AppHelper.callLater(_QUIZ_REVEAL_DELAY_SECONDS, self._reveal_expanded_window, reason)
@@ -207,6 +213,7 @@ class _ResidentAppController(NSObject):
             self._quiz_window.orderOut_(None)
 
         self._state.view = "minimized"
+        self._state.trigger_command = None
         if (
             self._state.suspended_timer_seconds is not None
             or self._state.suspended_sleep_seconds is not None
@@ -232,12 +239,11 @@ class _ResidentAppController(NSObject):
 
     @python_method
     def _set_timer_from_message(self, body: dict[Any, Any]) -> None:
-        commands_text = self._state.set_timer_from_message(body)
-        status = f"Timer set: {self._state.timer_seconds}s, commands: {commands_text}"
+        self._state.set_timer_from_message(body)
+        status = f"Timer set: {self._state.timer_seconds}s"
         self._send_state_to_web(status=status)
         print(
-            f"[linux-virus-frontend] timer_set seconds={self._state.timer_seconds} "
-            f"commands={commands_text}",
+            f"[linux-virus-frontend] timer_set seconds={self._state.timer_seconds}",
             flush=True,
         )
         self.minimize_window()
@@ -248,8 +254,31 @@ class _ResidentAppController(NSObject):
         if self._state.view == "minimized":
             self._send_state_to_web()
         if self._state.tick_timer_expired():
+            self._state.trigger_command = None
             self._events.put(_ControlEvent(name="expand", reason="timer"))
         self._tick_virus_timer()
+
+    @python_method
+    def _read_clipboard_command(self) -> str | None:
+        pasteboard = NSPasteboard.generalPasteboard()
+        raw_text = pasteboard.stringForType_(NSPasteboardTypeString)
+        if raw_text is None:
+            return None
+
+        first_token = str(raw_text).strip().split(" ", 1)[0].strip().lower()
+        if first_token in _SUPPORTED_LINUX_COMMANDS:
+            return first_token
+        return None
+
+    @python_method
+    def _expand_from_clipboard_copy(self) -> None:
+        if self._state.view in ("settings", "user") or self._state.is_timer_suspended():
+            return
+        if self._state.is_sleeping() or self._is_blocking_input():
+            return
+
+        command = self._read_clipboard_command()
+        self.expand_window("copy", trigger_command=command)
 
     @python_method
     def _send_state_to_web(self, status: str | None = None) -> None:
@@ -280,6 +309,7 @@ class _ResidentAppController(NSObject):
         payload = self._state.payload("Idle")
         payload["state"] = "minimized"
         payload["quizMode"] = "normal"
+        payload["triggerCommand"] = None
         script = self._resident_state_script(payload)
         self._quiz_webview.evaluateJavaScript_completionHandler_(script, None)
 
@@ -559,25 +589,12 @@ class _ResidentAppController(NSObject):
         if self._is_blocking_input():
             return False
 
-        if self._keyboard.is_virus_hotkey(event):
+        if self._keyboard.is_copy_hotkey(event):
             if self._state.view in ("settings", "user") or self._state.is_timer_suspended():
-                return True
-            self._events.put(_ControlEvent(name="virus", reason="hotkey"))
-            return True
-
-        if self._keyboard.is_toggle_hotkey(event):
-            if self._state.is_sleeping():
-                return True
-            self._events.put(_ControlEvent(name="expand", reason="hotkey"))
-            return True
-
-        label = self._keyboard.format_key(event)
-        if not label:
+                return False
+            AppHelper.callLater(_CLIPBOARD_READ_DELAY_SECONDS, self._expand_from_clipboard_copy)
             return False
 
-        self._events.put(_KeyEvent(label=label))
-        if self._state.record_key(label):
-            self._events.put(_ControlEvent(name="expand", reason="command"))
         return False
 
     @python_method
@@ -596,9 +613,6 @@ class _ResidentAppController(NSObject):
                 if event.name == "quit":
                     self.shutdown()
                 continue
-
-            self._send_state_to_web()
-            print(f"[linux-virus-frontend] key={event.label}", flush=True)
 
     @python_method
     def shutdown(self) -> None:

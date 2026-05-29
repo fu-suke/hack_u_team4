@@ -320,9 +320,16 @@ const LinuxVirusQuiz = (() => {
     }
   }
 
-  async function fetchQuestionByMode(mode) {
+  async function fetchQuestionByMode(mode, triggerCommand = null) {
     if (mode === "virus") {
       return LinuxVirusApi.fetchVirusQuestion();
+    }
+    if (triggerCommand) {
+      try {
+        return await LinuxVirusApi.fetchQuestionByCommand(triggerCommand);
+      } catch (error) {
+        console.warn("Command question fetch failed, falling back to normal", error);
+      }
     }
     const userId = LinuxVirusUser.currentUserId();
     const personalizeEnabled =
@@ -340,7 +347,7 @@ const LinuxVirusQuiz = (() => {
     return LinuxVirusApi.fetchQuestion();
   }
 
-  async function loadQuestion(mode = "normal", { force = false } = {}) {
+  async function loadQuestion(mode = "normal", { force = false, triggerCommand = null } = {}) {
     if (isLoading && !force) return;
     const requestId = loadRequestId + 1;
     loadRequestId = requestId;
@@ -362,7 +369,7 @@ const LinuxVirusQuiz = (() => {
     renderQuiz(true);
 
     try {
-      const data = await fetchQuestionByMode(mode);
+      const data = await fetchQuestionByMode(mode, triggerCommand);
       if (requestId !== loadRequestId) return;
       Object.assign(quiz, normalizeQuestion(data, mode), {
         typed: "",

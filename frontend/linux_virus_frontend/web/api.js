@@ -60,6 +60,14 @@ const LinuxVirusApi = (() => {
     return response.json();
   }
 
+  async function fetchQuestionByCommand(command) {
+    const params = new URLSearchParams({ command: String(command) });
+    const response = await request(`/questions/by-command?${params}`, {
+      timeoutMs: LONG_TIMEOUT_MS,
+    });
+    return response.json();
+  }
+
   async function fetchRating(userId) {
     const params = new URLSearchParams({ user_id: String(userId) });
     const response = await request(`/rating?${params}`);
@@ -147,6 +155,7 @@ const LinuxVirusApi = (() => {
     createUser,
     fetchPersonalizedQuestion,
     fetchQuestion,
+    fetchQuestionByCommand,
     fetchRating,
     fetchRatingHistory,
     fetchStreak,

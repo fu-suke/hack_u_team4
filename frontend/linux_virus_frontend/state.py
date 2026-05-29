@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from linux_virus_frontend.config import (
-    DEFAULT_COMMANDS,
     DEFAULT_SLEEP_MINUTES,
     DEFAULT_TIMER_SECONDS,
     MAX_SLEEP_MINUTES,
@@ -18,7 +17,6 @@ from linux_virus_frontend.config import (
 @dataclass
 class _ResidentState:
     view: str = "minimized"
-    key_count: int = 0
     timer_seconds: int = DEFAULT_TIMER_SECONDS
     sleep_minutes: int = DEFAULT_SLEEP_MINUTES
     deadline: float | None = None
@@ -26,25 +24,23 @@ class _ResidentState:
     suspended_timer_seconds: int | None = None
     suspended_sleep_seconds: int | None = None
     suspended_sleep_input_minutes: int | None = None
-    commands: list[str] = field(default_factory=lambda: DEFAULT_COMMANDS.copy())
-    typed_buffer: str = ""
     current_user: dict[str, Any] | None = None
+    trigger_command: str | None = None
 
     def __post_init__(self) -> None:
         self.restart_timer()
 
-    def set_timer_from_message(self, body: dict[Any, Any]) -> str:
+    def set_timer_from_message(self, body: dict[Any, Any]) -> None:
         seconds = self._timer_seconds_from_message(body)
         sleep_minutes = self._sleep_minutes_from_message(body)
         timing_changed = self._settings_timing_changed(seconds, sleep_minutes)
 
         self.timer_seconds = seconds
-        self.commands = self._commands_from_message(body)
 
         if timing_changed:
             self.start_sleep(sleep_minutes)
 
-        return ", ".join(self.commands)
+        return None
 
     def tick_timer_expired(self) -> bool:
         if self.is_sleeping():
@@ -136,27 +132,17 @@ class _ResidentState:
             return False
         return self.remaining_sleep_seconds() > 0
 
-    def record_key(self, label: str) -> bool:
-        self.key_count += 1
-        self.typed_buffer = (self.typed_buffer + label)[-80:]
-        if self.view in ("expanded", "settings") or self.is_sleeping():
-            return False
-
-        return any(self.typed_buffer.endswith(command) for command in self.commands)
-
     def payload(self, status: str | None = None) -> dict[str, Any]:
         return {
             "state": self.view,
             "timerText": self.timer_text(),
-            "keyCount": self.key_count,
-            "buffer": self.typed_buffer[-24:] or "-",
-            "commands": self.commands,
             "timerSeconds": self.timer_seconds,
             "sleepMinutes": self.sleep_minutes_for_input(),
             "timerMode": "sleep" if self.is_sleeping_or_suspended_sleep() else "timer",
             "status": status or self.status_text(),
             "config": PUBLIC_CONFIG,
             "currentUser": self.current_user,
+            "triggerCommand": self.trigger_command,
         }
 
     def timer_text(self) -> str:
@@ -219,18 +205,3 @@ class _ResidentState:
             else self.sleep_minutes
         )
         return seconds != self.timer_seconds or sleep_minutes != current_sleep_minutes
-
-    def _commands_from_message(self, body: dict[Any, Any]) -> list[str]:
-        raw_commands = body.get("commands")
-        if raw_commands is not None:
-            try:
-                raw_values = list(raw_commands)
-            except TypeError:
-                raw_values = [raw_commands]
-
-            if raw_values:
-                commands = [str(command).strip() for command in raw_values]
-                commands = [command for command in commands if command]
-                return commands or DEFAULT_COMMANDS.copy()
-
-        return DEFAULT_COMMANDS.copy()
