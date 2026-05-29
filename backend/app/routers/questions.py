@@ -189,6 +189,29 @@ def get_personalized_question(
 
 
 @router.get(
+    "/by-command",
+    response_model=QuestionResponse,
+)
+def get_question_by_command(
+    command: str,
+    db: Session = Depends(get_db),
+) -> QuestionResponse:
+    normalized_command = command.strip().lower()
+    if not normalized_command:
+        raise HTTPException(status_code=404, detail="No questions found")
+
+    questions = [
+        question
+        for question in db.query(Question).all()
+        if normalized_command in {str(category).lower() for category in question.category}
+    ]
+    if not questions:
+        raise HTTPException(status_code=404, detail="No questions found")
+
+    return question_response(random.choice(questions))
+
+
+@router.get(
     "/random",
     response_model=QuestionResponse,
 )

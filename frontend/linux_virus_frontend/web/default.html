@@ -11,7 +11,13 @@
   <body>
     <main id="app" class="app app--minimized">
       <section class="minimized" data-panel="minimized">
-        <div class="flip-timer" id="flipTimer">
+        <img
+          id="minimizedMascot"
+          class="minimized__mascot"
+          src="../image/penguin_small.png"
+          alt="Linux penguin"
+        />
+        <div class="flip-timer" id="flipTimer" hidden>
           <div class="flip-group">
             <div class="flip-card" id="fd0">0</div>
             <div class="flip-card" id="fd1">0</div>
@@ -99,32 +105,19 @@
             <button class="icon-button" type="button" data-action="minimize" aria-label="Back">←</button>
             <span>設定</span>
           </div>
-          <div class="settings-time-row">
-            <label>
-              <span>タイマー（秒）</span>
-              <input
-                id="timerSeconds"
-                inputmode="numeric"
-                type="number"
-                min="10"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-              />
-            </label>
-            <label>
-              <span>休止時間（分）</span>
-              <input
-                id="sleepMinutes"
-                inputmode="numeric"
-                type="number"
-                min="0"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-              />
-            </label>
-          </div>
+          <label>
+            <span>休止時間（分）</span>
+            <input
+              id="sleepMinutes"
+              inputmode="numeric"
+              type="number"
+              min="0"
+              value="0"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+            />
+          </label>
           <label class="toggle-switch">
             <span class="toggle-switch__label">パーソナライズ出題（ログイン時のみ）</span>
             <span class="toggle-switch__control">
@@ -134,45 +127,12 @@
               </span>
             </span>
           </label>
-          <div class="command-header">
-            <span>コマンド</span>
-            <div class="command-header__actions">
-              <button class="icon-button" type="button" data-action="addCommand">+</button>
-              <button class="icon-button" type="button" data-action="showHelp">?</button>
-            </div>
-          </div>
-          <div id="commands" class="commands"></div>
         </div>
         <div class="actions settings__footer">
-          <button class="btn btn--check" type="button" data-action="done">完了</button>
+          <button class="btn btn--check" type="button" data-action="done">反映</button>
         </div>
       </section>
 
-      <dialog id="helpDialog" class="help-dialog">
-        <div class="help-dialog__header">
-          <strong>コマンド表記</strong>
-          <button class="icon-button" type="button" data-action="closeHelp">×</button>
-        </div>
-        <div class="help-dialog__body">
-          <p>コマンドは最大10件まで登録できます。<code>/focus</code> のような文字列や <code>&lt;cmd&gt;+k</code> のようなショートカットを使えます。</p>
-          <p>文字列コマンドは入力された文字列と完全一致で判定します。</p>
-          <ul>
-            <li><code>&lt;cmd&gt;+v</code></li>
-            <li><code>/focus</code></li>
-            <li><code>start quiz</code></li>
-          </ul>
-          <p>修飾キーを使うショートカットは、キーの前に山括弧で指定します。</p>
-          <ul>
-            <li><code>&lt;cmd&gt;+k</code></li>
-            <li><code>&lt;ctrl&gt;+j</code></li>
-            <li><code>&lt;option&gt;+x</code></li>
-            <li><code>&lt;shift&gt;+a</code></li>
-            <li><code>&lt;ctrl+option&gt;+&lt;space&gt;</code></li>
-            <li><code>&lt;cmd+shift&gt;+p</code></li>
-          </ul>
-          <p>使用できる修飾キー名は <code>cmd</code>、<code>ctrl</code>、<code>option</code>、<code>shift</code> です。</p>
-        </div>
-      </dialog>
     </main>
     <script src="./config.js"></script>
     <script src="./storage.js"></script>

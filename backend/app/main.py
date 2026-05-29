@@ -10,13 +10,17 @@ from app.routers import answer_logs, questions, rating, users, virus
 
 Base.metadata.create_all(bind=engine)
 
-# SQLite のみ: 既存DBに virus_count カラムが欠けている場合の後付けマイグレーション
+# SQLite のみ: 既存DBに後付けカラムが欠けている場合の簡易マイグレーション
 if DATABASE_URL.startswith("sqlite"):
     with engine.connect() as _conn:
         _cols = [row[1] for row in _conn.execute(text("PRAGMA table_info(questions)"))]
+        if "sample_output" not in _cols:
+            _conn.execute(
+                text("ALTER TABLE questions ADD COLUMN sample_output VARCHAR NOT NULL DEFAULT ''")
+            )
         if "virus_count" not in _cols:
             _conn.execute(text("ALTER TABLE questions ADD COLUMN virus_count INTEGER NOT NULL DEFAULT 0"))
-            _conn.commit()
+        _conn.commit()
 
 app = FastAPI(title="Linux Virus Backend")
 

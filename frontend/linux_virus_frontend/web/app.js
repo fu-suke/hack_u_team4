@@ -1,22 +1,18 @@
 const state = {
   state: "minimized",
-  timerText: "Timer: not set",
-  keyCount: 0,
-  buffer: "-",
-  commands: [],
-  timerSeconds: 0,
+  timerText: "",
   sleepMinutes: 0,
-  timerMode: "timer",
+  timerMode: "idle",
   status: "Idle",
   config: {},
   quizMode: "normal",
+  triggerCommand: null,
 };
 
 const APP_ROOT = document.querySelector("#app");
 const IS_QUIZ_PAGE = APP_ROOT?.dataset.waitForState === "true";
 
 let lastRenderedState = state.state;
-let restoredSettings = false;
 let vaccineInProgress = false;
 let questionSoundPlayed = false;
 
@@ -46,43 +42,30 @@ function render() {
   const virusClass = state.quizMode === "virus" ? " app--virus" : "";
   APP_ROOT.className = `app app--${state.state}${virusClass}`;
   LinuxVirusConfig.update(state.config);
-  applyConfigToDom();
   LinuxVirusUser.updateBadge();
   if (typeof LinuxVirusTimer !== "undefined") {
     LinuxVirusTimer.updateFlipTimer(state.timerText, state.timerMode);
   }
-
-  const secondsInput = document.querySelector("#timerSeconds");
-  if (enteredSettings && secondsInput) {
-    secondsInput.value = String(state.timerSeconds);
-  }
-  const sleepInput = document.querySelector("#sleepMinutes");
-  if (enteredSettings && sleepInput) {
-    sleepInput.value = String(state.sleepMinutes || 0);
-  }
   if (enteredSettings) {
     const savedSettings = LinuxVirusSettings.readSavedSettings();
-    if (savedSettings) {
-      state.timerSeconds = savedSettings.timerSeconds || state.timerSeconds;
-      state.sleepMinutes = savedSettings.sleepMinutes ?? state.sleepMinutes;
-      state.commands = savedSettings.commands?.length
-        ? savedSettings.commands
-        : state.commands;
-      if (secondsInput) secondsInput.value = String(state.timerSeconds);
-      if (sleepInput) sleepInput.value = String(state.sleepMinutes || 0);
-    }
-    LinuxVirusSettings.setCommandInputs(
-      state.commands?.length
-        ? state.commands
-        : LinuxVirusConfig.get("defaultCommands", []),
+    state.sleepMinutes = LinuxVirusSettings.normalizeSleepMinutes(
+      LinuxVirusSettings.sleepMinutesFromSettings(savedSettings, state.sleepMinutes),
     );
+    const sleepInput = document.querySelector("#sleepMinutes");
+    if (sleepInput) {
+      sleepInput.value = String(state.sleepMinutes);
+      sleepInput.max = String(LinuxVirusConfig.get("maxSleepMinutes", ""));
+    }
     LinuxVirusSettings.refreshPersonalizeToggle();
   }
   if (state.state !== "expanded") {
     questionSoundPlayed = false;
   }
   if (enteredExpanded && hasQuizModule()) {
-    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal", { force: true });
+    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal", {
+      force: true,
+      triggerCommand: state.triggerCommand,
+    });
     playQuestionSoundOnce();
   }
   if (enteredUser) {
@@ -95,27 +78,7 @@ function render() {
   lastRenderedState = state.state;
 }
 
-function applyConfigToDom() {
-  const secondsInput = document.querySelector("#timerSeconds");
-  if (secondsInput) {
-    secondsInput.min = String(LinuxVirusConfig.get("minTimerSeconds"));
-    secondsInput.max = String(LinuxVirusConfig.get("maxTimerSeconds", ""));
-  }
-
-  const sleepInput = document.querySelector("#sleepMinutes");
-  if (sleepInput) {
-    sleepInput.max = String(LinuxVirusConfig.get("maxSleepMinutes", ""));
-  }
-}
-
 window.residentSetState = (nextState) => {
-  const activeEl = document.activeElement;
-  const protectedIds = new Set(["timerSeconds", "sleepMinutes", "userName", "terminalInput"]);
-  const activeIsProtected =
-    activeEl &&
-    (protectedIds.has(activeEl.id) ||
-      activeEl.classList?.contains("command-input"));
-
   const incoming = { ...nextState };
   if (incoming.currentUser !== undefined) {
     const newId = incoming.currentUser ? Number(incoming.currentUser.id) : null;
@@ -130,14 +93,6 @@ window.residentSetState = (nextState) => {
     if (!hadBaseUrl && LinuxVirusConfig.get("apiBaseUrl")) {
       LinuxVirusApi.pingHealth();
     }
-    if (incoming.state === "minimized" && !isQuizPage()) {
-      restoreSavedSettingsOnce();
-    }
-  }
-  if (activeIsProtected) {
-    delete incoming.timerSeconds;
-    delete incoming.sleepMinutes;
-    delete incoming.commands;
   }
   Object.assign(state, incoming);
   render();
@@ -313,7 +268,9 @@ document.addEventListener("click", async (event) => {
   }
 
   if (action === "retryQuiz") {
-    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal");
+    LinuxVirusQuiz.loadQuestion(state.quizMode || "normal", {
+      triggerCommand: state.triggerCommand,
+    });
     return;
   }
 
@@ -341,26 +298,6 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  if (action === "addCommand") {
-    LinuxVirusSettings.addCommandInput();
-    return;
-  }
-
-  if (action === "removeCommand") {
-    LinuxVirusSettings.removeCommandRow(button);
-    return;
-  }
-
-  if (action === "showHelp") {
-    LinuxVirusSettings.showHelp();
-    return;
-  }
-
-  if (action === "closeHelp") {
-    LinuxVirusSettings.closeHelp();
-    return;
-  }
-
   if (action === "loginUser") {
     LinuxVirusUser.login();
     return;
@@ -378,10 +315,8 @@ document.addEventListener("click", async (event) => {
 
   if (action === "done") {
     const settings = LinuxVirusSettings.saveCurrentSettings();
-    post("setTimer", {
-      seconds: settings.timerSeconds,
+    post("setSleep", {
       sleepMinutes: settings.sleepMinutes,
-      commands: settings.commands,
     });
     return;
   }
@@ -468,17 +403,4 @@ if (isQuizPage()) {
   LinuxVirusDrag.install();
   render();
   window.setInterval(() => LinuxVirusApi.pingHealth(), 60000);
-}
-
-function restoreSavedSettingsOnce() {
-  if (restoredSettings) return;
-  const savedSettings = LinuxVirusSettings.readSavedSettings();
-  if (!savedSettings) return;
-
-  restoredSettings = true;
-  post("setTimer", {
-    seconds: savedSettings.timerSeconds,
-    sleepMinutes: savedSettings.sleepMinutes,
-    commands: savedSettings.commands,
-  });
 }

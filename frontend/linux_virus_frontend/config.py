@@ -16,15 +16,38 @@ class FrontendSettings(BaseSettings):
         extra="ignore",
     )
 
-    default_timer_seconds: int = Field(60, validation_alias="DEFAULT_TIMER_SECONDS")
-    min_timer_seconds: int = Field(10, validation_alias="MIN_TIMER_SECONDS")
-    default_sleep_minutes: int = Field(0, validation_alias="DEFAULT_SLEEP_MINUTES")
-    max_timer_seconds: int = Field(99 * 60 + 59, validation_alias="MAX_TIMER_SECONDS")
-    max_sleep_minutes: int = Field(99, validation_alias="MAX_SLEEP_MINUTES")
-    default_commands: list[str] = Field(
-        default_factory=lambda: ["<cmd>+v"],
-        validation_alias="DEFAULT_COMMANDS",
+    supported_linux_commands: list[str] = Field(
+        default_factory=lambda: [
+            "cat",
+            "cd",
+            "chmod",
+            "cp",
+            "curl",
+            "cut",
+            "df",
+            "du",
+            "echo",
+            "find",
+            "grep",
+            "head",
+            "kill",
+            "ls",
+            "mkdir",
+            "mv",
+            "ps",
+            "pwd",
+            "rm",
+            "sort",
+            "tail",
+            "tar",
+            "touch",
+            "uniq",
+            "wc",
+        ],
+        validation_alias="SUPPORTED_LINUX_COMMANDS",
     )
+    default_sleep_minutes: int = Field(0, validation_alias="DEFAULT_SLEEP_MINUTES")
+    max_sleep_minutes: int = Field(99, validation_alias="MAX_SLEEP_MINUTES")
 
     edge_margin: float = Field(32.0, validation_alias="EDGE_MARGIN")
     top_margin: float = Field(56.0, validation_alias="TOP_MARGIN")
@@ -37,28 +60,17 @@ class FrontendSettings(BaseSettings):
         validation_alias="EXPANDED_SIZE",
     )
     settings_size: tuple[float, float] = Field(
-        (520.0, 440.0),
+        (420.0, 320.0),
         validation_alias="SETTINGS_SIZE",
+    )
+    user_size: tuple[float, float] = Field(
+        (520.0, 440.0),
+        validation_alias="USER_SIZE",
     )
 
     poll_interval_seconds: float = Field(0.1, validation_alias="POLL_INTERVAL_SECONDS")
     timer_interval_seconds: float = Field(0.2, validation_alias="TIMER_INTERVAL_SECONDS")
     virus_poll_interval_minutes: int = Field(5, validation_alias="VIRUS_POLL_INTERVAL_MINUTES")
-
-    special_key_labels: dict[int, str] = Field(
-        default_factory=lambda: {
-            36: "<return>",
-            48: "<tab>",
-            49: "<space>",
-            51: "<delete>",
-            53: "<escape>",
-            123: "<left>",
-            124: "<right>",
-            125: "<down>",
-            126: "<up>",
-        },
-        validation_alias="SPECIAL_KEY_LABELS",
-    )
 
     api_base_url: str = Field("http://127.0.0.1:8000", validation_alias="API_BASE_URL")
     api_timeout_ms: int = Field(8000, validation_alias="API_TIMEOUT_MS")
@@ -87,12 +99,9 @@ class FrontendSettings(BaseSettings):
         return {
             "apiBaseUrl": self.api_base_url,
             "apiTimeoutMs": self.api_timeout_ms,
-            "defaultTimerSeconds": self.default_timer_seconds,
-            "minTimerSeconds": self.min_timer_seconds,
+            "supportedLinuxCommands": self.supported_linux_commands,
             "defaultSleepMinutes": self.default_sleep_minutes,
-            "maxTimerSeconds": self.max_timer_seconds,
             "maxSleepMinutes": self.max_sleep_minutes,
-            "defaultCommands": self.default_commands,
             "virusPollIntervalMinutes": self.virus_poll_interval_minutes,
             "defaultTutorial": self.default_tutorial,
             "penguinImages": {
@@ -106,23 +115,17 @@ class FrontendSettings(BaseSettings):
 
 SETTINGS = FrontendSettings()
 
-DEFAULT_TIMER_SECONDS = SETTINGS.default_timer_seconds
-MIN_TIMER_SECONDS = SETTINGS.min_timer_seconds
 DEFAULT_SLEEP_MINUTES = SETTINGS.default_sleep_minutes
-MAX_TIMER_SECONDS = SETTINGS.max_timer_seconds
 MAX_SLEEP_MINUTES = SETTINGS.max_sleep_minutes
-DEFAULT_COMMANDS = SETTINGS.default_commands
-
 EDGE_MARGIN = SETTINGS.edge_margin
 TOP_MARGIN = SETTINGS.top_margin
 MINIMIZED_SIZE = SETTINGS.minimized_size
 EXPANDED_SIZE = SETTINGS.expanded_size
 SETTINGS_SIZE = SETTINGS.settings_size
+USER_SIZE = SETTINGS.user_size
 
 POLL_INTERVAL_SECONDS = SETTINGS.poll_interval_seconds
 TIMER_INTERVAL_SECONDS = SETTINGS.timer_interval_seconds
 VIRUS_POLL_INTERVAL_MINUTES = SETTINGS.virus_poll_interval_minutes
-
-SPECIAL_KEY_LABELS = SETTINGS.special_key_labels
 
 PUBLIC_CONFIG = SETTINGS.public_payload()

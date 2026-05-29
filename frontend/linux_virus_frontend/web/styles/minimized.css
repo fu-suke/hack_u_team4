@@ -1,15 +1,24 @@
-/* --- Minimized panel + flip clock --- */
+/* --- Minimized panel --- */
 
 .minimized {
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .minimized__actions {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.minimized__mascot {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  animation: minimized-float 2.8s ease-in-out infinite;
+  pointer-events: none;
+  user-select: none;
 }
 
 .minimized__settings,
@@ -77,12 +86,14 @@
   color: #131f24;
 }
 
-/* Flip clock */
-
 .flip-timer {
   display: flex;
   align-items: center;
   gap: 3px;
+}
+
+.flip-timer[hidden] {
+  display: none;
 }
 
 .flip-group {
@@ -122,6 +133,11 @@
   border-color: var(--duo-blue);
   background: linear-gradient(180deg, var(--duo-blue) 49.5%, var(--duo-blue-dark) 49.5%, var(--duo-blue-dark) 50.5%, #126b96 50.5%);
   color: #fff;
+}
+
+@keyframes minimized-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
 }
 
 @keyframes flip-tick {
