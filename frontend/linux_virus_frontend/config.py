@@ -72,7 +72,10 @@ class FrontendSettings(BaseSettings):
     timer_interval_seconds: float = Field(0.2, validation_alias="TIMER_INTERVAL_SECONDS")
     virus_poll_interval_minutes: int = Field(5, validation_alias="VIRUS_POLL_INTERVAL_MINUTES")
 
-    api_base_url: str = Field("http://127.0.0.1:8000", validation_alias="API_BASE_URL")
+    api_base_url: str = Field(
+        "https://linux-virus-backend.onrender.com",
+        validation_alias="API_BASE_URL",
+    )
     api_timeout_ms: int = Field(8000, validation_alias="API_TIMEOUT_MS")
     default_tutorial: str = Field(
         "この問題の解説はまだ登録されていません。",
