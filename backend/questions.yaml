@@ -2226,3 +2226,439 @@
     - `-c` : バイト数だけを表示する（character）
   sample_output: |
     320
+
+- difficulty: 1
+  category: [ping]
+  prompt: ホスト `example.com` とのネットワーク疎通を確認する。
+  choices: [ping, example.com, curl]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `ping` : 指定したホストとのネットワーク疎通を確認する
+
+    【今回は使わない要素】
+    - `curl` : URL に対して HTTP などのリクエストを送る
+  sample_output: |
+    PING example.com (93.184.216.34) 56(84) bytes of data.
+    64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=12.3 ms
+    64 bytes from 93.184.216.34: icmp_seq=2 ttl=56 time=12.1 ms
+    ...
+
+- difficulty: 1
+  category: [ping]
+  prompt: IPアドレス `8.8.8.8` とのネットワーク疎通を確認する。
+  choices: [ping, 8.8.8.8, ssh]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `ping` : 指定したホストやIPアドレスとのネットワーク疎通を確認する
+
+    【今回は使わない要素】
+    - `ssh` : リモートサーバーへ安全にログインする
+  sample_output: |
+    PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+    64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=8.42 ms
+    64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=8.30 ms
+    ...
+
+- difficulty: 2
+  category: [ping]
+  prompt: ホスト `example.com` との疎通確認を4回だけ行う。
+  choices: [ping, -c, "4", example.com, -i]
+  answers: [[1, 2, 3, 4], [1, 4, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `ping` : 指定したホストとのネットワーク疎通を確認する
+    - `-c` : ping を送る回数を指定する
+
+    【今回は使わない要素】
+    - `-i` : ping を送る間隔を指定する
+  sample_output: |
+    PING example.com (93.184.216.34) 56(84) bytes of data.
+    64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=12.3 ms
+    64 bytes from 93.184.216.34: icmp_seq=2 ttl=56 time=12.1 ms
+    64 bytes from 93.184.216.34: icmp_seq=3 ttl=56 time=12.4 ms
+    64 bytes from 93.184.216.34: icmp_seq=4 ttl=56 time=12.2 ms
+
+- difficulty: 2
+  category: [ping]
+  prompt: IPアドレス `8.8.8.8` との疎通確認を3回だけ行う。
+  choices: [ping, -c, "3", 8.8.8.8, -s]
+  answers: [[1, 2, 3, 4], [1, 4, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `ping` : 指定したホストやIPアドレスとのネットワーク疎通を確認する
+    - `-c` : ping を送る回数を指定する
+
+    【今回は使わない要素】
+    - `-s` : 送信するパケットサイズを指定する
+  sample_output: |
+    PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+    64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=8.42 ms
+    64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=8.30 ms
+    64 bytes from 8.8.8.8: icmp_seq=3 ttl=117 time=8.36 ms
+
+- difficulty: 2
+  category: [ping]
+  prompt: ホスト `example.com` との疎通確認を2秒間隔で行う。
+  choices: [ping, -i, "2", example.com, -c]
+  answers: [[1, 2, 3, 4], [1, 4, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `ping` : 指定したホストとのネットワーク疎通を確認する
+    - `-i` : ping を送る間隔を秒数で指定する
+
+    【今回は使わない要素】
+    - `-c` : ping を送る回数を指定する
+  sample_output: |
+    PING example.com (93.184.216.34) 56(84) bytes of data.
+    64 bytes from 93.184.216.34: icmp_seq=1 ttl=56 time=12.3 ms
+    64 bytes from 93.184.216.34: icmp_seq=2 ttl=56 time=12.1 ms
+    ...
+
+- difficulty: 1
+  category: [ssh]
+  prompt: "`user@example.com` にリモートログインする。"
+  choices: [ssh, user@example.com, ping]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `ssh` : リモートサーバーへ安全にログインする
+
+    【今回は使わない要素】
+    - `ping` : 指定したホストとのネットワーク疎通を確認する
+  sample_output: |
+    user@example.com's password:
+    Last login: Tue May  7 13:18:01 2024 from 192.0.2.10
+    user@example:~$
+
+- difficulty: 2
+  category: [ssh]
+  prompt: "`user@example.com` にポート `2222` を指定してリモート接続する。"
+  choices: [ssh, -p, "2222", user@example.com, -P]
+  answers: [[1, 2, 3, 4]]
+  tutorial: |
+    【正解で使う要素】
+    - `ssh` : リモートサーバーへ安全にログインする
+    - `-p` : SSH の接続ポート番号を指定する
+
+    【今回は使わない要素】
+    - `-P` : scp ではポート指定に使うが、ssh では `-p` を使う
+  sample_output: |
+    user@example.com's password:
+    Last login: Tue May  7 13:18:01 2024 from 192.0.2.10
+    user@example:~$
+
+- difficulty: 2
+  category: [ssh]
+  prompt: 秘密鍵 `key.pem` を指定して `user@example.com` にリモート接続する。
+  choices: [ssh, -i, key.pem, user@example.com, -p]
+  answers: [[1, 2, 3, 4]]
+  tutorial: |
+    【正解で使う要素】
+    - `ssh` : リモートサーバーへ安全にログインする
+    - `-i` : 認証に使う秘密鍵ファイルを指定する
+
+    【今回は使わない要素】
+    - `-p` : 接続ポート番号を指定する
+  sample_output: |
+    Last login: Tue May  7 13:18:01 2024 from 192.0.2.10
+    user@example:~$
+
+- difficulty: 1
+  category: [lsof]
+  prompt: 開かれているファイルの一覧を表示する。
+  choices: [lsof, ps]
+  answers: [[1]]
+  tutorial: |
+    【正解で使う要素】
+    - `lsof` : プロセスが開いているファイルの一覧を表示する（list open files）
+
+    【今回は使わない要素】
+    - `ps` : 実行中のプロセス一覧を表示する
+  sample_output: |
+    COMMAND   PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+    bash     1201 taro  cwd    DIR  253,0     4096    2 /home/taro
+    nginx    2891 root  txt    REG  253,0  1183440 1234 /usr/sbin/nginx
+    ...
+
+- difficulty: 1
+  category: [lsof]
+  prompt: ファイル `/var/log/app.log` を開いているプロセスを表示する。
+  choices: [lsof, /var/log/app.log, -p]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `lsof` : 指定したファイルを開いているプロセスを表示できる
+
+    【今回は使わない要素】
+    - `-p` : PID を指定するオプション
+  sample_output: |
+    COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+    app     4567 taro    4w   REG  253,0   1048576 9876 /var/log/app.log
+
+- difficulty: 2
+  category: [lsof]
+  prompt: ネットワーク関連の開いているファイルを表示する。
+  choices: [lsof, -i, -p, ps]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `lsof` : プロセスが開いているファイルの一覧を表示する
+    - `-i` : ネットワーク関連の開いているファイルを表示する
+
+    【今回は使わない要素】
+    - `-p` : 指定した PID のプロセスが開いているファイルを表示する
+    - `ps` : 実行中のプロセス一覧を表示する
+  sample_output: |
+    COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+    nginx   2891 root    6u  IPv4  34567      0t0  TCP *:http (LISTEN)
+    sshd    1200 root    3u  IPv4  12345      0t0  TCP *:ssh (LISTEN)
+    ...
+
+- difficulty: 2
+  category: [lsof]
+  prompt: ポート `3000` を使用しているプロセスを表示する。
+  choices: [lsof, -i, ":3000", -p, "3000"]
+  answers: [[1, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `lsof` : プロセスが開いているファイルの一覧を表示する
+    - `-i` : ネットワーク関連の対象を指定する
+    - `:3000` : ポート3000を対象にする
+
+    【今回は使わない要素】
+    - `-p` : PID を指定するオプションで、ポート指定には使わない
+  sample_output: |
+    COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+    node    4312 taro   18u  IPv4  67890      0t0  TCP *:3000 (LISTEN)
+
+- difficulty: 2
+  category: [lsof]
+  prompt: PID `1234` のプロセスが開いているファイルを表示する。
+  choices: [lsof, -p, "1234", -i, ":1234"]
+  answers: [[1, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `lsof` : プロセスが開いているファイルの一覧を表示する
+    - `-p` : 指定した PID のプロセスが開いているファイルを表示する
+
+    【今回は使わない要素】
+    - `-i` : ネットワーク関連の対象を指定する
+    - `:1234` : ポート1234を表す指定であり、PID指定ではない
+  sample_output: |
+    COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+    nginx   1234 root  cwd    DIR  253,0     4096    2 /
+    nginx   1234 root  txt    REG  253,0  1183440 1234 /usr/sbin/nginx
+    ...
+
+- difficulty: 2
+  category: [sed]
+  prompt: ファイル `app.log` 内の `error` を `warning` に置換して表示する。
+  choices: [sed, "'s/error/warning/g'", app.log, grep]
+  answers: [[1, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `sed` : テキストの置換や抽出などを行う
+    - `'s/error/warning/g'` : `error` を `warning` に置換する sed の置換式
+
+    【今回は使わない要素】
+    - `grep` : パターンに一致する行を抽出するが、文字列の置換は行わない
+  sample_output: |
+    2024-05-07 13:18:01 INFO  Starting application
+    2024-05-07 13:18:09 ERROR Failed to process request
+    2024-05-07 13:18:20 warning cache miss
+
+- difficulty: 2
+  category: [sed]
+  prompt: ファイル `file.txt` の1行目から10行目だけを表示する。
+  choices: [sed, -n, "'1,10p'", file.txt, -i]
+  answers: [[1, 2, 3, 4]]
+  tutorial: |
+    【正解で使う要素】
+    - `sed` : テキストを行単位で処理する
+    - `-n` : 自動出力を抑える
+    - `'1,10p'` : 1行目から10行目だけを表示する
+
+    【今回は使わない要素】
+    - `-i` : ファイルを直接書き換えるオプション
+  sample_output: |
+    line 1
+    line 2
+    line 3
+    ...
+    line 10
+
+- difficulty: 2
+  category: [sed]
+  prompt: ファイル `app.log` から `debug` を含む行を削除して表示する。
+  choices: [sed, "'/debug/d'", app.log, rm]
+  answers: [[1, 2, 3]]
+  tutorial: |
+    【正解で使う要素】
+    - `sed` : テキストを行単位で処理する
+    - `'/debug/d'` : `debug` を含む行を削除して出力する sed の指定
+
+    【今回は使わない要素】
+    - `rm` : ファイルやディレクトリを削除するコマンドで、行の削除には使わない
+  sample_output: |
+    2024-05-07 13:18:01 INFO  Starting application
+    2024-05-07 13:18:09 ERROR Failed to process request
+    2024-05-07 13:18:20 INFO  Shutdown complete
+
+- difficulty: 3
+  category: [sed]
+  prompt: ファイル `app.log` 内の `old` を `new` に置換し、結果を `fixed.log` に上書き保存する。
+  choices: [sed, "'s/old/new/g'", app.log, ">", fixed.log, -i, ">>"]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: |
+    【正解で使う要素】
+    - `sed` : テキストの置換や抽出などを行う
+    - `'s/old/new/g'` : `old` を `new` に置換する sed の置換式
+    - `>` : 出力をファイルに上書き保存するリダイレクト
+
+    【今回は使わない要素】
+    - `-i` : 元ファイルを直接書き換えるオプション
+    - `>>` : 出力をファイルの末尾に追記するリダイレクト
+  sample_output: (出力なし)
+
+- difficulty: 2
+  category: [xargs]
+  prompt: 標準入力で受け取った複数の値を1つずつ別々の行に表示する。
+  choices: [xargs, -n, "1", echo, "-0"]
+  answers: [[1, 2, 3, 4]]
+  tutorial: |
+    【正解で使う要素】
+    - `xargs` : 標準入力から受け取った値を、指定したコマンドの引数として渡す
+    - `-n` : 1回に渡す引数の数を指定する
+    - `echo` : 引数の文字列をそのまま画面に表示する
+
+    【今回は使わない要素】
+    - `-0` : NULL文字区切りの入力を受け取る
+  sample_output: |
+    apple
+    banana
+    orange
+
+- difficulty: 3
+  category: [xargs]
+  prompt: ファイル `files.txt` に書かれた名前のファイルをまとめて削除する。
+  choices: [cat, files.txt, "|", xargs, rm, grep, -n]
+  answers: [[1, 2, 3, 4, 5]]
+  tutorial: |
+    【正解で使う要素】
+    - `cat` : ファイルの中身を表示する
+    - `|` : パイプ。前のコマンドの出力を次のコマンドの入力に渡す
+    - `xargs` : 標準入力から受け取った値を、指定したコマンドの引数として渡す
+    - `rm` : ファイルを削除する
+
+    【今回は使わない要素】
+    - `grep` : パターンに一致する行を抽出する
+    - `-n` : xargs では1回に渡す引数の数を指定する
+  sample_output: (出力なし)
+
+- difficulty: 3
+  category: [xargs]
+  prompt: カレントディレクトリ配下の `.log` ファイルを検索し、それぞれの行数・単語数・文字数を表示する。
+  choices: [find, ., -name, '"*.log"', "|", xargs, wc, -l, rm, "-0"]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: |
+    【正解で使う要素】
+    - `find` : ディレクトリ配下を再帰的に検索する
+    - `-name` : ファイル名のパターンを指定する
+    - `|` : パイプ。前のコマンドの出力を次のコマンドの入力に渡す
+    - `xargs` : 標準入力から受け取った値を、指定したコマンドの引数として渡す
+    - `wc` : 行数・単語数・文字数を数える
+
+    【今回は使わない要素】
+    - `-l` : wc では行数だけを表示する
+    - `rm` : ファイルを削除する
+    - `-0` : NULL文字区切りの入力を受け取る
+  sample_output: |
+     120   820  4096 ./app.log
+      45   260  1300 ./error.log
+     300  1900  9800 ./access.log
+     465  2980 15196 total
+
+- difficulty: 3
+  category: [xargs]
+  prompt: ファイル `urls.txt` に書かれたURLの内容を1件ずつ取得する。
+  choices: [cat, urls.txt, "|", xargs, -n, "1", curl, -I, -L, wget]
+  answers: [[1, 2, 3, 4, 5, 6, 7]]
+  tutorial: |
+    【正解で使う要素】
+    - `cat` : ファイルの中身を表示する
+    - `|` : パイプ。前のコマンドの出力を次のコマンドの入力に渡す
+    - `xargs` : 標準入力から受け取った値を、指定したコマンドの引数として渡す
+    - `-n` : 1回に渡す引数の数を指定する
+    - `curl` : URL の内容を取得する
+
+    【今回は使わない要素】
+    - `-I` : レスポンスヘッダーだけを取得する
+    - `-L` : リダイレクトを追跡する
+    - `wget` : URL からファイルをダウンロードする
+  sample_output: |
+    <!doctype html>
+    <html>
+    ...
+
+- difficulty: 1
+  category: [which]
+  prompt: "`python` コマンドの実行ファイルの場所を表示する。"
+  choices: [which, python, where]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `which` : PATH 上で見つかるコマンドの実行ファイルの場所を表示する
+
+    【今回は使わない要素】
+    - `where` : GNU/Linux 標準の基本コマンドとしては一般的ではない
+  sample_output: |
+    /usr/bin/python
+
+- difficulty: 1
+  category: [man]
+  prompt: "`ls` コマンドのマニュアルを表示する。"
+  choices: [man, ls, which]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `man` : コマンドのマニュアルを表示する
+
+    【今回は使わない要素】
+    - `which` : コマンドの実行ファイルの場所を表示する
+  sample_output: |
+    LS(1)                            User Commands                           LS(1)
+
+    NAME
+           ls - list directory contents
+    ...
+
+- difficulty: 1
+  category: [rmdir]
+  prompt: 空のディレクトリ `emptydir` を削除する。
+  choices: [rmdir, emptydir, rm]
+  answers: [[1, 2]]
+  tutorial: |
+    【正解で使う要素】
+    - `rmdir` : 空のディレクトリを削除する
+
+    【今回は使わない要素】
+    - `rm` : ファイルやディレクトリを削除する汎用的なコマンド
+  sample_output: (出力なし)
+
+- difficulty: 1
+  category: [free]
+  prompt: メモリ使用状況を表示する。
+  choices: [free, df]
+  answers: [[1]]
+  tutorial: |
+    【正解で使う要素】
+    - `free` : メモリの使用状況を表示する
+
+    【今回は使わない要素】
+    - `df` : ディスク全体の使用状況を表示する
+  sample_output: |2
+                  total        used        free      shared  buff/cache   available
+    Mem:        8000000     2100000     1200000      120000     4700000     5500000
+    Swap:       2000000           0     2000000
