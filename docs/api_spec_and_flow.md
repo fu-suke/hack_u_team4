@@ -30,7 +30,7 @@ stateDiagram-v2
     minimized --> user: ユーザボタン
 
     expanded --> minimized: 正解後「閉じる」
-    settings --> minimized: 「完了」
+    settings --> minimized: 「反映」
     user --> minimized: ログイン/ログアウト完了
 
     state "ウイルスウィンドウ (独立)" as virus {

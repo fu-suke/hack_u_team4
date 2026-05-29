@@ -1,4 +1,5 @@
 const LinuxVirusSettings = (() => {
+  const SETTINGS_VERSION = 1;
   let personalizeEnabled = true;
   const savedSettings = LinuxVirusStorage.readSettings();
   if (savedSettings && typeof savedSettings.personalizeEnabled === "boolean") {
@@ -15,6 +16,31 @@ const LinuxVirusSettings = (() => {
     toggle.checked = personalizeEnabled;
   }
 
+  function readSavedSettings() {
+    return LinuxVirusStorage.readSettings();
+  }
+
+  function sleepMinutesFromSettings(settings, fallback) {
+    if (
+      !settings ||
+      !Object.prototype.hasOwnProperty.call(settings, "sleepMinutes")
+    ) {
+      return fallback;
+    }
+    if (!settings.version && Number(settings.sleepMinutes) === 1) {
+      return LinuxVirusConfig.get("defaultSleepMinutes", 0);
+    }
+    return settings.sleepMinutes;
+  }
+
+  function normalizeSleepMinutes(value) {
+    const fallback = Number(LinuxVirusConfig.get("defaultSleepMinutes", 0));
+    const max = Number(LinuxVirusConfig.get("maxSleepMinutes", 99));
+    const numericValue = Number(value);
+    const minutes = Number.isFinite(numericValue) ? numericValue : fallback;
+    return Math.min(Math.max(0, Math.trunc(minutes)), max);
+  }
+
   document.addEventListener("change", (event) => {
     const target = event.target;
     if (target && target.id === "personalizeToggle") {
@@ -23,25 +49,15 @@ const LinuxVirusSettings = (() => {
     }
   });
 
-  function readSavedSettings() {
-    return LinuxVirusStorage.readSettings();
-  }
-
   function saveCurrentSettings() {
-    const timerSeconds = document.querySelector("#timerSeconds")?.value;
     const sleepMinutes = document.querySelector("#sleepMinutes")?.value;
-    const minTimerSeconds = Number(LinuxVirusConfig.get("minTimerSeconds"));
-    const normalizedTimerSeconds = timerSeconds
-      ? Math.max(minTimerSeconds, Number(timerSeconds))
-      : undefined;
     const settings = {
-      timerSeconds: normalizedTimerSeconds,
-      sleepMinutes: sleepMinutes ? Number(sleepMinutes) : 0,
+      version: SETTINGS_VERSION,
+      sleepMinutes: normalizeSleepMinutes(sleepMinutes),
       personalizeEnabled,
     };
-    if (normalizedTimerSeconds !== undefined) {
-      document.querySelector("#timerSeconds").value = String(normalizedTimerSeconds);
-    }
+    const sleepInput = document.querySelector("#sleepMinutes");
+    if (sleepInput) sleepInput.value = String(settings.sleepMinutes);
     LinuxVirusStorage.saveSettings(settings);
     return settings;
   }
@@ -50,6 +66,8 @@ const LinuxVirusSettings = (() => {
     isPersonalizeEnabled,
     refreshPersonalizeToggle,
     readSavedSettings,
+    sleepMinutesFromSettings,
+    normalizeSleepMinutes,
     saveCurrentSettings,
   };
 })();

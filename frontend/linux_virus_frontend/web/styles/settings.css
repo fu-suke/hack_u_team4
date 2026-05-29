@@ -78,18 +78,6 @@
   color: #f4f7fb;
 }
 
-.settings-time-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.settings-time-row label {
-  grid-template-columns: 1fr;
-  gap: 6px;
-  align-content: start;
-}
-
 .settings label > span,
 .user-login label > span {
   min-width: 0;

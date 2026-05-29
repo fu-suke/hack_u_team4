@@ -3,40 +3,22 @@ from __future__ import annotations
 from typing import Any
 
 from AppKit import (
-    NSEventModifierFlagCommand,  # ty: ignore[unresolved-import]
     NSEventModifierFlagControl,  # ty: ignore[unresolved-import]
     NSEventModifierFlagOption,  # ty: ignore[unresolved-import]
 )
 
-_SPACE_KEY_CODE = 49
-_C_KEY_CODE = 8
 _V_KEY_CODE = 9
 QUIT_KEY_CODE = 12
 RECOVER_VACCINE_KEY_CODE = 13
 
 
 class _KeyboardInterpreter:
-    def is_toggle_hotkey(self, event: Any) -> bool:
-        key_code = event.keyCode()
-        flags = event.modifierFlags()
-        has_control = bool(flags & NSEventModifierFlagControl)
-        has_option = bool(flags & NSEventModifierFlagOption)
-        return key_code == _SPACE_KEY_CODE and has_control and has_option
-
     def is_virus_hotkey(self, event: Any) -> bool:
         key_code = event.keyCode()
         flags = event.modifierFlags()
         has_control = bool(flags & NSEventModifierFlagControl)
         has_option = bool(flags & NSEventModifierFlagOption)
         return key_code == _V_KEY_CODE and has_control and has_option
-
-    def is_copy_hotkey(self, event: Any) -> bool:
-        key_code = event.keyCode()
-        flags = event.modifierFlags()
-        has_command = bool(flags & NSEventModifierFlagCommand)
-        has_control = bool(flags & NSEventModifierFlagControl)
-        has_option = bool(flags & NSEventModifierFlagOption)
-        return key_code == _C_KEY_CODE and has_command and not has_control and not has_option
 
     def is_quit_hotkey(self, event: Any) -> bool:
         key_code = event.keyCode()

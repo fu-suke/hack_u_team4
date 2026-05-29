@@ -11,7 +11,13 @@
   <body>
     <main id="app" class="app app--minimized">
       <section class="minimized" data-panel="minimized">
-        <div class="flip-timer" id="flipTimer">
+        <img
+          id="minimizedMascot"
+          class="minimized__mascot"
+          src="../image/penguin_small.png"
+          alt="Linux penguin"
+        />
+        <div class="flip-timer" id="flipTimer" hidden>
           <div class="flip-group">
             <div class="flip-card" id="fd0">0</div>
             <div class="flip-card" id="fd1">0</div>
@@ -99,32 +105,19 @@
             <button class="icon-button" type="button" data-action="minimize" aria-label="Back">←</button>
             <span>設定</span>
           </div>
-          <div class="settings-time-row">
-            <label>
-              <span>タイマー（秒）</span>
-              <input
-                id="timerSeconds"
-                inputmode="numeric"
-                type="number"
-                min="10"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-              />
-            </label>
-            <label>
-              <span>休止時間（分）</span>
-              <input
-                id="sleepMinutes"
-                inputmode="numeric"
-                type="number"
-                min="0"
-                autocomplete="off"
-                autocapitalize="off"
-                spellcheck="false"
-              />
-            </label>
-          </div>
+          <label>
+            <span>休止時間（分）</span>
+            <input
+              id="sleepMinutes"
+              inputmode="numeric"
+              type="number"
+              min="0"
+              value="0"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+            />
+          </label>
           <label class="toggle-switch">
             <span class="toggle-switch__label">パーソナライズ出題（ログイン時のみ）</span>
             <span class="toggle-switch__control">
@@ -136,7 +129,7 @@
           </label>
         </div>
         <div class="actions settings__footer">
-          <button class="btn btn--check" type="button" data-action="done">完了</button>
+          <button class="btn btn--check" type="button" data-action="done">反映</button>
         </div>
       </section>
 
