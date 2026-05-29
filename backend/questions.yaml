@@ -1465,7 +1465,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [cut]
+  category: [cut, sort]
   prompt: ファイル `/etc/passwd` から、`:` を区切り文字として1番目のフィールド(ユーザー名)を取り出し、並べ替えて表示する。
   choices: [cut, -d, '":"', -f, "1", /etc/passwd, "|", sort, -n, -c]
   answers: [[1, 2, 3, 4, 5, 6, 7, 8]]
@@ -1488,7 +1488,7 @@
     ...
 
 - difficulty: 3
-  category: [cut]
+  category: [cut, head]
   prompt: CSVファイル `data.csv` から `,` を区切り文字として1番目のフィールドを取り出し、その先頭10件を表示する。
   choices: [cut, -d, '","', -f, "1", data.csv, "|", head, -n, "10", -c, ">"]
   answers: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
@@ -1512,7 +1512,7 @@
     ...
 
 - difficulty: 3
-  category: [du]
+  category: [du, sort]
   prompt: ディレクトリ `/var/log` 配下の各ディレクトリの容量を、サイズの大きい順に並べて表示する。
   choices: [du, -h, /var/log, "|", sort, -h, -r, -n, -k]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1530,7 +1530,7 @@
   sample_output: "1.2G\t/var/log\n128M\t/var/log/data\n12M\t/var/log/tmp\n4.0K\t/var/log/cache\n...\n"
 
 - difficulty: 3
-  category: [du]
+  category: [du, sort]
   prompt: ディレクトリ `/home` 配下の各ディレクトリの容量を、サイズの小さい順に並べて表示する。
   choices: [du, -h, /home, "|", sort, -h, -r, -n]
   answers: [[1, 2, 3, 4, 5, 6]]
@@ -1577,7 +1577,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [find]
+  category: [find, wc]
   prompt: カレントディレクトリ配下から拡張子 `.log` のファイルを再帰的に検索し、その件数を表示する。
   choices: [find, ., -name, '"*.log"', "|", wc, -l, -c, -type]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1653,7 +1653,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [find]
+  category: [find, wc]
   prompt: カレントディレクトリ配下から、過去7日以内に更新されたファイルを検索し、その件数を表示する。
   choices: [find, ., -mtime, "-7", "|", wc, -l, -c, -size]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1714,7 +1714,7 @@
     ...
 
 - difficulty: 3
-  category: [grep]
+  category: [grep, wc]
   prompt: ファイル `app.log` から `error` を含む行を抽出し、その件数を表示する。
   choices: [grep, '"error"', app.log, "|", wc, -l, -w, -n]
   answers: [[1, 2, 3, 4, 5, 6]]
@@ -1763,7 +1763,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [grep]
+  category: [grep, wc]
   prompt: ファイル `app.log` から `debug` を含まない行だけを表示し、その件数を表示する。
   choices: [grep, -v, '"debug"', app.log, "|", wc, -l, -w, -i]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1800,7 +1800,7 @@
     ...
 
 - difficulty: 3
-  category: [grep]
+  category: [grep, head]
   prompt: ファイル `app.log` から `warning` を含む行を抽出し、その先頭10件を表示する。
   choices: [grep, '"warning"', app.log, "|", head, -n, "10", -c, -v]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1822,7 +1822,7 @@
     ...
 
 - difficulty: 3
-  category: [grep]
+  category: [grep, wc]
   prompt: ディレクトリ `/var/log` 配下のすべてのファイルから `error` を含む行を再帰的に検索し、その総件数を表示する。
   choices: [grep, -r, '"error"', /var/log, "|", wc, -l, -i, -w]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1841,7 +1841,7 @@
     12
 
 - difficulty: 3
-  category: [head]
+  category: [grep, head]
   prompt: ファイル `access.log` の先頭から `error` を含む行だけを抽出して、その先頭3件を表示する。
   choices: [grep, '"error"', access.log, "|", head, -n, "3", -c, -q]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -1861,7 +1861,7 @@
     2024-05-07 14:11:02 ERROR Unhandled exception in worker
 
 - difficulty: 3
-  category: [head]
+  category: [head, tail]
   prompt: ファイル `data.txt` の11行目から15行目までを表示する。
   choices: [head, -n, "15", data.txt, "|", tail, -n, "5", -c, -f]
   answers: [[1, 2, 3, 4, 5, 6, 7, 8]]
@@ -1898,7 +1898,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [ls]
+  category: [ls, head]
   prompt: カレントディレクトリにあるファイルを、サイズの大きい順に詳細表示で並べた上で、上位5件のみを表示する。
   choices: [ls, -l, -S, "|", head, -n, "5", -t, -r]
   answers: [[1, 2, 3, 4, 5, 6, 7], [1, 3, 2, 4, 5, 6, 7]]
@@ -1938,7 +1938,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [ls]
+  category: [ls, grep]
   prompt: カレントディレクトリのファイル一覧を詳細表示し、その中から `.txt` で終わる行だけを表示する。
   choices: [ls, -l, "|", grep, '".txt"', -i, -v]
   answers: [[1, 2, 3, 4, 5]]
@@ -1958,7 +1958,7 @@
     report.txt
 
 - difficulty: 3
-  category: [ls]
+  category: [ls, grep]
   prompt: ディレクトリ `/etc` のファイル一覧から、`conf` を含むファイル名だけを表示する。
   choices: [ls, /etc, "|", grep, '"conf"', -i, -l]
   answers: [[1, 2, 3, 4, 5]]
@@ -1978,7 +1978,7 @@
     ...
 
 - difficulty: 3
-  category: [ps]
+  category: [ps, grep]
   prompt: 実行中のプロセス一覧から `nginx` を含む行だけを表示する。
   choices: [ps, aux, "|", grep, '"nginx"', kill, top]
   answers: [[1, 2, 3, 4, 5]]
@@ -1998,7 +1998,7 @@
     taro      3401  0.0  0.0  12345  1234 pts/0    S+   13:18   0:00 grep nginx
 
 - difficulty: 3
-  category: [ps]
+  category: [ps, grep, wc]
   prompt: 実行中のプロセス一覧から `nginx` を含む行を抽出し、その件数を表示する。
   choices: [ps, aux, "|", "|", grep, '"nginx"', wc, -l, top, kill]
   answers: [[1, 2, 3, 5, 6, 4, 7, 8]]
@@ -2034,7 +2034,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [sort]
+  category: [sort, uniq]
   prompt: ファイル `access.log` の内容を並べ替えた後、連続する重複行を取り除いて表示する。
   choices: [sort, access.log, "|", uniq, -c, -d]
   answers: [[1, 2, 3, 4]]
@@ -2091,7 +2091,7 @@
     ...
 
 - difficulty: 3
-  category: [sort]
+  category: [sort, uniq]
   prompt: ファイル `access.log` の内容を並べ替えて各行の出現回数を集計し、出現回数が多い順に並べ替えて表示する。
   choices: [sort, access.log, "|", uniq, -c, "|", sort, -rn, -k, -t]
   answers: [[1, 2, 3, 4, 5, 6, 7, 8]]
@@ -2114,7 +2114,7 @@
     ...
 
 - difficulty: 3
-  category: [tail]
+  category: [tail, grep]
   prompt: ファイル `app.log` の末尾100行から `error` を含む行だけを表示する。
   choices: [tail, -n, "100", app.log, "|", grep, '"error"', -f, -c]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -2134,7 +2134,7 @@
     ...
 
 - difficulty: 3
-  category: [tail]
+  category: [tail, grep]
   prompt: ファイル `app.log` の末尾を監視しながら、`error` を含む行だけをリアルタイムに表示する。
   choices: [tail, -f, app.log, "|", grep, '"error"', -n, -v]
   answers: [[1, 2, 3, 4, 5, 6]]
@@ -2170,7 +2170,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [tar]
+  category: [tar, wc]
   prompt: アーカイブ `archive.tar.gz` に含まれるファイル数を表示する。
   choices: [tar, -tzf, archive.tar.gz, "|", wc, -l, -czf, -c]
   answers: [[1, 2, 3, 4, 5, 6]]
@@ -2189,7 +2189,7 @@
     12
 
 - difficulty: 3
-  category: [uniq]
+  category: [sort, uniq]
   prompt: ファイル `access.log` の内容を並べ替えた後、各行の出現回数を表示する。
   choices: [sort, access.log, "|", uniq, -c, -d, -u]
   answers: [[1, 2, 3, 4, 5]]
@@ -2210,7 +2210,7 @@
     ...
 
 - difficulty: 3
-  category: [wc]
+  category: [grep, wc]
   prompt: ファイル `article.txt` から `the` を含む行を抽出し、その総単語数を表示する。
   choices: [grep, '"the"', article.txt, "|", wc, -w, -l, -c]
   answers: [[1, 2, 3, 4, 5, 6]]
@@ -2466,7 +2466,7 @@
     - `grep` : パターンに一致する行を抽出するが、文字列の置換は行わない
   sample_output: |
     2024-05-07 13:18:01 INFO  Starting application
-    2024-05-07 13:18:09 ERROR Failed to process request
+    2024-05-07 13:18:09 warning Failed to process request
     2024-05-07 13:18:20 warning cache miss
 
 - difficulty: 2
@@ -2541,7 +2541,7 @@
     orange
 
 - difficulty: 3
-  category: [xargs]
+  category: [cat, xargs]
   prompt: ファイル `files.txt` に書かれた名前のファイルをまとめて削除する。
   choices: [cat, files.txt, "|", xargs, rm, grep, -n]
   answers: [[1, 2, 3, 4, 5]]
@@ -2558,7 +2558,7 @@
   sample_output: (出力なし)
 
 - difficulty: 3
-  category: [xargs]
+  category: [find, xargs]
   prompt: カレントディレクトリ配下の `.log` ファイルを検索し、それぞれの行数・単語数・文字数を表示する。
   choices: [find, ., -name, '"*.log"', "|", xargs, wc, -l, rm, "-0"]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
@@ -2581,7 +2581,7 @@
      465  2980 15196 total
 
 - difficulty: 3
-  category: [xargs]
+  category: [cat, xargs]
   prompt: ファイル `urls.txt` に書かれたURLの内容を1件ずつ取得する。
   choices: [cat, urls.txt, "|", xargs, -n, "1", curl, -I, -L, wget]
   answers: [[1, 2, 3, 4, 5, 6, 7]]
